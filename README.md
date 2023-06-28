@@ -31,7 +31,7 @@ $ git clone https://github.com/hydroframe/subsettools .
 $ cp subsettools/docs/conus1_subsetting.ipynb .
 ```
 
-To run the notebook, go to the [verde on demand](verde.princeton.edu).
+To run the notebook, go to verde.princeton.edu.
 From the interactive apps tab, choose "Jupyter".
 "Number of hours": choose how many hours you want to run the notebook session.
 "Anaconda3 version used for starting up jupyter interface": choose the virtual environment you just created.
