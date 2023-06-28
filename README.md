@@ -8,7 +8,7 @@ Subsetting tools and utilities for ParFlow
 $ pip install git+ssh://git@github.com/hydroframe/subsettools
 ```
 
-###Detailed instructions to install on verde and run the example notebook:
+### Detailed instructions to install on verde and run the example notebook:
 
 Create a virtual environment ENV_NAME:
 
@@ -34,7 +34,7 @@ From the interactive apps tab, choose "Jupyter".
 "Number of hours": choose how many hours you want to run the notebook session.
 "Anaconda3 version used for starting up jupyter interface": choose the virtual environment you just created.
 "Extra slurm options": --ntasks=16 (for the example notebook). In general, set ntasks to the number of processes you will need when you distribute the parflow run.
-Finally, launch the notebook.
+Finally, launch the notebook. Feel free to run through the whole notebook as it is, or play with the functions and change their arguments!
 
 
 ## Usage
