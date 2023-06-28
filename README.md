@@ -4,13 +4,15 @@ Subsetting tools and utilities for ParFlow
 
 ## Installation
 
+If you know what you're doing:
+
 ```bash
 $ pip install git+ssh://git@github.com/hydroframe/subsettools
 ```
 
 ### Detailed instructions to install on verde and run the example notebook:
 
-Create a virtual environment ENV_NAME:
+Start the terminal and create a virtual environment ENV_NAME:
 
 ```bash
 $ module load anaconda3/2021.11
