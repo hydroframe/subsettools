@@ -28,7 +28,8 @@ To get the example notebook, clone the repository:
 ```bash
 $ cd ~
 $ git clone https://github.com/hydroframe/subsettools .
-$ cp docs/conus1_subsetting.ipynb .
+$ cd ..
+$ cp subsettools/docs/conus1_subsetting.ipynb .
 ```
 
 To run the notebook, go to verde.princeton.edu.
