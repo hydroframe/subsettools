@@ -5,5 +5,7 @@ def get_ref_yaml_path(grid):
         filename = "C1_pfclm_transient_solid.yaml"
     elif grid == "conus2":
         filename = ""
-
-    return resources.files("subsettools.ref_yamls").joinpath(filename)
+        
+    with resources.path("subsettools.ref_yamls", filename) as f:
+        data_file_path = f
+    return data_file_path
