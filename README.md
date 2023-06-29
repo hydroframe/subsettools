@@ -4,7 +4,7 @@ Subsetting tools and utilities for ParFlow
 
 ## Installation
 
-If you know what you're doing:
+You can install the package with the this command, or follow the detailed instructions below.
 
 ```bash
 $ pip install git+ssh://git@github.com/hydroframe/subsettools
