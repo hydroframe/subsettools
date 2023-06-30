@@ -13,7 +13,7 @@ To get the example notebook, start a terminal session and clone the repository:
 
 ```bash
 $ cd ~
-$ git clone https://github.com/hydroframe/subsettools .
+$ git clone https://github.com/hydroframe/subsettools
 $ cp subsettools/docs/conus1_subsetting.ipynb .
 ```
 
