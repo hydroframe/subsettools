@@ -141,10 +141,12 @@ def create_mask_solid(huc_id, grid, write_dir):
 def subset_static(ij_bounds, dataset, write_dir, var_list=['slope_x','slope_y','pf_indicator','mannings','depth_to_bedrock','pme']): 
     #getting paths and writing subset pfbs for static parameters
     for var in var_list: 
-        entry = data_access.get_catalog_entry(dataset = dataset,
-                                                                     file_type = "pfb",
-                                                                     period = "static",
-                                                                     variable = var)
+        entry = data_access.get_catalog_entry(
+            dataset = dataset,
+            file_type = "pfb",
+            period = "static",
+            variable = var
+        )
         if entry is not None:
             subset_data = data_access.get_ndarray(entry, grid_bounds = ij_bounds)
             write_pfb(f'{write_dir}/{var}.pfb', subset_data)
@@ -154,10 +156,12 @@ def subset_static(ij_bounds, dataset, write_dir, var_list=['slope_x','slope_y','
             print(f"{var} not found in dataset {dataset}")
 
 def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone = 'UTC'):
-    entry = data_access.get_catalog_entry(dataset = dataset,
-                                                                 file_type = "pfb",
-                                                                 variable = "pressure_head", 
-                                                                 period = "hourly")
+    entry = data_access.get_catalog_entry(
+        dataset = dataset,
+        file_type = "pfb",
+        variable = "pressure_head", 
+        period = "hourly"
+    )
     
     #getting the correct end day of the previous water year to be the init press
     first_date = datetime.strptime(date, '%Y-%m-%d')
@@ -175,14 +179,13 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone = 'UTC'):
         new_date = new_date.strftime("%Y-%m-%d %H:%M:%S")
     
     subset_data = data_access.get_ndarray(entry, grid_bounds = ij_bounds, start_time=new_date)
-    
+    out_file = f'{write_dir}/{dataset}_{date_string}_press.pfb' 
     if subset_data.size != 0:
-        write_pfb(f'{write_dir}/{dataset}_{date_string}_press.pfb', subset_data)
-
+        write_pfb(out_file, subset_data)
         print(f"Wrote {dataset}_{date_string}_press.pfb in specified directory.")
-        
     else:
         print(f"No pressure file found for {new_date} in dataset {dataset}")
+    return out_file
             
     
 def config_clm(ij_bounds, start, end, dataset, write_dir):  
@@ -272,6 +275,7 @@ def write_land_cover(land_cover_data, out_file):
     header = '\n'.join([heading, ' '.join(col_names)])
     np.savetxt(fname=out_file, X=land_cover_data, delimiter=' ', comments='', header=header,
                fmt=['%d'] * 2 +['%.6f'] * 2 + ['%.2f'] * 2 + ['%d'] * 19)
+    return out_file
 
 
 def edit_drvclmin(read_path, write_path=None, start=None, end=None, startcode=2, vegp_name='drv_vegp.dat', vegm_name='drv_vegm.dat'):
@@ -317,9 +321,9 @@ def edit_drvclmin(read_path, write_path=None, start=None, end=None, startcode=2,
                 lines[num] = f'emo            {em}                                    Ending Month\n'
             if 'eyr' in line:
                 lines[num] = f'eyr            {enddt.year}                                  Ending Year\n'
-
-                
     open(write_path, 'w').writelines(lines)
+    return write_path
+
 
 def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir):
     # CLM variables requested
@@ -333,6 +337,7 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir):
         "east_windspeed",
         "north_windspeed"
     ]        
+    outputs = {}
     
     for var in var_list:   
         entries = data_access.get_catalog_entry(
@@ -348,11 +353,15 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir):
         print(f'Done reading {var} pfb sequence, starting to write to folder')
         
         paths = data_access.get_file_paths(entries, start_time=start, end_time = end)
-        for path in enumerate(paths):
-            write_pfb(f'{write_dir}/{os.path.basename(path[1])}', subset_data[path[0],:,:,:])
+        out_paths = [f'{write_dir}/{os.path.basename(p)}' for p in paths]
+        for i, op in enumerate(out_paths):
+            write_pfb(op, subset_data[i,:,:,:])
         
         print(f'finished writing {var} to folder')
-    
+        outputs[var] = out_paths
+    return outputs
+
+
 def edit_runscript_for_subset(ij_bounds, runscript_path, write_dir=None, runname=None, forcing_dir=None):
     if write_dir is None:     
         write_dir = os.path.dirname(runscript_path) 
@@ -371,7 +380,6 @@ def edit_runscript_for_subset(ij_bounds, runscript_path, write_dir=None, runname
         print(f"New runname: {runname} provided, a new {file_extension} file will be created")
     else: 
          print(f"No runname provided, old {file_extension} file will be overwritten")
-        
     
     run.ComputationalGrid.NY = int(nj)
     run.ComputationalGrid.NX = int(ni) 
@@ -381,9 +389,7 @@ def edit_runscript_for_subset(ij_bounds, runscript_path, write_dir=None, runname
     #checks if we're running with clm    
     if forcing_dir is not None:
         print(f"Old path to climate forcing was {run.Solver.CLM.MetFilePath} and has been changed to {forcing_dir} in runscript.")
-        
         run.Solver.CLM.MetFilePath = forcing_dir
-           
     else:
         print("No forcing directory provided, key not set")
         
@@ -392,16 +398,15 @@ def edit_runscript_for_subset(ij_bounds, runscript_path, write_dir=None, runname
 
     if domain_type == "SolidFile":
         print(f"GeomInput.domaininput.InputType detected as SolidFile, no additional keys to change for subset")
-    
     else:
         print(f"GeomInput.domaininput.InputType detected as Box, updating Geom.domain.Upper.X to {ni * 1000} and Y to {nj * 1000} to match subset")
-        
         run.Geom.domain.Upper.X = ni * 1000
         run.Geom.domain.Upper.Y = nj * 1000
-        
     
     print(f"Updated runscript written to {write_dir} as detected extension")
     run.write(working_directory=write_dir, file_format=f'{file_extension}') 
+    #TODO: make this return the path to the new runscript
+    return write_dir
     
 def copy_static_files(static_input_dir, pf_dir):
     #It's just one line, but it doesn't really seem to fit with the otehr functions... 
