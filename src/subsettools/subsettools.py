@@ -437,9 +437,6 @@ def change_filename_values(runscript_path, write_dir = None, runname=None, slope
 
     
 def dist_run(P, Q, runscript_path, pf_run_dir, dist_clim_forcing=False):
-    if P != Q:
-        print(f"Processor P={P} and Q={Q}, they must be equal.")
-  
     run = Run.from_definition(runscript_path)
     
     run.Process.Topology.P = int(P)
