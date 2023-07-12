@@ -15,8 +15,7 @@ import pathlib
 import subprocess
 import sys
 import glob
-#sys.path.insert(1,'/home/SHARED/data/hydrodata/hydrodata')
-import hydrodata.data_catalog.data_access
+from hydrodata.data_catalog import data_access
 
 
 
@@ -25,17 +24,16 @@ def get_conus_ij(domain, grid):
     #for now this can handle huc inputs as string and lat/lon bbox
     if isinstance(domain, str):
         conus_ij = huc_to_ij(domain, grid)
-        
     else:
         conus_ij = latlon_to_ij(domain, grid)
-        
-    
     return conus_ij
         
 def huc_to_ij(huc_id, grid):
     huc_len = len(huc_id)
     #****this path to the conus huc tifs will need to be dealt with better...
-    conus_hucs = xr.open_dataset(f'/hydrodata/national_mapping/{grid.upper()}/HUC{huc_len}_{grid.upper()}_grid.tif').drop_vars(('x', 'y'))['band_data']
+    conus_hucs = xr.open_dataset(
+        f'/hydrodata/national_mapping/{grid.upper()}/HUC{huc_len}_{grid.upper()}_grid.tif'
+    ).drop_vars(('x', 'y'))['band_data']
     huc = int(huc_id)
     sel_huc = (conus_hucs == huc).squeeze()
     
@@ -77,7 +75,9 @@ def create_mask_solid(huc_id, grid, write_dir):
         print("Provided HUC ID")
         huc_len = len(huc_id)
         
-        conus_hucs = xr.open_dataset(f'/hydrodata/national_mapping/{grid.upper()}/HUC{huc_len}_{grid.upper()}_grid.tif').drop_vars(('x', 'y'))['band_data']
+        conus_hucs = xr.open_dataset(
+            f'/hydrodata/national_mapping/{grid.upper()}/HUC{huc_len}_{grid.upper()}_grid.tif'
+        ).drop_vars(('x', 'y'))['band_data']
         huc = int(huc_id)
         sel_huc = (conus_hucs == huc).squeeze()
 
@@ -141,12 +141,12 @@ def create_mask_solid(huc_id, grid, write_dir):
 def subset_static(ij_bounds, dataset, write_dir, var_list=['slope_x','slope_y','pf_indicator','mannings','depth_to_bedrock','pme']): 
     #getting paths and writing subset pfbs for static parameters
     for var in var_list: 
-        entry = hydrodata.data_catalog.data_access.get_catalog_entry(dataset = dataset,
+        entry = data_access.get_catalog_entry(dataset = dataset,
                                                                      file_type = "pfb",
                                                                      period = "static",
                                                                      variable = var)
         if entry is not None:
-            subset_data = hydrodata.data_catalog.data_access.get_ndarray(entry, grid_bounds = ij_bounds)
+            subset_data = data_access.get_ndarray(entry, grid_bounds = ij_bounds)
             write_pfb(f'{write_dir}/{var}.pfb', subset_data)
             print(f"Wrote {var}.pfb in specified directory.")
         
@@ -154,7 +154,7 @@ def subset_static(ij_bounds, dataset, write_dir, var_list=['slope_x','slope_y','
             print(f"{var} not found in dataset {dataset}")
 
 def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone = 'UTC'):
-    entry = hydrodata.data_catalog.data_access.get_catalog_entry(dataset = dataset,
+    entry = data_access.get_catalog_entry(dataset = dataset,
                                                                  file_type = "pfb",
                                                                  variable = "pressure_head", 
                                                                  period = "hourly")
@@ -174,7 +174,7 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone = 'UTC'):
         date_string = new_date.strftime("%Y.%m.%d:%H.%M.%S_UTC0")
         new_date = new_date.strftime("%Y-%m-%d %H:%M:%S")
     
-    subset_data = hydrodata.data_catalog.data_access.get_ndarray(entry, grid_bounds = ij_bounds, start_time=new_date)
+    subset_data = data_access.get_ndarray(entry, grid_bounds = ij_bounds, start_time=new_date)
     
     if subset_data.size != 0:
         write_pfb(f'{write_dir}/{dataset}_{date_string}_press.pfb', subset_data)
@@ -191,35 +191,41 @@ def config_clm(ij_bounds, start, end, dataset, write_dir):
     for file in file_type_list:
         print(file)
         if 'vegp' in file:
-            entry = hydrodata.data_catalog.data_access.get_catalog_entry(dataset = dataset,
-                                                                        file_type = "vegp",
-                                                                        variable = "clm_run",
-                                                                        period = "static")
-            path = hydrodata.data_catalog.data_access.get_file_paths(entry)
+            entry = data_access.get_catalog_entry(
+                dataset = dataset,
+                file_type = "vegp",
+                variable = "clm_run",
+                period = "static"
+            )
+            path = data_access.get_file_paths(entry)
             print(path[0])
             shutil.copyfile(path[0], f'{write_dir}/drv_vegp.dat')
             print(f"copied vegp")
             
         elif 'vegm' in file:
-            entry = hydrodata.data_catalog.data_access.get_catalog_entry(dataset = dataset,
-                                                                        file_type = "vegm",
-                                                                        variable = "clm_run",
-                                                                        period = "static")
-            path = hydrodata.data_catalog.data_access.get_file_paths(entry)
+            entry = data_access.get_catalog_entry(
+                dataset = dataset,
+                file_type = "vegm",
+                variable = "clm_run",
+                period = "static"
+            )
+            path = data_access.get_file_paths(entry)
             print(f"subsetting vegm (this takes awhile)")
             vegm = subset_vegm(path[0],ij_bounds) 
             write_land_cover(vegm, f'{write_dir}/drv_vegm.dat')
             print(f"subset vegm")
             
         elif 'drv' in file:
-            entries = hydrodata.data_catalog.data_access.get_catalog_entries(dataset = dataset,
-                                                                        file_type = "drv_clm",
-                                                                        variable = "clm_run",
-                                                                        period = "static")
-            path = hydrodata.data_catalog.data_access.get_file_paths(entries[0])
+            entries = data_access.get_catalog_entries(
+                dataset = dataset,
+                file_type = "drv_clm",
+                variable = "clm_run",
+                period = "static"
+            )
+            path = data_access.get_file_paths(entries[0])
             print(path[0])
 
-            edit_drvclmin(read_path = path[0],write_path = f'{write_dir}/drv_clmin.dat',start = start,end=end)
+            edit_drvclmin(read_path = path[0], write_path = f'{write_dir}/drv_clmin.dat',start = start,end=end)
             print(f"edited drv_clmin")
             
         else:
@@ -316,20 +322,32 @@ def edit_drvclmin(read_path, write_path=None, start=None, end=None, startcode=2,
     open(write_path, 'w').writelines(lines)
 
 def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir):
-    var_list = ["precipitation","downward_shortwave","downward_longwave","specific_humidity","air_temp","atmospheric_pressure","east_windspeed","north_windspeed"]        # CLM variables requested
+    # CLM variables requested
+    var_list = [
+        "precipitation",
+        "downward_shortwave",
+        "downward_longwave",
+        "specific_humidity",
+        "air_temp",
+        "atmospheric_pressure",
+        "east_windspeed",
+        "north_windspeed"
+    ]        
     
     for var in var_list:   
-        entries = hydrodata.data_catalog.data_access.get_catalog_entry(dataset = dataset,
-                                                                         variable = var,
-                                                                         grid = grid, 
-                                                                         file_type = "pfb",
-                                                                         period = "hourly")
+        entries = data_access.get_catalog_entry(
+            dataset = dataset,
+            variable = var,
+            grid = grid, 
+            file_type = "pfb",
+            period = "hourly"
+        )
         
         print(f'Reading {var} pfb sequence')
-        subset_data = hydrodata.data_catalog.data_access.get_ndarray(entries, start_time = start, end_time = end, grid_bounds = ij_bounds)
+        subset_data = data_access.get_ndarray(entries, start_time = start, end_time = end, grid_bounds = ij_bounds)
         print(f'Done reading {var} pfb sequence, starting to write to folder')
         
-        paths = hydrodata.data_catalog.data_access.get_file_paths(entries, start_time=start, end_time = end)
+        paths = data_access.get_file_paths(entries, start_time=start, end_time = end)
         for path in enumerate(paths):
             write_pfb(f'{write_dir}/{os.path.basename(path[1])}', subset_data[path[0],:,:,:])
         
@@ -386,11 +404,24 @@ def edit_runscript_for_subset(ij_bounds, runscript_path, write_dir=None, runname
     run.write(working_directory=write_dir, file_format=f'{file_extension}') 
     
 def copy_static_files(static_input_dir, pf_dir):
-    #It's just one line, but it doesn't really seem to fit with the otehr functions... I do think it would be more intuitive to have it in a function but not sure
+    #It's just one line, but it doesn't really seem to fit with the otehr functions... 
+    # I do think it would be more intuitive to have it in a function but not sure
     os.system('cp -r '+static_input_dir+'*.* '+pf_dir)
     
         
-def change_filename_values(runscript_path, write_dir = None, runname=None, slopex=None, slopey=None, solidfile=None, ip=None, indicator=None, depth_to_bedrock=None, mannings=None, evap_trans=None):
+def change_filename_values(
+    runscript_path, 
+    write_dir = None, 
+    runname=None, 
+    slopex=None, 
+    slopey=None, 
+    solidfile=None, 
+    ip=None, 
+    indicator=None, 
+    depth_to_bedrock=None, 
+    mannings=None, 
+    evap_trans=None
+):
     
     file_name, file_extension = os.path.splitext(runscript_path)
     file_extension = file_extension[1:]
