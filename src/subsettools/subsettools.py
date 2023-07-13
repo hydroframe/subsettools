@@ -32,34 +32,44 @@ def get_conus_ij(domain, grid):
     
     return conus_ij
         
-def huc_to_ij(huc_id, grid):
-    huc_len = len(huc_id)
+def huc_to_ij(hucs, grid):
+    assert len(set([len(h) for h in hucs]))==1, 'All HUC IDs must be the same length'
+    
+    result = [1000000, 1000000, 0, 0]
+    
+    huc_len = len(hucs[0])
+    huc_list = [int(item) for item in hucs]
+    
+    for huc in huc_list:
     #****this path to the conus huc tifs will need to be dealt with better...
-    conus_hucs = xr.open_dataset(f'/hydrodata/national_mapping/{grid.upper()}/HUC{huc_len}_{grid.upper()}_grid.tif').drop_vars(('x', 'y'))['band_data']
-    huc = int(huc_id)
-    sel_huc = (conus_hucs == huc).squeeze()
-    
-    # First find where along the y direction has "valid" cells
-    y_mask = (sel_huc.sum(dim='x') > 0).astype(int)
-    
-    # Then, taking a diff along that dimension let's us see where the boundaries of that mask ar
-    diffed_y_mask = y_mask.diff(dim='y')
+        conus_huc = xr.open_dataset(f'/hydrodata/national_mapping/{grid.upper()}/HUC{huc_len}_{grid.upper()}_grid.tif').drop_vars(('x', 'y'))['band_data']
+        sel_huc = (conus_huc == huc).squeeze()
 
-    # Taking the argmin and argmax get's us the locations of the boundaries
-    arr_jmax = np.argmin(diffed_y_mask.values) + 1 #this one is because you want to include this right bound in your slice
-    arr_jmin = np.argmax(diffed_y_mask.values) + 1 #because of the point you actually want to indicate from the diff function
+        # First find where along the y direction has "valid" cells
+        y_mask = (sel_huc.sum(dim='x') > 0).astype(int)
 
-    jmin = conus_hucs.shape[1]-arr_jmax 
-    jmax = conus_hucs.shape[1]-arr_jmin
+        # Then, taking a diff along that dimension let's us see where the boundaries of that mask ar
+        diffed_y_mask = y_mask.diff(dim='y')
 
-    # Do the exact same thing for the x dimension
-    diffed_x_mask = (sel_huc.sum(dim='y') > 0).astype(int).diff(dim='x')
-    imax = np.argmin(diffed_x_mask.values) + 1
-    imin = np.argmax(diffed_x_mask.values) + 1
+        # Taking the argmin and argmax get's us the locations of the boundaries
+        arr_jmax = np.argmin(diffed_y_mask.values) + 1 #this one is because you want to include this right bound in your slice
+        arr_jmin = np.argmax(diffed_y_mask.values) + 1 #because of the point you actually want to indicate from the diff function
 
-    ij_bounds = [imin,jmin,imax,jmax]  
-  
-    return ij_bounds
+        jmin = conus_huc.shape[1]-arr_jmax 
+        jmax = conus_huc.shape[1]-arr_jmin
+
+        # Do the exact same thing for the x dimension
+        diffed_x_mask = (sel_huc.sum(dim='y') > 0).astype(int).diff(dim='x')
+        imax = np.argmin(diffed_x_mask.values) + 1
+        imin = np.argmax(diffed_x_mask.values) + 1
+        
+        result[0] = imin if imin < result[0] else result[0]
+        result[1] = jmin if jmin < result[1] else result[1]
+        result[2] = imax if imax > result[2] else result[2]
+        result[3] = jmax if jmax > result[3] else result[3]
+        
+
+    return result
 
 
 def latlon_to_ij(latlng_bounds,grid):
