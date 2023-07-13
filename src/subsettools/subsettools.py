@@ -17,25 +17,11 @@ import sys
 import glob
 #sys.path.insert(1,'/home/SHARED/data/hydrodata/hydrodata')
 import hydrodata.data_catalog.data_access
-
-
-
-def get_conus_ij(domain, grid):
-    #Eventually add a check if we are getting a shapefile, tif, etc. 
-    #for now this can handle huc inputs as string and lat/lon bbox
-    if isinstance(domain, str):
-        conus_ij = huc_to_ij(domain, grid)
-        
-    else:
-        conus_ij = latlon_to_ij(domain, grid)
-        
-    
-    return conus_ij
         
 def huc_to_ij(hucs, grid):
     assert len(set([len(h) for h in hucs]))==1, 'All HUC IDs must be the same length'
     
-    result = [1000000, 1000000, 0, 0]
+    ij_bounds = [1000000, 1000000, 0, 0]
     
     huc_len = len(hucs[0])
     huc_list = [int(item) for item in hucs]
@@ -63,13 +49,13 @@ def huc_to_ij(hucs, grid):
         imax = np.argmin(diffed_x_mask.values) + 1
         imin = np.argmax(diffed_x_mask.values) + 1
         
-        result[0] = imin if imin < result[0] else result[0]
-        result[1] = jmin if jmin < result[1] else result[1]
-        result[2] = imax if imax > result[2] else result[2]
-        result[3] = jmax if jmax > result[3] else result[3]
+        ij_bounds[0] = imin if imin < ij_bounds[0] else ij_bounds[0]
+        ij_bounds[1] = jmin if jmin < ij_bounds[1] else ij_bounds[1]
+        ij_bounds[2] = imax if imax > ij_bounds[2] else ij_bounds[2]
+        ij_bounds[3] = jmax if jmax > ij_bounds[3] else ij_bounds[3]
         
 
-    return result
+    return ij_bounds
 
 
 def latlon_to_ij(latlng_bounds,grid):
