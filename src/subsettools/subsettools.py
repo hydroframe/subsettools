@@ -15,48 +15,44 @@ import pathlib
 import subprocess
 import sys
 import glob
-from hydrodata.data_catalog import data_access
-
-
-
-def get_conus_ij(domain, grid):
-    #Eventually add a check if we are getting a shapefile, tif, etc. 
-    #for now this can handle huc inputs as string and lat/lon bbox
-    if isinstance(domain, str):
-        conus_ij = huc_to_ij(domain, grid)
-    else:
-        conus_ij = latlon_to_ij(domain, grid)
-    return conus_ij
+import hydrodata.data_catalog.data_access
         
-def huc_to_ij(huc_id, grid):
-    huc_len = len(huc_id)
+def huc_to_ij(hucs, grid):
+    assert len(set([len(h) for h in hucs]))==1, 'All HUC IDs must be the same length'
+    
+    ij_bounds = [1000000, 1000000, 0, 0]
+    huc_len = len(hucs[0])
+    huc_list = [int(item) for item in hucs]
+    
+    for huc in huc_list:
     #****this path to the conus huc tifs will need to be dealt with better...
-    conus_hucs = xr.open_dataset(
-        f'/hydrodata/national_mapping/{grid.upper()}/HUC{huc_len}_{grid.upper()}_grid.tif'
-    ).drop_vars(('x', 'y'))['band_data']
-    huc = int(huc_id)
-    sel_huc = (conus_hucs == huc).squeeze()
-    
-    # First find where along the y direction has "valid" cells
-    y_mask = (sel_huc.sum(dim='x') > 0).astype(int)
-    
-    # Then, taking a diff along that dimension let's us see where the boundaries of that mask ar
-    diffed_y_mask = y_mask.diff(dim='y')
+        conus_huc = xr.open_dataset(f'/hydrodata/national_mapping/{grid.upper()}/HUC{huc_len}_{grid.upper()}_grid.tif').drop_vars(('x', 'y'))['band_data']
+        sel_huc = (conus_huc == huc).squeeze()
 
-    # Taking the argmin and argmax get's us the locations of the boundaries
-    arr_jmax = np.argmin(diffed_y_mask.values) + 1 #this one is because you want to include this right bound in your slice
-    arr_jmin = np.argmax(diffed_y_mask.values) + 1 #because of the point you actually want to indicate from the diff function
+        # First find where along the y direction has "valid" cells
+        y_mask = (sel_huc.sum(dim='x') > 0).astype(int)
 
-    jmin = conus_hucs.shape[1]-arr_jmax 
-    jmax = conus_hucs.shape[1]-arr_jmin
+        # Then, taking a diff along that dimension let's us see where the boundaries of that mask ar
+        diffed_y_mask = y_mask.diff(dim='y')
 
-    # Do the exact same thing for the x dimension
-    diffed_x_mask = (sel_huc.sum(dim='y') > 0).astype(int).diff(dim='x')
-    imax = np.argmin(diffed_x_mask.values) + 1
-    imin = np.argmax(diffed_x_mask.values) + 1
+        # Taking the argmin and argmax get's us the locations of the boundaries
+        arr_jmax = np.argmin(diffed_y_mask.values) + 1 #this one is because you want to include this right bound in your slice
+        arr_jmin = np.argmax(diffed_y_mask.values) + 1 #because of the point you actually want to indicate from the diff function
 
-    ij_bounds = [imin,jmin,imax,jmax]  
-  
+        jmin = conus_huc.shape[1]-arr_jmax 
+        jmax = conus_huc.shape[1]-arr_jmin
+
+        # Do the exact same thing for the x dimension
+        diffed_x_mask = (sel_huc.sum(dim='y') > 0).astype(int).diff(dim='x')
+        imax = np.argmin(diffed_x_mask.values) + 1
+        imin = np.argmax(diffed_x_mask.values) + 1
+        
+        ij_bounds[0] = imin if imin < ij_bounds[0] else ij_bounds[0]
+        ij_bounds[1] = jmin if jmin < ij_bounds[1] else ij_bounds[1]
+        ij_bounds[2] = imax if imax > ij_bounds[2] else ij_bounds[2]
+        ij_bounds[3] = jmax if jmax > ij_bounds[3] else ij_bounds[3]
+        
+
     return ij_bounds
 
 
@@ -473,9 +469,6 @@ def change_filename_values(
 
     
 def dist_run(P, Q, runscript_path, pf_run_dir, dist_clim_forcing=False):
-    if P != Q:
-        print(f"Processor P={P} and Q={Q}, they must be equal.")
-  
     run = Run.from_definition(runscript_path)
     
     run.Process.Topology.P = int(P)
