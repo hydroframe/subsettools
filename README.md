@@ -7,24 +7,31 @@ If you want to use it within parflow-ml follow the 'Getting started' instruction
 
 ## Getting started
 
-subsettools is already installed in the parflow-ml module on verde. You only need to get the example notebook from the repo and run it.
+subsettools is already installed in the parflow-ml module on verde. You only need to get an example notebook from the repo and run it.
 
-To get the example notebook, start a terminal session and clone the repository:
+To get the entire folder of example notebooks, start a terminal session, navigate to your chosen download location and do:
 
 ```bash
-$ cd ~
-$ git clone https://github.com/hydroframe/subsettools
-$ cp subsettools/docs/conus1_subsetting.ipynb .
+$ svn checkout https://github.com/hydroframe/subsettools/trunk/docs/example_notebooks
 ```
 
-The notebook should now be in your home directory. To run the notebook, go to verde.princeton.edu. From the interactive apps tab, choose "Jupyter". \
+If you want to download a single notebook, copy the notebook title from the github URL and do:
+
+```bash
+$ curl https://raw.githubusercontent.com/hydroframe/subsettools/main/docs/example_notebooks/<notebook_title>.ipynb -o example_notebook.ipynb
+```
+
+The notebook should now be in your chosen download location. \
+To run the notebook, go to verde.princeton.edu. From the interactive apps tab, choose "Jupyter". \
 "Number of hours": choose how many hours you want to run the notebook session. \
 "Anaconda3 version used for starting up jupyter interface": choose "parflow-ml" from the list of environments. \
-"Extra slurm options": --ntasks=16 (for the example notebook). In general, set ntasks to the number of processes you will need when you distribute the parflow run. \
+"Extra slurm options": --ntasks=N (where N is the number of required cores for the example notebook). In general, set ntasks to the number of processes you will need when you distribute the parflow run. \
 Finally, launch the notebook. Feel free to run through the whole notebook as it is, or play with the functions and change their arguments!
 
 
-## Installation
+## Installation outside verde
+
+Activate your chosen virtual environment, then do:
 
 ```bash
 $ pip install git+ssh://git@github.com/hydroframe/subsettools
