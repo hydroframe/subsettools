@@ -1,0 +1,616 @@
+BCPressure:
+  PatchNames: xlower xupper ylower yupper zlower zupper
+Cell:
+  '0':
+    dzScale:
+      Value: 1.0
+  '1':
+    dzScale:
+      Value: 0.01
+  '2':
+    dzScale:
+      Value: 0.006
+  '3':
+    dzScale:
+      Value: 0.003
+  '4':
+    dzScale:
+      Value: 0.001
+ComputationalGrid:
+  DX: 1000.0
+  DY: 1000.0
+  DZ: 100.0
+  Lower:
+    X: 0.0
+    Y: 0.0
+    Z: 0.0
+  NX: 3342
+  NY: 1888
+  NZ: 5
+Contaminants:
+  Names: ''
+Cycle:
+  Names: constant
+  constant:
+    Names: alltime
+    Repeat: -1
+    alltime:
+      Length: 10000000
+Domain:
+  GeomName: domain
+FileVersion: 4
+Geom:
+  Perm:
+    Names: domain s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13 g1 g2 g3 g4 g5 g6 g7
+      g8 b1 b2
+    TensorByGeom:
+      Names: domain
+  Porosity:
+    GeomNames: domain s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13 g1 g2 g3 g4 g5 g6
+      g7 g8
+  Retardation:
+    GeomNames: ''
+  b1:
+    Perm:
+      Type: Constant
+      Value: 0.005
+  b2:
+    Perm:
+      Type: Constant
+      Value: 0.01
+  domain:
+    ICPressure:
+      FileName: press_init.pfb
+      RefGeom: domain
+      RefPatch: zlower
+    Lower:
+      X: 0.0
+      Y: 0.0
+      Z: 0.0
+    Patches: xlower xupper ylower yupper zlower zupper
+    Perm:
+      TensorValX: 1.0
+      TensorValY: 1.0
+      TensorValZ: 1.0
+      Type: Constant
+      Value: 0.02
+    Porosity:
+      Type: Constant
+      Value: 0.33
+    RelPerm:
+      Alpha: 1.0
+      InterpolationMethod: Linear
+      MinPressureHead: -300
+      N: 3.0
+      NumSamplePoints: 20000
+    Saturation:
+      Alpha: 1.0
+      N: 3.0
+      SRes: 0.001
+      SSat: 1.0
+    SpecificStorage:
+      Value: 0.0001
+    Upper:
+      X: 3342000.0
+      Y: 1888000.0
+      Z: 500.0
+  g1:
+    Perm:
+      Type: Constant
+      Value: 0.02
+    Porosity:
+      Type: Constant
+      Value: 0.33
+  g2:
+    Perm:
+      Type: Constant
+      Value: 0.03
+    Porosity:
+      Type: Constant
+      Value: 0.33
+  g3:
+    Perm:
+      Type: Constant
+      Value: 0.04
+    Porosity:
+      Type: Constant
+      Value: 0.33
+  g4:
+    Perm:
+      Type: Constant
+      Value: 0.05
+    Porosity:
+      Type: Constant
+      Value: 0.33
+  g5:
+    Perm:
+      Type: Constant
+      Value: 0.06
+    Porosity:
+      Type: Constant
+      Value: 0.33
+  g6:
+    Perm:
+      Type: Constant
+      Value: 0.08
+    Porosity:
+      Type: Constant
+      Value: 0.33
+  g7:
+    Perm:
+      Type: Constant
+      Value: 0.1
+    Porosity:
+      Type: Constant
+      Value: 0.33
+  g8:
+    Perm:
+      Type: Constant
+      Value: 0.2
+    Porosity:
+      Type: Constant
+      Value: 0.33
+  indi_input:
+    FileName: pf_indicator.pfb
+  s1:
+    Perm:
+      Type: Constant
+      Value: 0.269022595
+    Porosity:
+      Type: Constant
+      Value: 0.375
+    RelPerm:
+      Alpha: 3.548
+      InterpolationMethod: Linear
+      MinPressureHead: -300
+      N: 4.162
+      NumSamplePoints: 20000
+    Saturation:
+      Alpha: 3.548
+      N: 4.162
+      SRes: 0.0001
+      SSat: 1.0
+  s10:
+    Perm:
+      Type: Constant
+      Value: 0.004783973
+    Porosity:
+      Type: Constant
+      Value: 0.385
+    RelPerm:
+      Alpha: 3.311
+      InterpolationMethod: Linear
+      MinPressureHead: -300
+      N: 2.202
+      NumSamplePoints: 20000
+    Saturation:
+      Alpha: 3.311
+      N: 2.202
+      SRes: 0.0001
+      SSat: 1.0
+  s11:
+    Perm:
+      Type: Constant
+      Value: 0.003979136
+    Porosity:
+      Type: Constant
+      Value: 0.481
+    RelPerm:
+      Alpha: 1.622
+      InterpolationMethod: Linear
+      MinPressureHead: -300
+      N: 2.318
+      NumSamplePoints: 20000
+    Saturation:
+      Alpha: 1.622
+      N: 2.318
+      SRes: 0.0001
+      SSat: 1.0
+  s12:
+    Perm:
+      Type: Constant
+      Value: 0.006162952
+    Porosity:
+      Type: Constant
+      Value: 0.459
+    RelPerm:
+      Alpha: 1.514
+      InterpolationMethod: Linear
+      MinPressureHead: -300
+      N: 2.259
+      NumSamplePoints: 20000
+    Saturation:
+      Alpha: 1.514
+      N: 2.259
+      SRes: 0.0001
+      SSat: 1.0
+  s13:
+    Perm:
+      Type: Constant
+      Value: 0.005009435
+    Porosity:
+      Type: Constant
+      Value: 0.399
+    RelPerm:
+      Alpha: 1.122
+      InterpolationMethod: Linear
+      MinPressureHead: -300
+      N: 2.479
+      NumSamplePoints: 20000
+    Saturation:
+      Alpha: 1.122
+      N: 2.479
+      SRes: 0.0001
+      SSat: 1.0
+  s2:
+    Perm:
+      Type: Constant
+      Value: 0.043630356
+    Porosity:
+      Type: Constant
+      Value: 0.39
+    RelPerm:
+      Alpha: 3.467
+      InterpolationMethod: Linear
+      MinPressureHead: -300
+      N: 2.738
+      NumSamplePoints: 20000
+    Saturation:
+      Alpha: 3.467
+      N: 2.738
+      SRes: 0.0001
+      SSat: 1.0
+  s3:
+    Perm:
+      Type: Constant
+      Value: 0.015841225
+    Porosity:
+      Type: Constant
+      Value: 0.387
+    RelPerm:
+      Alpha: 2.692
+      InterpolationMethod: Linear
+      MinPressureHead: -300
+      N: 2.445
+      NumSamplePoints: 20000
+    Saturation:
+      Alpha: 2.692
+      N: 2.445
+      SRes: 0.0001
+      SSat: 1.0
+  s4:
+    Perm:
+      Type: Constant
+      Value: 0.007582087
+    Porosity:
+      Type: Constant
+      Value: 0.439
+    RelPerm:
+      Alpha: 0.501
+      InterpolationMethod: Linear
+      MinPressureHead: -300
+      N: 2.659
+      NumSamplePoints: 20000
+    Saturation:
+      Alpha: 0.501
+      N: 2.659
+      SRes: 0.1
+      SSat: 1.0
+  s5:
+    Perm:
+      Type: Constant
+      Value: 0.01818816
+    Porosity:
+      Type: Constant
+      Value: 0.489
+    RelPerm:
+      Alpha: 0.661
+      InterpolationMethod: Linear
+      MinPressureHead: -300
+      N: 2.659
+      NumSamplePoints: 20000
+    Saturation:
+      Alpha: 0.661
+      N: 2.659
+      SRes: 0.0001
+      SSat: 1.0
+  s6:
+    Perm:
+      Type: Constant
+      Value: 0.005009435
+    Porosity:
+      Type: Constant
+      Value: 0.399
+    RelPerm:
+      Alpha: 1.122
+      InterpolationMethod: Linear
+      MinPressureHead: -300
+      N: 2.479
+      NumSamplePoints: 20000
+    Saturation:
+      Alpha: 1.122
+      N: 2.479
+      SRes: 0.0001
+      SSat: 1.0
+  s7:
+    Perm:
+      Type: Constant
+      Value: 0.005492736
+    Porosity:
+      Type: Constant
+      Value: 0.384
+    RelPerm:
+      Alpha: 2.089
+      InterpolationMethod: Linear
+      MinPressureHead: -300
+      N: 2.318
+      NumSamplePoints: 20000
+    Saturation:
+      Alpha: 2.089
+      N: 2.318
+      SRes: 0.0001
+      SSat: 1.0
+  s8:
+    Perm:
+      Type: Constant
+      Value: 0.004675077
+    Porosity:
+      Type: Constant
+      Value: 0.482
+    RelPerm:
+      Alpha: 0.832
+      InterpolationMethod: Linear
+      MinPressureHead: -300
+      N: 2.514
+      NumSamplePoints: 20000
+    Saturation:
+      Alpha: 0.832
+      N: 2.514
+      SRes: 0.0001
+      SSat: 1.0
+  s9:
+    Perm:
+      Type: Constant
+      Value: 0.003386794
+    Porosity:
+      Type: Constant
+      Value: 0.442
+    RelPerm:
+      Alpha: 1.585
+      InterpolationMethod: Linear
+      MinPressureHead: -300
+      N: 2.413
+      NumSamplePoints: 20000
+    Saturation:
+      Alpha: 1.585
+      N: 2.413
+      SRes: 0.0001
+      SSat: 1.0
+GeomInput:
+  Names: domaininput indi_input
+  b1:
+    Value: 19
+  b2:
+    Value: 20
+  domaininput:
+    GeomName: domain
+    GeomNames: domain
+    InputType: Box
+  g1:
+    Value: 21
+  g2:
+    Value: 22
+  g3:
+    Value: 23
+  g4:
+    Value: 24
+  g5:
+    Value: 25
+  g6:
+    Value: 26
+  g7:
+    Value: 27
+  g8:
+    Value: 28
+  indi_input:
+    GeomNames: s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13 g1 g2 g3 g4 g5 g6 g7 g8
+      b1 b2
+    InputType: IndicatorField
+  s1:
+    Value: 1
+  s10:
+    Value: 10
+  s11:
+    Value: 11
+  s12:
+    Value: 12
+  s13:
+    Value: 13
+  s2:
+    Value: 2
+  s3:
+    Value: 3
+  s4:
+    Value: 4
+  s5:
+    Value: 5
+  s6:
+    Value: 6
+  s7:
+    Value: 7
+  s8:
+    Value: 8
+  s9:
+    Value: 9
+Gravity: 1.0
+ICPressure:
+  GeomNames: domain
+  Type: PFBFile
+KnownSolution: NoKnownSolution
+Mannings:
+  Geom:
+    domain:
+      Value: 2.4e-06
+  GeomNames: domain
+  Type: Constant
+Patch:
+  xlower:
+    BCPressure:
+      Cycle: constant
+      Type: FluxConst
+      alltime:
+        Value: 0.0
+  xupper:
+    BCPressure:
+      Cycle: constant
+      Type: FluxConst
+      alltime:
+        Value: 0.0
+  ylower:
+    BCPressure:
+      Cycle: constant
+      Type: FluxConst
+      alltime:
+        Value: 0.0
+  yupper:
+    BCPressure:
+      Cycle: constant
+      Type: FluxConst
+      alltime:
+        Value: 0.0
+  zlower:
+    BCPressure:
+      Cycle: constant
+      Type: FluxConst
+      alltime:
+        Value: 0.0
+  zupper:
+    BCPressure:
+      Cycle: constant
+      Type: OverlandFlow
+      alltime:
+        Value: 0.0
+Perm:
+  TensorType: TensorByGeom
+Phase:
+  Names: water
+  RelPerm:
+    GeomNames: domain s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13
+    Type: VanGenuchten
+  Saturation:
+    GeomNames: domain s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13
+    Type: VanGenuchten
+  water:
+    Density:
+      Type: Constant
+      Value: 1.0
+    Mobility:
+      Type: Constant
+      Value: 1.0
+    Viscosity:
+      Type: Constant
+      Value: 1.0
+PhaseSources:
+  water:
+    Geom:
+      domain:
+        Value: 0.0
+    GeomNames: domain
+    Type: Constant
+Process:
+  Topology:
+    P: 4
+    Q: 4
+    R: 1
+Solver:
+  AbsTol: 1.0e-09
+  BinaryOutDir: false
+  CLM:
+    CLMDumpInterval: 1
+    CLMFileDir: ./
+    DailyRST: true
+    EvapBeta: Linear
+    FieldCapacity: 1.0
+    IrrigationType: none
+    IstepStart: 1
+    MetFileNT: 24
+    MetFileName: NLDAS
+    MetFilePath: ''
+    MetForcing: 3D
+    Print1dOut: false
+    ResSat: 0.2
+    ReuseCount: 1
+    RootZoneNZ: 4
+    SingleFile: true
+    SoiLayer: 4
+    VegWaterStress: Saturation
+    WiltingPoint: 0.2
+    WriteLastRST: true
+    WriteLogs: false
+  Drop: 1.0e-30
+  LSM: CLM
+  Linear:
+    KrylovDimension: 500
+    MaxRestarts: 8
+    Preconditioner:
+      PCMatrixType: PFSymmetric
+      _value_: PFMG
+  MaxConvergenceFailures: 20
+  MaxIter: 250000
+  Nonlinear:
+    DerivativeEpsilon: 1.0e-16
+    EtaChoice: EtaConstant
+    EtaValue: 0.001
+    Globalization: LineSearch
+    MaxIter: 500
+    ResidualTol: 1.0e-07
+    StepTol: 1.0e-16
+    UseJacobian: true
+    VariableDz: true
+  PrintCLM: true
+  PrintMask: true
+  PrintOverlandSum: false
+  PrintPressure: true
+  PrintSaturation: true
+  PrintSubsurfData: true
+  PrintVelocities: false
+  TerrainFollowingGrid: true
+  WriteCLMBinary: false
+  WriteSiloCLM: false
+  WriteSiloEvapTrans: false
+  WriteSiloEvapTransSum: false
+  WriteSiloMannings: false
+  WriteSiloMask: false
+  WriteSiloOverlandSum: false
+  WriteSiloPressure: false
+  WriteSiloSaturation: false
+  WriteSiloSlopes: false
+  WriteSiloSpecificStorage: false
+  WriteSiloSubsurfData: false
+  _value_: Richards
+SpecificStorage:
+  GeomNames: domain
+  Type: Constant
+TimeStep:
+  Type: Constant
+  Value: 1.0
+TimingInfo:
+  BaseUnit: 1.0
+  DumpInterval: 1.0
+  StartCount: 0
+  StartTime: 0
+  StopTime: 8760
+TopoSlopesX:
+  FileName: slope_x.pfb
+  GeomNames: domain
+  Type: PFBFile
+TopoSlopesY:
+  FileName: slope_y.pfb
+  GeomNames: domain
+  Type: PFBFile
+Wells:
+  Names: ''
+dzScale:
+  GeomNames: domain
+  Type: nzList
+  nzListNumber: 5
