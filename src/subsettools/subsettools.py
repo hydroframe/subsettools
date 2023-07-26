@@ -472,7 +472,7 @@ def change_filename_values(
     run.write(working_directory=write_dir, file_format=f'{file_extension}') 
 
     
-def dist_run(P, Q, runscript_path, pf_run_dir, dist_clim_forcing=False):
+def dist_run(P, Q, runscript_path, pf_run_dir, dist_clim_forcing=True):
     if P != Q:
         print(f"Processor P={P} and Q={Q}, they must be equal.")
   
