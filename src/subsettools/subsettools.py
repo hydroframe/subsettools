@@ -472,10 +472,14 @@ def change_filename_values(
     run.write(working_directory=write_dir, file_format=f'{file_extension}') 
 
     
-def dist_run(P, Q, runscript_path, pf_run_dir, dist_clim_forcing=False):
-    if P != Q:
-        print(f"Processor P={P} and Q={Q}, they must be equal.")
-  
+def dist_run(P, Q, runscript_path, write_dir, dist_clim_forcing=True):
+    assert write_dir is not None
+
+    nz = 0 #starting nz as zero 
+
+    file_name, file_extension = os.path.splitext(runscript_path)
+    file_extension = file_extension[1:]
+            
     run = Run.from_definition(runscript_path)
     
     run.Process.Topology.P = int(P)
@@ -490,13 +494,22 @@ def dist_run(P, Q, runscript_path, pf_run_dir, dist_clim_forcing=False):
     else: 
         print("no forcing dir provided, only distributing static inputs")
         
-    static_input_paths = list(pathlib.Path(f'{pf_run_dir}').glob('*.pfb'))
+    static_input_paths = list(pathlib.Path(f'{write_dir}').glob('*.pfb'))
     
     for path in static_input_paths:
         input_array = read_pfb(path)
         run.ComputationalGrid.NZ = int(input_array.shape[0])
+        
+        if int(input_array.shape[0]) > nz: 
+            nz = int(input_array.shape[0])
+            
         run.dist(path)
         print(f"Distributed {os.path.basename(path)} with NZ {int(input_array.shape[0])}")
+        
+    run.ComputationalGrid.NZ = nz
+
+    run.write(working_directory=write_dir, file_format=f'{file_extension}') 
+
     
 def create_job_script():
     pass
