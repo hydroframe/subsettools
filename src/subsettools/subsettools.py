@@ -473,17 +473,13 @@ def change_filename_values(
 
     
 def dist_run(P, Q, runscript_path, write_dir, dist_clim_forcing=True):
-    if P != Q:
-        print(f"Processor P={P} and Q={Q}, they must be equal.")
+    assert write_dir is not None
+
     nz = 0 #starting nz as zero 
 
     file_name, file_extension = os.path.splitext(runscript_path)
     file_extension = file_extension[1:]
-    
-    if write_dir is None:     
-        write_dir = os.path.dirname(runscript_path) 
-        print(f"No write directory provided, updated or new {file_extension} file will be written to the runscript path")
-        
+            
     run = Run.from_definition(runscript_path)
     
     run.Process.Topology.P = int(P)
