@@ -17,25 +17,17 @@ import sys
 import glob
 from hydrodata.data_catalog import data_access
 
-
-
-def get_conus_ij(domain, grid):
-    #Eventually add a check if we are getting a shapefile, tif, etc. 
-    #for now this can handle huc inputs as string and lat/lon bbox
-    if isinstance(domain, str):
-        conus_ij = huc_to_ij(domain, grid)
-    else:
-        conus_ij = latlon_to_ij(domain, grid)
-    return conus_ij
         
-def huc_to_ij(huc_id, grid):
-    huc_len = len(huc_id)
+def huc_to_ij(huc_list, grid):
+    huc_len = len(huc_list[0])
+    assert all([len(huc) == huc_len for huc in huc_list]), "All huc IDs should have the same length!"
+    
     #****this path to the conus huc tifs will need to be dealt with better...
     conus_hucs = xr.open_dataset(
         f'/hydrodata/national_mapping/{grid.upper()}/HUC{huc_len}_{grid.upper()}_grid.tif'
     ).drop_vars(('x', 'y'))['band_data']
-    huc = int(huc_id)
-    sel_huc = (conus_hucs == huc).squeeze()
+    huc_list = [int(huc) for huc in huc_list]
+    sel_huc = conus_hucs.isin(huc_list).squeeze()
     
     # First find where along the y direction has "valid" cells
     y_mask = (sel_huc.sum(dim='x') > 0).astype(int)
@@ -70,73 +62,70 @@ def latlon_to_ij(latlng_bounds,grid):
     ij_bounds = [imin,jmin,imax,jmax]
     return ij_bounds
 
-def create_mask_solid(huc_id, grid, write_dir):
-    if isinstance(huc_id, str):
-        print("Provided HUC ID")
-        huc_len = len(huc_id)
+
+def create_mask_solid(huc_list, grid, write_dir):
+    huc_len = len(huc_list[0])
+    assert all([len(huc) == huc_len for huc in huc_list]), "All huc IDs should have the same length!"
+    
+    conus_hucs = xr.open_dataset(
+        f'/hydrodata/national_mapping/{grid.upper()}/HUC{huc_len}_{grid.upper()}_grid.tif'
+    ).drop_vars(('x', 'y'))['band_data']
+    huc_list = [int(huc) for huc in huc_list]
+    sel_huc = conus_hucs.isin(huc_list).squeeze()
+
+    # First find where along the y direction has "valid" cells
+    y_mask = (sel_huc.sum(dim='x') > 0).astype(int)
+
+    # Then, taking a diff along that dimension let's us see where the boundaries of that mask ar
+    diffed_y_mask = y_mask.diff(dim='y')
+
+    # Taking the argmin and argmax get's us the locations of the boundaries
+    #the location of these boundaries are the ymin/ymax on a numpy NOT parflow grid
+    arr_jmax = np.argmin(diffed_y_mask.values) + 1 #this one is because you want to include this right bound in your slice
+    arr_jmin = np.argmax(diffed_y_mask.values) + 1 #because of the point you actually want to indicate from the diff function
+
+    #This essentially flips the grid over the x-axis so that we get on the parflow oriented grid
+    jmin = conus_hucs.shape[1]-arr_jmax #1888 for conus1
+    jmax = conus_hucs.shape[1]-arr_jmin
+
+    # Do the exact same thing for the x dimension
+    diffed_x_mask = (sel_huc.sum(dim='y') > 0).astype(int).diff(dim='x')
+    imax = np.argmin(diffed_x_mask.values) + 1
+    imin = np.argmax(diffed_x_mask.values) + 1
+
+    nj = jmax-jmin
+    ni = imax-imin
         
-        conus_hucs = xr.open_dataset(
-            f'/hydrodata/national_mapping/{grid.upper()}/HUC{huc_len}_{grid.upper()}_grid.tif'
-        ).drop_vars(('x', 'y'))['band_data']
-        huc = int(huc_id)
-        sel_huc = (conus_hucs == huc).squeeze()
+    #checks conus1 / 2 grid and assigns appripriate dz and z_total for making the mask and solid file
+    if grid.lower() == "conus1": 
+        print("grid is conus1")
+        layz = 100
+        z_total = str(500)
+    else: 
+        print("grid is conus2")
+        layz = 200
+        z_total = str(2000)
+    #could look this up in dC and get the information
 
-        # First find where along the y direction has "valid" cells
-        y_mask = (sel_huc.sum(dim='x') > 0).astype(int)
-
-        # Then, taking a diff along that dimension let's us see where the boundaries of that mask ar
-        diffed_y_mask = y_mask.diff(dim='y')
-
-        # Taking the argmin and argmax get's us the locations of the boundaries
-        #the location of these boundaries are the ymin/ymax on a numpy NOT parflow grid
-        arr_jmax = np.argmin(diffed_y_mask.values) + 1 #this one is because you want to include this right bound in your slice
-        arr_jmin = np.argmax(diffed_y_mask.values) + 1 #because of the point you actually want to indicate from the diff function
-
-        #This essentially flips the grid over the x-axis so that we get on the parflow oriented grid
-        jmin = conus_hucs.shape[1]-arr_jmax #1888 for conus1
-        jmax = conus_hucs.shape[1]-arr_jmin
-
-        # Do the exact same thing for the x dimension
-        diffed_x_mask = (sel_huc.sum(dim='y') > 0).astype(int).diff(dim='x')
-        imax = np.argmin(diffed_x_mask.values) + 1
-        imin = np.argmax(diffed_x_mask.values) + 1
-
-        nj = jmax-jmin
-        ni = imax-imin
+    #create and write the pfb mask
+    mask_clip = np.zeros((1,nj,ni))
+    mask_clip[0,:,:] = sel_huc[arr_jmin:arr_jmax,imin:imax] #we need to use numpy iymin / iymax because we are subsetting the tif file
+    mask_clip = np.flip(mask_clip,1) #This flip tooks the section we just subset and puts it in the appropriate parflow orientation
+    mask_clip = mask_clip.astype(float)
+    write_pfb(f'{write_dir}/mask.pfb', mask_clip, dx=1000, dy=1000, dz=layz, dist = False)
+    print("Wrote mask.pfb")
         
-        #checks conus1 / 2 grid and assigns appripriate dz and z_total for making the mask and solid file
-        if grid.lower() == "conus1": 
-            print("grid is conus1")
-            layz = 100
-            z_total = str(500)
-        else: 
-            print("grid is conus2")
-            layz = 200
-            z_total = str(2000)
-        #could look this up in dC and get the information
-
-        #create and write the pfb mask
-        mask_clip = np.zeros((1,nj,ni))
-        mask_clip[0,:,:] = sel_huc[arr_jmin:arr_jmax,imin:imax] #we need to use numpy iymin / iymax because we are subsetting the tif file
-        mask_clip = np.flip(mask_clip,1) #This flip tooks the section we just subset and puts it in the appropriate parflow orientation
-        mask_clip = mask_clip.astype(float)
-        write_pfb(f'{write_dir}/mask.pfb', mask_clip, dx=1000, dy=1000, dz=layz, dist = False)
-        
-        print("Wrote mask.pfb")
-        
-        subprocess.run([
-            os.path.join(os.environ["PARFLOW_DIR"], 'bin', 'pfmask-to-pfsol'),
-            '--mask', f'{write_dir}/mask.pfb',
-            '--pfsol', f'{write_dir}/solidfile.pfsol',
-            '--vtk', f'{write_dir}/mask_vtk.vtk',
-            '--z-bottom', '0.0',
-            '--z-top', z_total
-        ], capture_output=True)
-        
-        print(f"Wrote solidfile.pfsol and mask_vtk.vtk with total z of {z_total} meters")
-        
-    else:
-        print("Unsupported domain boundary, only HUC IDs are supported currently to produce solid files. \nRun ParFlow with a box domain template. ")
+    subprocess.run([
+        os.path.join(os.environ["PARFLOW_DIR"], 'bin', 'pfmask-to-pfsol'),
+        '--mask', f'{write_dir}/mask.pfb',
+        '--pfsol', f'{write_dir}/solidfile.pfsol',
+        '--vtk', f'{write_dir}/mask_vtk.vtk',
+        '--z-bottom', '0.0',
+        '--z-top', z_total
+    ], capture_output=True)
+    
+    print(f"Wrote solidfile.pfsol and mask_vtk.vtk with total z of {z_total} meters")
+    
     
 def subset_static(ij_bounds, dataset, write_dir, var_list=['slope_x','slope_y','pf_indicator','mannings','depth_to_bedrock','pme']): 
     #getting paths and writing subset pfbs for static parameters
