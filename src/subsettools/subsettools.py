@@ -17,38 +17,43 @@ import sys
 import glob
 from hydrodata.data_catalog import data_access
 
-        
-def huc_to_ij(huc_list, grid):
+def get_conus_hucs_indices(huc_list, grid):
     huc_len = len(huc_list[0])
     assert all([len(huc) == huc_len for huc in huc_list]), "All huc IDs should have the same length!"
-    
-    #****this path to the conus huc tifs will need to be dealt with better...
-    conus_hucs = xr.open_dataset(
-        f'/hydrodata/national_mapping/{grid.upper()}/HUC{huc_len}_{grid.upper()}_grid.tif'
-    ).drop_vars(('x', 'y'))['band_data']
     huc_list = [int(huc) for huc in huc_list]
-    sel_huc = conus_hucs.isin(huc_list).squeeze()
-    
-    # First find where along the y direction has "valid" cells
-    y_mask = (sel_huc.sum(dim='x') > 0).astype(int)
-    
-    # Then, taking a diff along that dimension let's us see where the boundaries of that mask ar
-    diffed_y_mask = y_mask.diff(dim='y')
+    entry = data_access.get_catalog_entry(
+        dataset = "huc_mapping",
+        grid=grid.lower(), 
+        file_type = "tiff"
+    )
 
-    # Taking the argmin and argmax get's us the locations of the boundaries
-    arr_jmax = np.argmin(diffed_y_mask.values) + 1 #this one is because you want to include this right bound in your slice
-    arr_jmin = np.argmax(diffed_y_mask.values) + 1 #because of the point you actually want to indicate from the diff function
+    conus_hucs = data_access.get_ndarray(entry,level = str(huc_len))
+    
+    sel_hucs = np.isin(conus_hucs, huc_list).squeeze()
 
+    indices_j, indices_i = np.where(sel_hucs > 0)
+
+    return conus_hucs, sel_hucs, indices_j, indices_i
+
+def indices_to_ij(conus_hucs, indices_j, indices_i):
+    # # Find the boundaries in the i and j directions
+    imin = np.min(indices_i)
+    imax = np.max(indices_i) + 1 #right bound inclusive
+    arr_jmin = np.min(indices_j)
+    arr_jmax = np.max(indices_j) + 1 #right bound inclusive
+    
     jmin = conus_hucs.shape[1]-arr_jmax 
     jmax = conus_hucs.shape[1]-arr_jmin
 
-    # Do the exact same thing for the x dimension
-    diffed_x_mask = (sel_huc.sum(dim='y') > 0).astype(int).diff(dim='x')
-    imax = np.argmin(diffed_x_mask.values) + 1
-    imin = np.argmax(diffed_x_mask.values) + 1
-
     ij_bounds = [imin,jmin,imax,jmax]  
   
+    return ij_bounds
+
+def huc_to_ij(huc_list, grid):
+    conus_hucs, sel_hucs, indices_j, indices_i = get_conus_hucs_indices(huc_list, grid)
+    
+    ij_bounds = indices_to_ij(conus_hucs, indices_j, indices_i)
+
     return ij_bounds
 
 
@@ -64,37 +69,13 @@ def latlon_to_ij(latlng_bounds,grid):
 
 
 def create_mask_solid(huc_list, grid, write_dir):
-    huc_len = len(huc_list[0])
-    assert all([len(huc) == huc_len for huc in huc_list]), "All huc IDs should have the same length!"
-    
-    conus_hucs = xr.open_dataset(
-        f'/hydrodata/national_mapping/{grid.upper()}/HUC{huc_len}_{grid.upper()}_grid.tif'
-    ).drop_vars(('x', 'y'))['band_data']
-    huc_list = [int(huc) for huc in huc_list]
-    sel_huc = conus_hucs.isin(huc_list).squeeze()
+    conus_hucs, sel_hucs, indices_j, indices_i = get_conus_hucs_indices(huc_list, grid)
+    arr_jmin = np.min(indices_j)
+    arr_jmax = np.max(indices_j) + 1 #right bound inclusive
+    ij_bounds = indices_to_ij(conus_hucs, indices_j, indices_i)
 
-    # First find where along the y direction has "valid" cells
-    y_mask = (sel_huc.sum(dim='x') > 0).astype(int)
-
-    # Then, taking a diff along that dimension let's us see where the boundaries of that mask ar
-    diffed_y_mask = y_mask.diff(dim='y')
-
-    # Taking the argmin and argmax get's us the locations of the boundaries
-    #the location of these boundaries are the ymin/ymax on a numpy NOT parflow grid
-    arr_jmax = np.argmin(diffed_y_mask.values) + 1 #this one is because you want to include this right bound in your slice
-    arr_jmin = np.argmax(diffed_y_mask.values) + 1 #because of the point you actually want to indicate from the diff function
-
-    #This essentially flips the grid over the x-axis so that we get on the parflow oriented grid
-    jmin = conus_hucs.shape[1]-arr_jmax #1888 for conus1
-    jmax = conus_hucs.shape[1]-arr_jmin
-
-    # Do the exact same thing for the x dimension
-    diffed_x_mask = (sel_huc.sum(dim='y') > 0).astype(int).diff(dim='x')
-    imax = np.argmin(diffed_x_mask.values) + 1
-    imin = np.argmax(diffed_x_mask.values) + 1
-
-    nj = jmax-jmin
-    ni = imax-imin
+    nj = ij_bounds[3]-ij_bounds[1]
+    ni = ij_bounds[2]-ij_bounds[0]
         
     #checks conus1 / 2 grid and assigns appripriate dz and z_total for making the mask and solid file
     if grid.lower() == "conus1": 
@@ -109,7 +90,7 @@ def create_mask_solid(huc_list, grid, write_dir):
 
     #create and write the pfb mask
     mask_clip = np.zeros((1,nj,ni))
-    mask_clip[0,:,:] = sel_huc[arr_jmin:arr_jmax,imin:imax] #we need to use numpy iymin / iymax because we are subsetting the tif file
+    mask_clip[0,:,:] = sel_hucs[arr_jmin:arr_jmax,ij_bounds[0]:ij_bounds[2]] #we need to use numpy iymin / iymax because we are subsetting the tif file
     mask_clip = np.flip(mask_clip,1) #This flip tooks the section we just subset and puts it in the appropriate parflow orientation
     mask_clip = mask_clip.astype(float)
     write_pfb(f'{write_dir}/mask.pfb', mask_clip, dx=1000, dy=1000, dz=layz, dist = False)
