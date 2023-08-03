@@ -434,7 +434,7 @@ def change_filename_values(
         run.Mannings.FileName = mannings
         print(f"Mannings filename changed to {mannings}")
     if evap_trans is not None: 
-        run.Solver.EvapTransFile = evap_trans
+        run.Solver.EvapTrans.FileName = evap_trans
         print(f"Evaptrans filename changed to {evap_trans}")
         
     
