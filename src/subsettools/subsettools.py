@@ -108,7 +108,7 @@ def create_mask_solid(huc_list, grid, write_dir):
     print(f"Wrote solidfile.pfsol and mask_vtk.vtk with total z of {z_total} meters")
     
     
-def subset_static(ij_bounds, dataset, write_dir, var_list=['slope_x','slope_y','pf_indicator','mannings','depth_to_bedrock','pme']): 
+def subset_static(ij_bounds, dataset, write_dir, var_list=['slope_x','slope_y','pf_indicator','mannings','depth_to_bedrock','pme','ss_pressure_head']): 
     #getting paths and writing subset pfbs for static parameters
     for var in var_list: 
         entry = data_access.get_catalog_entry(
