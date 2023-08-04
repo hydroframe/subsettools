@@ -399,9 +399,8 @@ def edit_runscript_for_subset(ij_bounds, runscript_path, write_dir=None, runname
         run.Geom.domain.Upper.Y = nj * 1000
     
     print(f"Updated runscript written to {write_dir} as detected extension")
-    run.write(working_directory=write_dir, file_format=f'{file_extension}') 
-    #TODO: make this return the path to the new runscript
-    return write_dir
+    return run.write(working_directory=write_dir, file_format=f'{file_extension}')[0]
+
     
 def copy_static_files(static_input_dir, pf_dir):
     #It's just one line, but it doesn't really seem to fit with the otehr functions... 
@@ -464,7 +463,7 @@ def change_filename_values(
         
     
     print(f"Updated runscript written to {write_dir} as detected file extension")
-    run.write(working_directory=write_dir, file_format=f'{file_extension}') 
+    return run.write(working_directory=write_dir, file_format=f'{file_extension}')[0]
 
     
 def dist_run(P, Q, runscript_path, write_dir, dist_clim_forcing=True):
