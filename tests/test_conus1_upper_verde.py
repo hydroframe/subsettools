@@ -2,14 +2,15 @@ from parflow import Run
 from parflow.tools.settings import set_working_directory
 from subsettools.subsettools import *
 from subsettools.datasets import get_ref_yaml_path
+import pytest
 
 # remove this for newer parflow versions
 from testutils import pf_test_file
 
-
-def test_conus1_upper_verde(setup):
+@pytest.fixture(scope="module")
+def setup_run(setup_dir_structure):
     run_name = "conus1_upper_verde"
-    static_write_dir, forcing_dir, pf_out_dir, correct_output_dir, target_runscript = setup(run_name)
+    static_write_dir, forcing_dir, pf_out_dir, correct_output_dir, target_runscript = setup_dir_structure(run_name)
     
     subset_target = "15060202"
     start = "2005-10-01" 
@@ -18,8 +19,6 @@ def test_conus1_upper_verde(setup):
     run_ds = "conus1_baseline_mod"
     var_ds = "conus1_domain"
     forcing_ds = "NLDAS2"
-    P = 4
-    Q = 4
     reference_run = get_ref_yaml_path(grid, "transient", "solid")
     
     ij_bounds = get_conus_ij(domain = subset_target, grid = grid)
@@ -34,14 +33,32 @@ def test_conus1_upper_verde(setup):
     
     subset_forcing(ij_bounds, grid = grid, start = start, end = end, dataset = forcing_ds, write_dir = forcing_dir)
 
-    edit_runscript_for_subset(ij_bounds, runscript_path = reference_run, write_dir = pf_out_dir, runname = run_name, forcing_dir = forcing_dir)
+    target_runscript = edit_runscript_for_subset(ij_bounds, runscript_path = reference_run, write_dir = pf_out_dir,
+                                                 runname = run_name, forcing_dir = forcing_dir)
     
     copy_static_files(static_input_dir = static_write_dir, pf_dir = pf_out_dir)
     
-    change_filename_values(runscript_path = target_runscript, ip = "conus1_baseline_mod_2005.09.30:23.00.00_UTC0_press.pfb")
+    target_runscript = change_filename_values(runscript_path = target_runscript, ip = "conus1_baseline_mod_2005.09.30:23.00.00_UTC0_press.pfb")
 
+    return run_name, target_runscript, pf_out_dir, correct_output_dir
+
+
+@pytest.mark.parametrize(
+    "P, Q",
+    [
+        (1, 1),
+        (2, 2),
+        (4, 4)
+    ]
+)
+def test_conus1_upper_verde(setup_run, remove_output_files, P, Q):
+    run_name, target_runscript, pf_out_dir, correct_output_dir = setup_run
+
+    # overwrite run_name
+    run_name = run_name + f"_{P}_{Q}"
+    target_runscript = change_filename_values(runscript_path=target_runscript, runname=run_name)
+    
     dist_run(P, Q, runscript_path = target_runscript, write_dir = pf_out_dir, dist_clim_forcing = True)
-
 
     set_working_directory(pf_out_dir)
     run = Run.from_definition(target_runscript)
@@ -65,3 +82,5 @@ def test_conus1_upper_verde(setup):
 
         filename = f"/{run_name}.out.satur.0000{i}.pfb"
         assert pf_test_file(pf_out_dir + filename, correct_output_dir + filename, f"Max difference in Saturation for timestep {i}")
+
+    remove_output_files(pf_out_dir)

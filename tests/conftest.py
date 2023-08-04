@@ -1,8 +1,9 @@
 import pytest
 import os
 from parflow.tools.fs import get_absolute_path, mkdir, rm
+from pathlib import Path
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def setup_dir_structure():
     home = os.path.expanduser("~")
     base_dir = f"{home}/subsettools_test_output/"
@@ -30,3 +31,11 @@ def setup_dir_structure():
         del os.environ["PARFLOW_DIR"]
         
     rm(base_dir)
+
+    
+@pytest.fixture
+def remove_output_files():
+    def ret_fun(dir):
+        for p in Path(dir).glob("*.out.*"):
+            p.unlink()
+    return ret_fun
