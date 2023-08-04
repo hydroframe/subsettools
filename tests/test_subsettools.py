@@ -5,7 +5,6 @@ from subsettools import subsettools, datasets
 @pytest.mark.parametrize(
     "huc_id, grid, result",
     [
-        ("15060202", "conus1", [375, 239, 487, 329]),
         ("15060202", "conus1", [375, 239, 487, 329])
     ]
 )

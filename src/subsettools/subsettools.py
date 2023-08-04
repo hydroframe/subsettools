@@ -1,19 +1,14 @@
 from datetime import datetime, timedelta
 import shutil
 import numpy as np
-import parflow
-import sqlite3
-import logging
 import xarray as xr
-from contextlib import closing
 from hydrodata.national_mapping.map_wgs84 import ConusMap
 from parflow import Run
-from parflow.tools.io import read_clm, read_pfb, read_pfb_sequence, write_pfb
+from parflow.tools.io import read_clm, read_pfb, write_pfb
 import pytz
 import os
 import pathlib
 import subprocess
-import sys
 import glob
 from hydrodata.data_catalog import data_access
 
