@@ -1,19 +1,14 @@
 from datetime import datetime, timedelta
 import shutil
 import numpy as np
-import parflow
-import sqlite3
-import logging
 import xarray as xr
-from contextlib import closing
 from hydrodata.national_mapping.map_wgs84 import ConusMap
 from parflow import Run
-from parflow.tools.io import read_clm, read_pfb, read_pfb_sequence, write_pfb
+from parflow.tools.io import read_clm, read_pfb, write_pfb
 import pytz
 import os
 import pathlib
 import subprocess
-import sys
 import glob
 from hydrodata.data_catalog import data_access
 
@@ -404,9 +399,8 @@ def edit_runscript_for_subset(ij_bounds, runscript_path, write_dir=None, runname
         run.Geom.domain.Upper.Y = nj * 1000
     
     print(f"Updated runscript written to {write_dir} as detected extension")
-    run.write(working_directory=write_dir, file_format=f'{file_extension}') 
-    #TODO: make this return the path to the new runscript
-    return write_dir
+    return run.write(working_directory=write_dir, file_format=f'{file_extension}')[0]
+
     
 def copy_static_files(static_input_dir, pf_dir):
     #It's just one line, but it doesn't really seem to fit with the otehr functions... 
@@ -469,7 +463,7 @@ def change_filename_values(
         
     
     print(f"Updated runscript written to {write_dir} as detected file extension")
-    run.write(working_directory=write_dir, file_format=f'{file_extension}') 
+    return run.write(working_directory=write_dir, file_format=f'{file_extension}')[0]
 
     
 def dist_run(P, Q, runscript_path, write_dir, dist_clim_forcing=True):
