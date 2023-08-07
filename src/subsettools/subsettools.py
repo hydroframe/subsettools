@@ -144,13 +144,14 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone = 'UTC'):
         new_date = new_date.strftime("%Y-%m-%d %H:%M:%S")
     
     subset_data = data_access.get_ndarray(entry, grid_bounds = ij_bounds, start_time=new_date)
-    out_file = f'{write_dir}/{dataset}_{date_string}_press.pfb' 
+    out_file_path = f'{write_dir}/{dataset}_{date_string}_press.pfb'
+    out_file_name = f'{dataset}_{date_string}_press.pfb'
     if subset_data.size != 0:
-        write_pfb(out_file, subset_data)
+        write_pfb(out_file_path, subset_data)
         print(f"Wrote {dataset}_{date_string}_press.pfb in specified directory.")
     else:
         print(f"No pressure file found for {new_date} in dataset {dataset}")
-    return out_file
+    return out_file_name
             
     
 def config_clm(ij_bounds, start, end, dataset, write_dir):  
