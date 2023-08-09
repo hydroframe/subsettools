@@ -156,59 +156,32 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone = 'UTC'):
     
 def config_clm(ij_bounds, start, end, dataset, write_dir):  
     file_type_list = ['vegp','vegm', 'drv_clm']
-
-    for file in file_type_list:
-        print(file)
-        if 'vegp' in file:
-            entry = data_access.get_catalog_entry(
-                dataset = dataset,
-                file_type = "vegp",
-                variable = "clm_run",
-                period = "static"
-            )
-            path = data_access.get_file_paths(entry)
-            print(path[0])
-            shutil.copyfile(path[0], f'{write_dir}/drv_vegp.dat')
+    for file_type in file_type_list:
+        print(f"processing {file_type}")    
+        entry = data_access.get_catalog_entries(dataset=dataset, file_type=file_type, variable="clm_run", period="static")[0]
+        file_path = data_access.get_file_paths(entry)[0]
+        print(file_path)
+        if file_type == 'vegp':
+            shutil.copyfile(file_path, f'{write_dir}/drv_vegp.dat')
             print(f"copied vegp")
-            
-        elif 'vegm' in file:
-            entry = data_access.get_catalog_entry(
-                dataset = dataset,
-                file_type = "vegm",
-                variable = "clm_run",
-                period = "static"
-            )
-            path = data_access.get_file_paths(entry)
-            print(f"subsetting vegm (this takes awhile)")
-            vegm = subset_vegm(path[0],ij_bounds) 
-            write_land_cover(vegm, f'{write_dir}/drv_vegm.dat')
+        elif file_type == 'vegm':
+            land_cover_file = subset_vegm(file_path, ij_bounds) 
+            write_land_cover(land_cover_file, f'{write_dir}/drv_vegm.dat')
             print(f"subset vegm")
-            
-        elif 'drv' in file:
-            entries = data_access.get_catalog_entries(
-                dataset = dataset,
-                file_type = "drv_clm",
-                variable = "clm_run",
-                period = "static"
-            )
-            path = data_access.get_file_paths(entries[0])
-            print(path[0])
-
-            edit_drvclmin(read_path = path[0], write_path = f'{write_dir}/drv_clmin.dat',start = start,end=end)
+        elif file_type == 'drv_clm':
+            edit_drvclmin(read_path = file_path, write_path = f'{write_dir}/drv_clmin.dat',start = start,end=end)
             print(f"edited drv_clmin")
+
             
-        else:
-            print(f"error with file {file}")
-    
 def subset_vegm(path,ij_bounds):
     
     #read in the target vegm file
-    vegm = read_clm(path, type = 'vegm') #returns (j,i,k)
-    
-    vegm = np.transpose(vegm, (2,0,1)) # transpose to k,j,i
-    
+    vegm = read_clm(path, type = 'vegm')  #returns (j,i,k)
+    vegm = np.transpose(vegm, (2,0,1))    #transpose to k,j,i
+
+    imin,jmin,imax,jmax = ij_bounds
     #slice based on the i,j indices
-    vegm = vegm[:,(ij_bounds[1]):(ij_bounds[3]),(ij_bounds[0]):(ij_bounds[2])] #slicing on k,j,i
+    vegm = vegm[:, jmin:jmax, imin:imax] #slicing on k,j,i
     
     #generate the i, j indices necessary for the vegm file based on the shape of the subset data
     nj, ni = vegm.shape[1:]
@@ -253,19 +226,17 @@ def edit_drvclmin(read_path, write_path=None, start=None, end=None, startcode=2,
         write_path = read_path
         lines = open(read_path, 'r').readlines()
     
-    for num, line in enumerate(lines):
+    for i, line in enumerate(lines):
         if 'vegtf' in line:
-            lines[num] = f'vegtf           {vegm_name}                         Vegetation Tile Specification File\n'
-        if 'vegpf' in line:
-            lines[num] = f'vegpf           {vegp_name}                         Vegetation Type Parameter\n'
+            lines[i] = f'vegtf           {vegm_name}                         Vegetation Tile Specification File\n'
+        elif 'vegpf' in line:
+            lines[i] = f'vegpf           {vegp_name}                         Vegetation Type Parameter\n'            
+        elif 'startcode' in line:
+            lines[i] = f'startcode       {startcode}                                    1=restart file, 2=defined\n'
+        elif 'clm_ic' in line:
+            lines[i] = f'clm_ic          {startcode}                                    1=restart file, 2=defined\n'
             
-        if 'startcode' in line:
-                lines[num] = f'startcode       {startcode}                                    1=restart file, 2=defined\n'
-        if 'clm_ic' in line:
-            lines[num] = f'clm_ic          {startcode}                                    1=restart file, 2=defined\n'
-            
-    if start is not None:
-        
+    if start is not None:        
         startdt = datetime.strptime(start, '%Y-%m-%d')
         sd = startdt.strftime('%d')
         sm = startdt.strftime('%m')
@@ -273,20 +244,20 @@ def edit_drvclmin(read_path, write_path=None, start=None, end=None, startcode=2,
         ed = enddt.strftime('%d')
         em = enddt.strftime('%m')
 
-        for num, line in enumerate(lines):
+        for i, line in enumerate(lines):
             if 'sda' in line:
-                lines[num] = f'sda            {sd}                                    Starting Day\n'
-            if 'smo' in line:
-                lines[num] = f'smo            {sm}                                    Starting Month\n'
-            if 'syr' in line:
-                lines[num] = f'syr            {startdt.year}                                  Starting Year\n'
+                lines[i] = f'sda            {sd}                                    Starting Day\n'
+            elif 'smo' in line:
+                lines[i] = f'smo            {sm}                                    Starting Month\n'
+            elif 'syr' in line:
+                lines[i] = f'syr            {startdt.year}                                  Starting Year\n'
+            elif 'eda' in line:
+                lines[i] = f'eda            {ed}                                    Ending Day\n'
+            elif 'emo' in line:
+                lines[i] = f'emo            {em}                                    Ending Month\n'
+            elif 'eyr' in line:
+                lines[i] = f'eyr            {enddt.year}                                  Ending Year\n'
 
-            if 'eda' in line:
-                lines[num] = f'eda            {ed}                                    Ending Day\n'
-            if 'emo' in line:
-                lines[num] = f'emo            {em}                                    Ending Month\n'
-            if 'eyr' in line:
-                lines[num] = f'eyr            {enddt.year}                                  Ending Year\n'
     open(write_path, 'w').writelines(lines)
     return write_path
 
@@ -332,11 +303,12 @@ def edit_runscript_for_subset(ij_bounds, runscript_path, write_dir=None, runname
     if write_dir is None:     
         write_dir = os.path.dirname(runscript_path) 
         
-    file_name, file_extension = os.path.splitext(runscript_path)
-    file_extension = file_extension[1:]
+    file_extension = os.path.splitext(runscript_path)[1][1:]
+
+    imin, jmin, imax, jmax = ij_bounds
     #getting the subset ni/nj to update keys
-    nj = ij_bounds[3]-ij_bounds[1]
-    ni = ij_bounds[2]-ij_bounds[0]
+    nj = jmax - jmin
+    ni = imax - imin
     
     #load in the reference pfidb or yaml specified by the user
     run = Run.from_definition(runscript_path)
@@ -374,8 +346,6 @@ def edit_runscript_for_subset(ij_bounds, runscript_path, write_dir=None, runname
 
     
 def copy_static_files(static_input_dir, pf_dir):
-    #It's just one line, but it doesn't really seem to fit with the otehr functions... 
-    # I do think it would be more intuitive to have it in a function but not sure
     os.system('cp -r '+static_input_dir+'*.* '+pf_dir)
     
         
