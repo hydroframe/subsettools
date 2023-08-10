@@ -147,7 +147,7 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone = 'UTC'):
     out_file_path = f'{write_dir}/{dataset}_{date_string}_press.pfb'
     out_file_name = f'{dataset}_{date_string}_press.pfb'
     if subset_data.size != 0:
-        write_pfb(out_file_path, subset_data[0, 0, :, :, :], dist=False)
+        write_pfb(out_file_path, subset_data, dist=False)
         print(f"Wrote {dataset}_{date_string}_press.pfb in specified directory.")
     else:
         print(f"No pressure file found for {new_date} in dataset {dataset}")
