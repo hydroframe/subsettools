@@ -415,7 +415,7 @@ def dist_run(P, Q, runscript_path, write_dir, dist_clim_forcing=True):
     else: 
         print("no forcing dir provided, only distributing static inputs")
         
-    static_input_paths = list(pathlib.Path(f'{write_dir}').glob('*.pfb'))
+    static_input_paths = list(pathlib.Path(write_dir).glob('*.pfb'))
     max_nz = 0 
     for path in static_input_paths:
         input_array = read_pfb(path)
