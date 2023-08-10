@@ -1,6 +1,7 @@
 from importlib import resources
 
-def get_ref_yaml_path(grid, mode, input_file_type):    
+
+def get_ref_yaml_path(grid, mode, input_file_type):
     if mode == "transient":
         mode = "_pfclm_" + mode + "_"
     else:
