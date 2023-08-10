@@ -114,7 +114,7 @@ def subset_static(ij_bounds, dataset, write_dir, var_list=['slope_x','slope_y','
         )
         if entry is not None:
             subset_data = data_access.get_ndarray(entry, grid_bounds = ij_bounds)
-            write_pfb(f'{write_dir}/{var}.pfb', subset_data)
+            write_pfb(f'{write_dir}/{var}.pfb', subset_data, dist=False)
             print(f"Wrote {var}.pfb in specified directory.")
         
         else:
@@ -147,7 +147,7 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone = 'UTC'):
     out_file_path = f'{write_dir}/{dataset}_{date_string}_press.pfb'
     out_file_name = f'{dataset}_{date_string}_press.pfb'
     if subset_data.size != 0:
-        write_pfb(out_file_path, subset_data)
+        write_pfb(out_file_path, subset_data, dist=False)
         print(f"Wrote {dataset}_{date_string}_press.pfb in specified directory.")
     else:
         print(f"No pressure file found for {new_date} in dataset {dataset}")
@@ -292,7 +292,7 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir):
         paths = data_access.get_file_paths(entries, start_time=start, end_time = end)
         out_paths = [f'{write_dir}/{os.path.basename(p)}' for p in paths]
         for i, op in enumerate(out_paths):
-            write_pfb(op, subset_data[i,:,:,:])
+            write_pfb(op, subset_data[i,:,:,:], dist=False)
         
         print(f'finished writing {var} to folder')
         outputs[var] = out_paths
@@ -300,40 +300,34 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir):
 
 
 def edit_runscript_for_subset(ij_bounds, runscript_path, write_dir=None, runname=None, forcing_dir=None):
-    if write_dir is None:     
-        write_dir = os.path.dirname(runscript_path) 
-        
-    file_extension = os.path.splitext(runscript_path)[1][1:]
+    assert write_dir is not None
 
-    imin, jmin, imax, jmax = ij_bounds
-    #getting the subset ni/nj to update keys
-    nj = jmax - jmin
-    ni = imax - imin
-    
     #load in the reference pfidb or yaml specified by the user
     run = Run.from_definition(runscript_path)
-    
+    file_extension = os.path.splitext(runscript_path)[1][1:]    
     if runname is not None: 
         run.set_name(runname)
         print(f"New runname: {runname} provided, a new {file_extension} file will be created")
     else: 
          print(f"No runname provided, old {file_extension} file will be overwritten")
     
-    run.ComputationalGrid.NY = int(nj)
-    run.ComputationalGrid.NX = int(ni) 
-    
-    print(f"ComputationalGrid.NY set to {nj} and NX to {ni}")
-    
     #checks if we're running with clm    
     if forcing_dir is not None:
-        print(f"Old path to climate forcing was {run.Solver.CLM.MetFilePath} and has been changed to {forcing_dir} in runscript.")
+        print(f"Climate forcing directory has been changed to {forcing_dir} in runscript.")
         run.Solver.CLM.MetFilePath = forcing_dir
     else:
-        print("No forcing directory provided, key not set")
+        print("No forcing directory provided, run.Solver.CLM.MetFilePath key not set")
         
     #Checking if we are solid or box  
     domain_type = run.GeomInput.domaininput.InputType
 
+    #getting the subset ni/nj to update keys
+    imin, jmin, imax, jmax = ij_bounds
+    ni, nj = imax - imin, jmax - jmin
+    run.ComputationalGrid.NY = int(nj)
+    run.ComputationalGrid.NX = int(ni)
+    print(f"ComputationalGrid.NY set to {nj} and NX to {ni}")
+    
     if domain_type == "SolidFile":
         print(f"GeomInput.domaininput.InputType detected as SolidFile, no additional keys to change for subset")
     else:
@@ -356,15 +350,14 @@ def change_filename_values(
     slopex=None, 
     slopey=None, 
     solidfile=None, 
-    ip=None, 
+    init_press=None, 
     indicator=None, 
     depth_to_bedrock=None, 
     mannings=None, 
     evap_trans=None
 ):
     
-    file_name, file_extension = os.path.splitext(runscript_path)
-    file_extension = file_extension[1:]
+    file_extension = os.path.splitext(runscript_path)[1][1:]
     
     if write_dir is None:     
         write_dir = os.path.dirname(runscript_path) 
@@ -386,9 +379,9 @@ def change_filename_values(
     if solidfile is not None: 
         run.GeomInput.domaininput.FileName = solidfile
         print(f"Solidfile filename changed to {solidfile}")
-    if ip is not None: 
-        run.Geom.domain.ICPressure.FileName = ip
-        print(f"Initial pressure filename changed to {ip}")
+    if init_press is not None: 
+        run.Geom.domain.ICPressure.FileName = init_press
+        print(f"Initial pressure filename changed to {init_press}")
     if indicator is not None:
         run.Geom.indi_input.FileName = indicator
         print(f"Indicator filename changed to {indicator}")
@@ -402,47 +395,39 @@ def change_filename_values(
         run.Solver.EvapTrans.FileName = evap_trans
         print(f"Evaptrans filename changed to {evap_trans}")
         
-    
-    print(f"Updated runscript written to {write_dir} as detected file extension")
+    print(f"Updated runscript written to {write_dir}")
     return run.write(working_directory=write_dir, file_format=f'{file_extension}')[0]
 
     
 def dist_run(P, Q, runscript_path, write_dir, dist_clim_forcing=True):
-    assert write_dir is not None
-
-    nz = 0 #starting nz as zero 
-
-    file_name, file_extension = os.path.splitext(runscript_path)
-    file_extension = file_extension[1:]
-            
+    assert write_dir is not None            
     run = Run.from_definition(runscript_path)
     
-    run.Process.Topology.P = int(P)
-    run.Process.Topology.Q = int(Q)
+    run.Process.Topology.P = P
+    run.Process.Topology.Q = Q
     
     if dist_clim_forcing is True: 
         print("Distributing your climate forcing")
         forcing_dir = run.Solver.CLM.MetFilePath
         for filename_forcing in os.listdir(forcing_dir):
-            if filename_forcing[-3:]=='pfb':
+            if filename_forcing[-3:] == 'pfb':
                 run.dist(f'{forcing_dir}{filename_forcing}')
     else: 
         print("no forcing dir provided, only distributing static inputs")
         
     static_input_paths = list(pathlib.Path(f'{write_dir}').glob('*.pfb'))
-    
+    max_nz = 0 
     for path in static_input_paths:
         input_array = read_pfb(path)
-        run.ComputationalGrid.NZ = int(input_array.shape[0])
-        
-        if int(input_array.shape[0]) > nz: 
-            nz = int(input_array.shape[0])
-            
+        nz = input_array.shape[0]
+        run.ComputationalGrid.NZ = nz
+        if nz > max_nz: 
+            max_nz = nz
         run.dist(path)
-        print(f"Distributed {os.path.basename(path)} with NZ {int(input_array.shape[0])}")
-        
-    run.ComputationalGrid.NZ = nz
-
+        print(f"Distributed {os.path.basename(path)} with NZ {nz}")
+    run.ComputationalGrid.NZ = max_nz
+    
+    file_extension = os.path.splitext(runscript_path)[1][1:]    
     run.write(working_directory=write_dir, file_format=f'{file_extension}') 
 
     
