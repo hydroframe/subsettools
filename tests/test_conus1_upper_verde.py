@@ -27,7 +27,7 @@ def setup_run(setup_dir_structure):
 
     subset_static(ij_bounds, dataset = var_ds, write_dir = static_write_dir)
     
-    press_init_filename = subset_press_init(ij_bounds, dataset = run_ds, date = start, write_dir = static_write_dir, time_zone = 'UTC')
+    init_press_filename = subset_press_init(ij_bounds, dataset = run_ds, date = start, write_dir = static_write_dir, time_zone = 'UTC')
     
     config_clm(ij_bounds, start = start, end = end, dataset = run_ds, write_dir = static_write_dir)
     
@@ -38,7 +38,7 @@ def setup_run(setup_dir_structure):
     
     copy_static_files(static_input_dir = static_write_dir, pf_dir = pf_out_dir)
     
-    target_runscript = change_filename_values(runscript_path = target_runscript, ip = press_init_filename)
+    target_runscript = change_filename_values(runscript_path = target_runscript, init_press = init_press_filename)
 
     return run_name, target_runscript, pf_out_dir, correct_output_dir
 

@@ -22,10 +22,10 @@ def test_conus1_upper_verde_spinup(setup_dir_structure, remove_output_files):
     ij_bounds = huc_to_ij(huc_list=huc_list, grid = grid)
     create_mask_solid(huc_list=huc_list, grid = grid, write_dir = static_write_dir)
     subset_static(ij_bounds, dataset = var_ds, write_dir = static_write_dir)
-    press_init_filename = subset_press_init(ij_bounds, dataset = run_ds, date = start, write_dir = static_write_dir, time_zone = 'UTC')
+    init_press_filename = subset_press_init(ij_bounds, dataset = run_ds, date = start, write_dir = static_write_dir, time_zone = 'UTC')
     target_runscript = edit_runscript_for_subset(ij_bounds, runscript_path = reference_run, write_dir = pf_out_dir, runname = run_name)
     copy_static_files(static_input_dir = static_write_dir, pf_dir = pf_out_dir)
-    target_runscript = change_filename_values(runscript_path = target_runscript, ip = press_init_filename)
+    target_runscript = change_filename_values(runscript_path = target_runscript, init_press = init_press_filename)
     dist_run(P=P, Q=Q, runscript_path = target_runscript, write_dir = pf_out_dir, dist_clim_forcing = False)
 
     set_working_directory(f'{pf_out_dir}')
