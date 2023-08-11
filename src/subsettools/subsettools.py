@@ -13,6 +13,7 @@ import subprocess
 import glob
 from hydrodata.data_catalog import data_access
 
+
 def get_conus_hucs_indices(huc_list, grid):
     huc_len = len(huc_list[0])
     assert all(
@@ -78,7 +79,7 @@ def latlon_to_ij(latlng_bounds, grid):
 
 def create_mask_solid(huc_list, grid, write_dir):
     assert os.path.isdir(write_dir), "write_dir must be a directory"
-    
+
     conus_hucs, sel_hucs, indices_j, indices_i = get_conus_hucs_indices(huc_list, grid)
     arr_jmin = np.min(indices_j)
     arr_jmax = np.max(indices_j) + 1  # right bound inclusive
@@ -143,7 +144,7 @@ def subset_static(
         "depth_to_bedrock",
         "pme",
         "ss_pressure_head",
-    ]
+    ],
 ):
     assert os.path.isdir(write_dir), "write_dir must be a directory"
 
@@ -163,7 +164,7 @@ def subset_static(
 
 def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
     assert os.path.isdir(write_dir), "write_dir must be a directory"
-    
+
     entry = data_access.get_catalog_entry(
         dataset=dataset, file_type="pfb", variable="pressure_head", period="hourly"
     )
@@ -174,20 +175,14 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
 
     # getting the correct end day of the previous water year to be the init press
     first_date = datetime.strptime(date, "%Y-%m-%d")
-    new_date = first_date - timedelta(
-        hours=1
-    )  # assumes time is UTC 0 like CONUS runs, so can remain time unaware and grab the right pressure
+    # assumes time is UTC 0 like CONUS runs, so can remain time unaware and grab the right pressure
+    new_date = first_date - timedelta(hours=1)
     if time_zone != "UTC":
-        print(
-            f"Time zone provided, converting the requested datetime from UTC0 to {time_zone}"
-        )
+        print(f"Converting the requested datetime from UTC0 to {time_zone}")
         new_date = new_date.replace(tzinfo=pytz.UTC)  # add time awareness as UTC
-        new_date = new_date.astimezone(
-            pytz.timezone(time_zone)
-        )  # convert to provided timezone
+        new_date = new_date.astimezone(pytz.timezone(time_zone))
         date_string = new_date.strftime("%Y.%m.%d:%H.%M.%S_UTC0")
         new_date = new_date.strftime("%Y-%m-%d %H:%M:%S")
-
     else:
         date_string = new_date.strftime("%Y.%m.%d:%H.%M.%S_UTC0")
         new_date = new_date.strftime("%Y-%m-%d %H:%M:%S")
@@ -397,19 +392,25 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir):
             dataset=dataset, variable=var, grid=grid, file_type="pfb", period="hourly"
         )
 
+        start_date = datetime.strptime(start, "%Y-%m-%d")
+        end_date = datetime.strptime(end, "%Y-%m-%d")
+        delta = timedelta(days=1)
         print(f"Reading {var} pfb sequence")
-        subset_data = data_access.get_ndarray(
-            entries, start_time=start, end_time=end, grid_bounds=ij_bounds
-        )
-        print(f"Done reading {var} pfb sequence, starting to write to folder")
 
-        paths = data_access.get_file_paths(entries, start_time=start, end_time=end)
-        out_paths = [os.path.join(write_dir, os.path.basename(p)) for p in paths]
-        for i, out_path in enumerate(out_paths):
-            write_pfb(out_path, subset_data[i, :, :, :], dist=False)
+        while start_date <= end_date:
+            subset_data = data_access.get_ndarray(
+                entries, start_time=start_date, end_time=start_date + delta, grid_bounds=ij_bounds
+            )
+            print(f"Done reading {var} pfb sequence, starting to write to folder")            
+            paths = data_access.get_file_paths(entries, start_time=start_date, end_time=start_date + delta)
+            out_paths = [os.path.join(write_dir, os.path.basename(p)) for p in paths]
+            for out_path in out_paths:
+                write_pfb(out_path, subset_data[:, :, :], dist=False)    
+            start_date = start_date + delta
 
         print(f"finished writing {var} to folder")
         outputs[var] = out_paths
+        
     return outputs
 
 
@@ -446,7 +447,7 @@ def edit_runscript_for_subset(
     run.ComputationalGrid.NX = int(ni)
     print(f"ComputationalGrid.NY set to {nj} and NX to {ni}")
 
-    domain_type = run.GeomInput.domaininput.InputType    
+    domain_type = run.GeomInput.domaininput.InputType
     if domain_type == "SolidFile":
         print(
             f"GeomInput.domaininput.InputType detected as SolidFile, no additional keys to change for subset"
@@ -459,7 +460,9 @@ def edit_runscript_for_subset(
         run.Geom.domain.Upper.Y = nj * 1000
 
     print(f"Updated runscript written to {write_dir}")
-    file_path, _ = run.write(working_directory=write_dir, file_format=f"{file_extension[1:]}")
+    file_path, _ = run.write(
+        working_directory=write_dir, file_format=f"{file_extension[1:]}"
+    )
     return file_path
 
 
@@ -484,7 +487,9 @@ def change_filename_values(
     evap_trans=None,
 ):
     assert os.path.isdir(write_dir), "write_dir must be a directory"
-    assert os.path.isfile(runscript_path), "runscript_path must be a valid path to an existing file"
+    assert os.path.isfile(
+        runscript_path
+    ), "runscript_path must be a valid path to an existing file"
 
     _, file_extension = os.path.splitext(runscript_path)
     run = Run.from_definition(runscript_path)
@@ -521,7 +526,9 @@ def change_filename_values(
         print(f"Evaptrans filename changed to {evap_trans}")
 
     print(f"Updated runscript written to {write_dir}")
-    file_path, _ = run.write(working_directory=write_dir, file_format=f"{file_extension[1:]}")
+    file_path, _ = run.write(
+        working_directory=write_dir, file_format=f"{file_extension[1:]}"
+    )
     return file_path
 
 
