@@ -173,19 +173,12 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
         print(f"No pressure file found for {new_date} in dataset {dataset}")
         return None
 
-    # getting the correct end day of the previous water year to be the init press
-    first_date = datetime.strptime(date, "%Y-%m-%d")
     # assumes time is UTC 0 like CONUS runs, so can remain time unaware and grab the right pressure
-    new_date = first_date - timedelta(hours=1)
+    new_date = datetime.strptime(date, "%Y-%m-%d") - timedelta(hours=1)
     if time_zone != "UTC":
         print(f"Converting the requested datetime from UTC0 to {time_zone}")
-        new_date = new_date.replace(tzinfo=pytz.UTC)  # add time awareness as UTC
-        new_date = new_date.astimezone(pytz.timezone(time_zone))
-        date_string = new_date.strftime("%Y.%m.%d:%H.%M.%S_UTC0")
-        new_date = new_date.strftime("%Y-%m-%d %H:%M:%S")
-    else:
-        date_string = new_date.strftime("%Y.%m.%d:%H.%M.%S_UTC0")
-        new_date = new_date.strftime("%Y-%m-%d %H:%M:%S")
+        new_date = new_date.replace(tzinfo=pytz.UTC).astimezone(pytz.timezone(time_zone))
+    date_string = new_date.strftime("%Y.%m.%d:%H.%M.%S_UTC0")
 
     subset_data = data_access.get_ndarray(
         entry, grid_bounds=ij_bounds, start_time=new_date
