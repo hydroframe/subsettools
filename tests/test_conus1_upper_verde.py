@@ -63,10 +63,10 @@ def setup_run(setup_dir_structure):
         forcing_dir=forcing_dir,
     )
 
-    copy_static_files(static_input_dir=static_write_dir, pf_dir=pf_out_dir)
+    copy_static_files(read_dir=static_write_dir, write_dir=pf_out_dir)
 
     target_runscript = change_filename_values(
-        runscript_path=target_runscript, init_press=init_press_filename
+        runscript_path=target_runscript, write_dir=pf_out_dir, init_press=init_press_filename
     )
 
     return run_name, target_runscript, pf_out_dir, correct_output_dir
@@ -79,7 +79,7 @@ def test_conus1_upper_verde(setup_run, remove_output_files, P, Q):
     # overwrite run_name
     run_name = run_name + f"_{P}_{Q}"
     target_runscript = change_filename_values(
-        runscript_path=target_runscript, runname=run_name
+        runscript_path=target_runscript, write_dir=pf_out_dir, runname=run_name
     )
 
     dist_run(

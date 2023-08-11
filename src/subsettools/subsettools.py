@@ -12,7 +12,6 @@ import subprocess
 import glob
 from hydrodata.data_catalog import data_access
 
-
 def get_conus_hucs_indices(huc_list, grid):
     huc_len = len(huc_list[0])
     assert all(
@@ -77,6 +76,8 @@ def latlon_to_ij(latlng_bounds, grid):
 
 
 def create_mask_solid(huc_list, grid, write_dir):
+    assert os.path.isdir(write_dir), "write_dir must be a directory"
+    
     conus_hucs, sel_hucs, indices_j, indices_i = get_conus_hucs_indices(huc_list, grid)
     arr_jmin = np.min(indices_j)
     arr_jmax = np.max(indices_j) + 1  # right bound inclusive
@@ -105,18 +106,19 @@ def create_mask_solid(huc_list, grid, write_dir):
         mask_clip, 1
     )  # This flip tooks the section we just subset and puts it in the appropriate parflow orientation
     mask_clip = mask_clip.astype(float)
-    write_pfb(f"{write_dir}/mask.pfb", mask_clip, dx=1000, dy=1000, dz=layz, dist=False)
+    mask_file_path = os.path.join(write_dir, "mask.pfb")
+    write_pfb(mask_file_path, mask_clip, dx=1000, dy=1000, dz=layz, dist=False)
     print("Wrote mask.pfb")
 
     subprocess.run(
         [
             os.path.join(os.environ["PARFLOW_DIR"], "bin", "pfmask-to-pfsol"),
             "--mask",
-            f"{write_dir}/mask.pfb",
+            mask_file_path,
             "--pfsol",
-            f"{write_dir}/solidfile.pfsol",
+            os.path.join(write_dir, "solidfile.pfsol"),
             "--vtk",
-            f"{write_dir}/mask_vtk.vtk",
+            os.path.join(write_dir, "mask_vtk.vtk"),
             "--z-bottom",
             "0.0",
             "--z-top",
@@ -140,8 +142,10 @@ def subset_static(
         "depth_to_bedrock",
         "pme",
         "ss_pressure_head",
-    ],
+    ]
 ):
+    assert os.path.isdir(write_dir), "write_dir must be a directory"
+
     # getting paths and writing subset pfbs for static parameters
     for var in var_list:
         entry = data_access.get_catalog_entry(
@@ -149,7 +153,7 @@ def subset_static(
         )
         if entry is not None:
             subset_data = data_access.get_ndarray(entry, grid_bounds=ij_bounds)
-            write_pfb(f"{write_dir}/{var}.pfb", subset_data, dist=False)
+            write_pfb(os.path.join(write_dir, f"{var}.pfb"), subset_data, dist=False)
             print(f"Wrote {var}.pfb in specified directory.")
 
         else:
@@ -157,16 +161,21 @@ def subset_static(
 
 
 def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
+    assert os.path.isdir(write_dir), "write_dir must be a directory"
+    
     entry = data_access.get_catalog_entry(
         dataset=dataset, file_type="pfb", variable="pressure_head", period="hourly"
     )
+
+    if entry is None:
+        print(f"No pressure file found for {new_date} in dataset {dataset}")
+        return None
 
     # getting the correct end day of the previous water year to be the init press
     first_date = datetime.strptime(date, "%Y-%m-%d")
     new_date = first_date - timedelta(
         hours=1
     )  # assumes time is UTC 0 like CONUS runs, so can remain time unaware and grab the right pressure
-
     if time_zone != "UTC":
         print(
             f"Time zone provided, converting the requested datetime from UTC0 to {time_zone}"
@@ -185,17 +194,16 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
     subset_data = data_access.get_ndarray(
         entry, grid_bounds=ij_bounds, start_time=new_date
     )
-    out_file_path = f"{write_dir}/{dataset}_{date_string}_press.pfb"
-    out_file_name = f"{dataset}_{date_string}_press.pfb"
-    if subset_data.size != 0:
-        write_pfb(out_file_path, subset_data, dist=False)
-        print(f"Wrote {dataset}_{date_string}_press.pfb in specified directory.")
-    else:
-        print(f"No pressure file found for {new_date} in dataset {dataset}")
-    return out_file_name
+
+    out_file = f"{dataset}_{date_string}_press.pfb"
+    write_pfb(os.path.join(write_dir, out_file), subset_data, dist=False)
+    print(f"Wrote {out_file} in specified directory.")
+    return out_file
 
 
 def config_clm(ij_bounds, start, end, dataset, write_dir):
+    assert os.path.isdir(write_dir), "write_dir must be a directory"
+
     file_type_list = ["vegp", "vegm", "drv_clm"]
     for file_type in file_type_list:
         print(f"processing {file_type}")
@@ -205,16 +213,16 @@ def config_clm(ij_bounds, start, end, dataset, write_dir):
         file_path = data_access.get_file_paths(entry)[0]
         print(file_path)
         if file_type == "vegp":
-            shutil.copyfile(file_path, f"{write_dir}/drv_vegp.dat")
+            shutil.copyfile(file_path, os.path.join(write_dir, "drv_vegp.dat"))
             print(f"copied vegp")
         elif file_type == "vegm":
-            land_cover_file = subset_vegm(file_path, ij_bounds)
-            write_land_cover(land_cover_file, f"{write_dir}/drv_vegm.dat")
+            land_cover_data = subset_vegm(file_path, ij_bounds)
+            write_land_cover(land_cover_data, write_dir)
             print(f"subset vegm")
         elif file_type == "drv_clm":
             edit_drvclmin(
                 read_path=file_path,
-                write_path=f"{write_dir}/drv_clmin.dat",
+                write_dir=write_dir,
                 start=start,
                 end=end,
             )
@@ -242,7 +250,7 @@ def subset_vegm(path, ij_bounds):
     return vegm
 
 
-def write_land_cover(land_cover_data, out_file):
+def write_land_cover(land_cover_data, write_dir):
     """Write the land cover file in vegm format
     Parameters
     ----------
@@ -258,7 +266,7 @@ def write_land_cover(land_cover_data, out_file):
         "x y lat lon sand clay color fractional coverage of grid, by vegetation class (Must/Should Add to "
         "1.0) "
     )
-    col_names = [
+    vegm_col_names = (
         "",
         "",
         "(Deg)",
@@ -284,8 +292,9 @@ def write_land_cover(land_cover_data, out_file):
         "16",
         "17",
         "18",
-    ]
-    header = "\n".join([heading, " ".join(col_names)])
+    )
+    header = "\n".join([heading, " ".join(vegm_col_names)])
+    out_file = os.path.join(write_dir, "drv_vegm.dat")
     np.savetxt(
         fname=out_file,
         X=land_cover_data,
@@ -299,20 +308,16 @@ def write_land_cover(land_cover_data, out_file):
 
 def edit_drvclmin(
     read_path,
-    write_path=None,
+    write_dir,
     start=None,
     end=None,
     startcode=2,
     vegp_name="drv_vegp.dat",
     vegm_name="drv_vegm.dat",
 ):
-    if write_path is not None:
-        shutil.copyfile(read_path, write_path)
-        lines = open(write_path, "r").readlines()
-
-    else:
-        write_path = read_path
-        lines = open(read_path, "r").readlines()
+    write_path = os.path.join(write_dir, "drv_clmin.dat")
+    shutil.copyfile(read_path, write_path)
+    lines = open(write_path, "r").readlines()
 
     for i, line in enumerate(lines):
         if "vegtf" in line:
@@ -371,6 +376,8 @@ def edit_drvclmin(
 
 
 def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir):
+    assert os.path.isdir(write_dir), "write_dir must be a directory"
+
     # CLM variables requested
     var_list = [
         "precipitation",
@@ -396,9 +403,9 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir):
         print(f"Done reading {var} pfb sequence, starting to write to folder")
 
         paths = data_access.get_file_paths(entries, start_time=start, end_time=end)
-        out_paths = [f"{write_dir}/{os.path.basename(p)}" for p in paths]
-        for i, op in enumerate(out_paths):
-            write_pfb(op, subset_data[i, :, :, :], dist=False)
+        out_paths = [os.path.join(write_dir, os.path.basename(p)) for p in paths]
+        for i, out_path in enumerate(out_paths):
+            write_pfb(out_path, subset_data[i, :, :, :], dist=False)
 
         print(f"finished writing {var} to folder")
         outputs[var] = out_paths
@@ -406,20 +413,21 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir):
 
 
 def edit_runscript_for_subset(
-    ij_bounds, runscript_path, write_dir=None, runname=None, forcing_dir=None
+    ij_bounds, runscript_path, write_dir, runname=None, forcing_dir=None
 ):
-    assert write_dir is not None
+    assert os.path.isdir(write_dir), "write_dir must be a directory"
+    assert os.path.isfile(runscript_path), "runscript_path must be a valid file path"
 
     # load in the reference pfidb or yaml specified by the user
     run = Run.from_definition(runscript_path)
-    file_extension = os.path.splitext(runscript_path)[1][1:]
+    _, file_extension = os.path.splitext(runscript_path)
     if runname is not None:
         run.set_name(runname)
         print(
-            f"New runname: {runname} provided, a new {file_extension} file will be created"
+            f"New runname: {runname} provided, a new {file_extension[1:]} file will be created"
         )
     else:
-        print(f"No runname provided, old {file_extension} file will be overwritten")
+        print(f"No runname provided, old {file_extension[1:]} file will be overwritten")
 
     # checks if we're running with clm
     if forcing_dir is not None:
@@ -430,9 +438,6 @@ def edit_runscript_for_subset(
     else:
         print("No forcing directory provided, run.Solver.CLM.MetFilePath key not set")
 
-    # Checking if we are solid or box
-    domain_type = run.GeomInput.domaininput.InputType
-
     # getting the subset ni/nj to update keys
     imin, jmin, imax, jmax = ij_bounds
     ni, nj = imax - imin, jmax - jmin
@@ -440,6 +445,7 @@ def edit_runscript_for_subset(
     run.ComputationalGrid.NX = int(ni)
     print(f"ComputationalGrid.NY set to {nj} and NX to {ni}")
 
+    domain_type = run.GeomInput.domaininput.InputType    
     if domain_type == "SolidFile":
         print(
             f"GeomInput.domaininput.InputType detected as SolidFile, no additional keys to change for subset"
@@ -451,17 +457,18 @@ def edit_runscript_for_subset(
         run.Geom.domain.Upper.X = ni * 1000
         run.Geom.domain.Upper.Y = nj * 1000
 
-    print(f"Updated runscript written to {write_dir} as detected extension")
-    return run.write(working_directory=write_dir, file_format=f"{file_extension}")[0]
+    print(f"Updated runscript written to {write_dir}")
+    file_path, _ = run.write(working_directory=write_dir, file_format=f"{file_extension[1:]}")
+    return file_path
 
 
-def copy_static_files(static_input_dir, pf_dir):
-    os.system("cp -r " + static_input_dir + "*.* " + pf_dir)
+def copy_static_files(read_dir, write_dir):
+    os.system("cp -r " + read_dir + "*.* " + write_dir)
 
 
 def change_filename_values(
     runscript_path,
-    write_dir=None,
+    write_dir,
     runname=None,
     slopex=None,
     slopey=None,
@@ -472,20 +479,15 @@ def change_filename_values(
     mannings=None,
     evap_trans=None,
 ):
-    file_extension = os.path.splitext(runscript_path)[1][1:]
+    assert os.path.isdir(write_dir), "write_dir must be a directory"
+    assert os.path.isfile(runscript_path), "runscript_path must be a valid path to an existing file"
 
-    if write_dir is None:
-        write_dir = os.path.dirname(runscript_path)
-        print(
-            f"No write directory provided, updated or new {file_extension} file will be written to the runscript path"
-        )
-
+    _, file_extension = os.path.splitext(runscript_path)
     run = Run.from_definition(runscript_path)
-
     if runname is not None:
         run.set_name(runname)
         print(
-            f"New runname: {runname} provided, a new {file_extension} file will be created"
+            f"New runname: {runname} provided, a new {file_extension[1:]} file will be created"
         )
 
     # check which input files are not none, to update the key
@@ -515,26 +517,28 @@ def change_filename_values(
         print(f"Evaptrans filename changed to {evap_trans}")
 
     print(f"Updated runscript written to {write_dir}")
-    return run.write(working_directory=write_dir, file_format=f"{file_extension}")[0]
+    file_path, _ = run.write(working_directory=write_dir, file_format=f"{file_extension[1:]}")
+    return file_path
 
 
 def dist_run(P, Q, runscript_path, write_dir, dist_clim_forcing=True):
-    assert write_dir is not None
+    assert os.path.isdir(write_dir), "write_dir must be a directory"
+    assert os.path.isfile(runscript_path), "runscript_path must be a valid file path"
+
     run = Run.from_definition(runscript_path)
 
     run.Process.Topology.P = P
     run.Process.Topology.Q = Q
 
-    if dist_clim_forcing is True:
+    if dist_clim_forcing:
         print("Distributing your climate forcing")
         forcing_dir = run.Solver.CLM.MetFilePath
-        for filename_forcing in os.listdir(forcing_dir):
-            if filename_forcing[-3:] == "pfb":
-                run.dist(f"{forcing_dir}{filename_forcing}")
+        for filename in pathlib.Path(forcing_dir).glob("*.pfb"):
+            run.dist(filename)
     else:
         print("no forcing dir provided, only distributing static inputs")
 
-    static_input_paths = list(pathlib.Path(write_dir).glob("*.pfb"))
+    static_input_paths = pathlib.Path(write_dir).glob("*.pfb")
     max_nz = 0
     for path in static_input_paths:
         input_array = read_pfb(path)
@@ -546,8 +550,8 @@ def dist_run(P, Q, runscript_path, write_dir, dist_clim_forcing=True):
         print(f"Distributed {os.path.basename(path)} with NZ {nz}")
     run.ComputationalGrid.NZ = max_nz
 
-    file_extension = os.path.splitext(runscript_path)[1][1:]
-    run.write(working_directory=write_dir, file_format=f"{file_extension}")
+    _, file_extension = os.path.splitext(runscript_path)
+    run.write(working_directory=write_dir, file_format=f"{file_extension[1:]}")
 
 
 def create_job_script():

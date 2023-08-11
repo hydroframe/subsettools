@@ -39,9 +39,9 @@ def test_conus1_upper_verde_spinup(setup_dir_structure, remove_output_files):
     target_runscript = edit_runscript_for_subset(
         ij_bounds, runscript_path=reference_run, write_dir=pf_out_dir, runname=run_name
     )
-    copy_static_files(static_input_dir=static_write_dir, pf_dir=pf_out_dir)
+    copy_static_files(read_dir=static_write_dir, write_dir=pf_out_dir)
     target_runscript = change_filename_values(
-        runscript_path=target_runscript, init_press=init_press_filename
+        runscript_path=target_runscript, write_dir=pf_out_dir, init_press=init_press_filename
     )
     dist_run(
         P=P,
