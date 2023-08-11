@@ -57,30 +57,23 @@ def test_conus1_upper_verde_spinup(setup_dir_structure, remove_output_files):
     run.TimingInfo.DumpInterval = 12.0
     run.run(working_directory=pf_out_dir)
 
-    filename = f"/{run_name}.out.perm_x.pfb"
-    assert pf_test_file(
-        pf_out_dir + filename, correct_output_dir + filename, "Max difference in perm_x"
-    )
-    filename = f"/{run_name}.out.perm_y.pfb"
-    assert pf_test_file(
-        pf_out_dir + filename, correct_output_dir + filename, "Max difference in perm_y"
-    )
-    filename = f"/{run_name}.out.perm_z.pfb"
-    assert pf_test_file(
-        pf_out_dir + filename, correct_output_dir + filename, "Max difference in perm_z"
-    )
-
-    for i in range(5):
-        filename = f"/{run_name}.out.press.0000{i}.pfb"
+    vars = ["perm_x", "perm_y", "perm_z"]
+    for var in vars:
+        filename = f"{run_name}.out.{var}.pfb"
         assert pf_test_file(
-            pf_out_dir + filename,
-            correct_output_dir + filename,
+            os.path.join(pf_out_dir, filename), os.path.join(correct_output_dir, filename), "Max difference in perm_x"
+        )
+    for i in range(5):
+        filename = f"{run_name}.out.press.0000{i}.pfb"
+        assert pf_test_file(
+            os.path.join(pf_out_dir, filename),
+            os.path.join(correct_output_dir, filename),
             f"Max difference in Pressure for timestep {i}",
         )
-        filename = f"/{run_name}.out.satur.0000{i}.pfb"
+        filename = f"{run_name}.out.satur.0000{i}.pfb"
         assert pf_test_file(
-            pf_out_dir + filename,
-            correct_output_dir + filename,
+            os.path.join(pf_out_dir, filename),
+            os.path.join(correct_output_dir, filename),
             f"Max difference in Saturation for timestep {i}",
         )
 

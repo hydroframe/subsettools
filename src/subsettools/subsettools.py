@@ -5,6 +5,7 @@ import xarray as xr
 from hydrodata.national_mapping.map_wgs84 import ConusMap
 from parflow import Run
 from parflow.tools.io import read_clm, read_pfb, write_pfb
+from parflow.tools.fs import cp
 import pytz
 import os
 import pathlib
@@ -463,7 +464,10 @@ def edit_runscript_for_subset(
 
 
 def copy_static_files(read_dir, write_dir):
-    os.system("cp -r " + read_dir + "*.* " + write_dir)
+    for filename in os.listdir(read_dir):
+        file_path = os.path.join(read_dir, filename)
+        if os.path.isfile(file_path):
+            shutil.copy(file_path, write_dir)
 
 
 def change_filename_values(
