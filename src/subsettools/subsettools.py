@@ -384,27 +384,37 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir):
             dataset=dataset, variable=var, grid=grid, file_type="pfb", period="hourly"
         )
 
+        day = 1
         start_date = datetime.strptime(start, "%Y-%m-%d")
         end_date = datetime.strptime(end, "%Y-%m-%d")
         delta = timedelta(days=1)
+        outputs[var] = []
         print(f"Reading {var} pfb sequence")
 
-        while start_date <= end_date:
+        while start_date < end_date:
             subset_data = data_access.get_ndarray(
                 entries, start_time=start_date, end_time=start_date + delta, grid_bounds=ij_bounds
             )
-            print(f"Done reading {var} pfb sequence, starting to write to folder")            
             paths = data_access.get_file_paths(entries, start_time=start_date, end_time=start_date + delta)
-            out_paths = [os.path.join(write_dir, os.path.basename(p)) for p in paths]
-            for out_path in out_paths:
-                write_pfb(out_path, subset_data[:, :, :], dist=False)    
+            write_paths = [os.path.join(write_dir, adjust_filename_hours(os.path.basename(path), day)) for path in paths]
+            outputs[var] += write_paths
+            for path in write_paths:
+                write_pfb(path, subset_data[:, :, :], dist=False)
+                day = day + 1
             start_date = start_date + delta
 
-        print(f"finished writing {var} to folder")
-        outputs[var] = out_paths
+        print(f"Finished writing {var} to folder")
+
         
     return outputs
 
+
+def adjust_filename_hours(filename, day):
+    s1, s2, _, s4 = filename.split('.')
+    start = str(24 * (day - 1) + 1).rjust(6, '0')
+    end = str(24 * day).rjust(6, '0')
+    s3 = start + "_to_" + end
+    return '.'.join([s1, s2, s3, s4])
 
 def edit_runscript_for_subset(
     ij_bounds, runscript_path, write_dir, runname=None, forcing_dir=None
