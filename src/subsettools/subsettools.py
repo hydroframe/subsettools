@@ -1,17 +1,15 @@
-from datetime import datetime, timedelta
-import shutil
-import numpy as np
-import xarray as xr
-from hydrodata.national_mapping.map_wgs84 import ConusMap
-from parflow import Run
-from parflow.tools.io import read_clm, read_pfb, write_pfb
-from parflow.tools.fs import cp
-import pytz
 import os
+import shutil
 import pathlib
 import subprocess
-import glob
+from datetime import datetime, timedelta
+
+import numpy as np
+import pytz
+from hydrodata.national_mapping.map_wgs84 import ConusMap
 from hydrodata.data_catalog import data_access
+from parflow import Run
+from parflow.tools.io import read_clm, read_pfb, write_pfb
 
 
 def get_conus_hucs_indices(huc_list, grid):
@@ -49,7 +47,7 @@ def indices_to_ij(conus_hucs, indices_j, indices_i):
 
 
 def huc_to_ij(huc_list, grid):
-    conus_hucs, sel_hucs, indices_j, indices_i = get_conus_hucs_indices(huc_list, grid)
+    conus_hucs, _, indices_j, indices_i = get_conus_hucs_indices(huc_list, grid)
 
     ij_bounds = indices_to_ij(conus_hucs, indices_j, indices_i)
 
@@ -127,6 +125,7 @@ def create_mask_solid(huc_list, grid, write_dir):
             z_total,
         ],
         capture_output=True,
+        check=True,
     )
 
     print(f"Wrote solidfile.pfsol and mask_vtk.vtk with total z of {z_total} meters")
@@ -168,13 +167,13 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
     entry = data_access.get_catalog_entry(
         dataset=dataset, file_type="pfb", variable="pressure_head", period="hourly"
     )
-
+    
+    # assumes time is UTC 0 like CONUS runs, so can remain time unaware and grab the right pressure
+    new_date = datetime.strptime(date, "%Y-%m-%d") - timedelta(hours=1)
     if entry is None:
         print(f"No pressure file found for {new_date} in dataset {dataset}")
         return None
 
-    # assumes time is UTC 0 like CONUS runs, so can remain time unaware and grab the right pressure
-    new_date = datetime.strptime(date, "%Y-%m-%d") - timedelta(hours=1)
     if time_zone != "UTC":
         print(f"Converting the requested datetime from UTC0 to {time_zone}")
         new_date = new_date.replace(tzinfo=pytz.UTC).astimezone(pytz.timezone(time_zone))
@@ -203,11 +202,11 @@ def config_clm(ij_bounds, start, end, dataset, write_dir):
         print(file_path)
         if file_type == "vegp":
             shutil.copyfile(file_path, os.path.join(write_dir, "drv_vegp.dat"))
-            print(f"copied vegp")
+            print("copied vegp")
         elif file_type == "vegm":
             land_cover_data = subset_vegm(file_path, ij_bounds)
             write_land_cover(land_cover_data, write_dir)
-            print(f"subset vegm")
+            print("subset vegm")
         elif file_type == "drv_clm":
             edit_drvclmin(
                 read_path=file_path,
@@ -215,7 +214,7 @@ def config_clm(ij_bounds, start, end, dataset, write_dir):
                 start=start,
                 end=end,
             )
-            print(f"edited drv_clmin")
+            print("edited drv_clmin")
 
 
 def subset_vegm(path, ij_bounds):
@@ -306,7 +305,8 @@ def edit_drvclmin(
 ):
     write_path = os.path.join(write_dir, "drv_clmin.dat")
     shutil.copyfile(read_path, write_path)
-    lines = open(write_path, "r").readlines()
+    with open(write_path, 'r') as f:
+        lines = f.readlines()
 
     for i, line in enumerate(lines):
         if "vegtf" in line:
@@ -360,7 +360,8 @@ def edit_drvclmin(
                     i
                 ] = f"eyr            {enddt.year}                                  Ending Year\n"
 
-    open(write_path, "w").writelines(lines)
+    with open(write_path, 'w') as f:
+        f.writelines(lines)
     return write_path
 
 
@@ -452,7 +453,7 @@ def edit_runscript_for_subset(
     domain_type = run.GeomInput.domaininput.InputType
     if domain_type == "SolidFile":
         print(
-            f"GeomInput.domaininput.InputType detected as SolidFile, no additional keys to change for subset"
+            "GeomInput.domaininput.InputType detected as SolidFile, no additional keys to change for subset"
         )
     else:
         print(
@@ -603,7 +604,3 @@ def restart_run(runscript_path):
         print(f"Overwrote drv_clmin.dat (changed startcode to 1 (restart file))")
 
     run.write(working_directory=pf_dir, file_format=f"{file_extension}")
-
-
-if __name__ == "__main__":
-    main()
