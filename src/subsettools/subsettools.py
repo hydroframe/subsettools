@@ -136,7 +136,7 @@ def subset_static(
     ij_bounds,
     dataset,
     write_dir,
-    var_list=[
+    var_list=(
         "slope_x",
         "slope_y",
         "pf_indicator",
@@ -144,7 +144,7 @@ def subset_static(
         "depth_to_bedrock",
         "pme",
         "ss_pressure_head",
-    ],
+    ),
 ):
     assert os.path.isdir(write_dir), "write_dir must be a directory"
 
@@ -367,8 +367,7 @@ def edit_drvclmin(
 def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir):
     assert os.path.isdir(write_dir), "write_dir must be a directory"
 
-    # CLM variables requested
-    var_list = [
+    var_list = (
         "precipitation",
         "downward_shortwave",
         "downward_longwave",
@@ -377,7 +376,7 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir):
         "atmospheric_pressure",
         "east_windspeed",
         "north_windspeed",
-    ]
+    )
     outputs = {}
 
     for var in var_list:
@@ -547,7 +546,6 @@ def dist_run(P, Q, runscript_path, write_dir, dist_clim_forcing=True):
     for path in static_input_paths:
         input_array = read_pfb(path)
         nz = input_array.shape[0]
-        run.ComputationalGrid.NZ = nz
         if nz > max_nz:
             max_nz = nz
         run.dist(path)
