@@ -1,8 +1,8 @@
+import pytest
 from parflow import Run
 from parflow.tools.settings import set_working_directory
 from subsettools.subsettools import *
 from subsettools.datasets import get_ref_yaml_path
-import pytest
 
 # remove this for newer parflow versions
 from testutils import pf_test_file
@@ -66,7 +66,9 @@ def setup_run(setup_dir_structure):
     copy_static_files(read_dir=static_write_dir, write_dir=pf_out_dir)
 
     target_runscript = change_filename_values(
-        runscript_path=target_runscript, write_dir=pf_out_dir, init_press=init_press_filename
+        runscript_path=target_runscript,
+        write_dir=pf_out_dir,
+        init_press=init_press_filename,
     )
 
     return run_name, target_runscript, pf_out_dir, correct_output_dir
@@ -95,11 +97,13 @@ def test_conus1_upper_verde(setup_run, remove_output_files, P, Q):
     run.TimingInfo.StopTime = 10
     run.run(working_directory=pf_out_dir)
 
-    vars = ["perm_x", "perm_y", "perm_z"]
-    for var in vars:
+    test_vars = ["perm_x", "perm_y", "perm_z"]
+    for var in test_vars:
         filename = f"{run_name}.out.{var}.pfb"
         assert pf_test_file(
-            os.path.join(pf_out_dir, filename), os.path.join(correct_output_dir, filename), "Max difference in perm_x"
+            os.path.join(pf_out_dir, filename),
+            os.path.join(correct_output_dir, filename),
+            "Max difference in perm_x",
         )
 
     for i in range(5):

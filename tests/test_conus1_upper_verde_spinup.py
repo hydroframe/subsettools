@@ -10,7 +10,7 @@ def test_conus1_upper_verde_spinup(setup_dir_structure, remove_output_files):
     run_name = "conus1_upper_verde_spinup"
     (
         static_write_dir,
-        forcing_dir,
+        _,
         pf_out_dir,
         correct_output_dir,
         target_runscript,
@@ -18,7 +18,6 @@ def test_conus1_upper_verde_spinup(setup_dir_structure, remove_output_files):
 
     huc_list = ["15060202"]
     start = "2005-10-01"
-    wy = 2006
     grid = "conus1"
     run_ds = "conus1_baseline_mod"
     var_ds = "conus1_domain"
@@ -41,7 +40,9 @@ def test_conus1_upper_verde_spinup(setup_dir_structure, remove_output_files):
     )
     copy_static_files(read_dir=static_write_dir, write_dir=pf_out_dir)
     target_runscript = change_filename_values(
-        runscript_path=target_runscript, write_dir=pf_out_dir, init_press=init_press_filename
+        runscript_path=target_runscript,
+        write_dir=pf_out_dir,
+        init_press=init_press_filename,
     )
     dist_run(
         P=P,
@@ -57,11 +58,13 @@ def test_conus1_upper_verde_spinup(setup_dir_structure, remove_output_files):
     run.TimingInfo.DumpInterval = 12.0
     run.run(working_directory=pf_out_dir)
 
-    vars = ["perm_x", "perm_y", "perm_z"]
-    for var in vars:
+    test_vars = ["perm_x", "perm_y", "perm_z"]
+    for var in test_vars:
         filename = f"{run_name}.out.{var}.pfb"
         assert pf_test_file(
-            os.path.join(pf_out_dir, filename), os.path.join(correct_output_dir, filename), "Max difference in perm_x"
+            os.path.join(pf_out_dir, filename),
+            os.path.join(correct_output_dir, filename),
+            "Max difference in perm_x",
         )
     for i in range(5):
         filename = f"{run_name}.out.press.0000{i}.pfb"

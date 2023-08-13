@@ -61,8 +61,7 @@ def msig_diff(data1, data2, m, abs_zero=0.0):
                 adiff = abs(data1[i, j, k] - data2[i, j, k])
                 amax = max(abs(data1[i, j, k]), abs(data2[i, j, k]))
 
-                if max_adiff < adiff:
-                    max_adiff = adiff
+                max_adiff = max(max_adiff, adiff)
 
                 m_sig_digs = True
                 if amax > abs_zero:

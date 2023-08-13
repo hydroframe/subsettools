@@ -1,7 +1,7 @@
-import pytest
 import os
-from parflow.tools.fs import get_absolute_path, mkdir, rm
 from pathlib import Path
+import pytest
+from parflow.tools.fs import get_absolute_path, mkdir, rm
 
 
 @pytest.fixture(scope="module")
@@ -33,7 +33,7 @@ def setup_dir_structure():
     yield setup
 
     if temp_pf_dir is not None:
-        os.environ["PARFLOW_DIR"]
+        os.environ["PARFLOW_DIR"] = temp_pf_dir
     else:
         del os.environ["PARFLOW_DIR"]
 
@@ -42,8 +42,8 @@ def setup_dir_structure():
 
 @pytest.fixture
 def remove_output_files():
-    def ret_fun(dir):
-        for p in Path(dir).glob("*.out.*"):
+    def ret_fun(dir_path):
+        for p in Path(dir_path).glob("*.out.*"):
             p.unlink()
 
     return ret_fun
