@@ -6,9 +6,9 @@
 
 # -- Project information -----------------------------------------------------
 
-project = u"subsettools"
-copyright = u"2023, George Artavanis, Amanda Triplett"
-author = u"George Artavanis, Amanda Triplett"
+project = "subsettools"
+copyright = "2023, George Artavanis, Amanda Triplett"
+author = "George Artavanis, Amanda Triplett"
 
 # -- General configuration ---------------------------------------------------
 

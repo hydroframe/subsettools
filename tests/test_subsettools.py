@@ -1,5 +1,5 @@
 import pytest
-from subsettools import subsettools, datasets
+from subsettools import subsettools
 
 
 @pytest.mark.parametrize(
