@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 
 import numpy as np
 import pytz
+import re
 from hydrodata.national_mapping.map_wgs84 import ConusMap
 from hydrodata.data_catalog import data_access
 from parflow import Run
@@ -422,10 +423,16 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir):
 
 
 def adjust_filename_hours(filename, day):
-    s1, s2, _, s4 = filename.split(".")
+    assert day >= 1
+    s1, s2, s3, s4 = filename.split(".")
+    assert s1 != '' and s2 != '' and s4 != '', "invalid forcing filename"
+    pattern = re.compile("[0-9]{6}_to_[0-9]{6}")
+    assert pattern.fullmatch(s3) is not None, "invalid forcing filename"
+    
     start = str(24 * (day - 1) + 1).rjust(6, "0")
     end = str(24 * day).rjust(6, "0")
     s3 = start + "_to_" + end
+    assert pattern.fullmatch(s3) is not None, "invalid adjusted forcing filename"    
     return ".".join([s1, s2, s3, s4])
 
 
