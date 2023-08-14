@@ -14,26 +14,43 @@ from parflow.tools.io import read_clm, read_pfb, write_pfb
 
 
 def get_conus_hucs_indices(huc_list, grid):
+    """Get the huc datafile as an ndarray and three mask arrays
+    representing the selected hucs.
+
+    Args:
+        huc_list (list[str]): a list of huc IDs
+        grid (str): "conus1" or "conus2"
+
+    Returns:
+        A tuple (conus_hucs, sel_hucs, indices_j, indices_i) where
+        conus_hucs is an ndarray of the huc datafile, sel_hucs is 
+        a mask array for the selected hucs, and indices_i and 
+        indices_j mask arrays in the j and i directions. 
+    """
     huc_len = len(huc_list[0])
-    assert all(
-        [len(huc) == huc_len for huc in huc_list]
-    ), "All huc IDs should have the same length!"
     huc_list = [int(huc) for huc in huc_list]
     entry = data_access.get_catalog_entry(
         dataset="huc_mapping", grid=grid.lower(), file_type="tiff"
     )
-
     conus_hucs = data_access.get_ndarray(entry, level=str(huc_len))
-
     sel_hucs = np.isin(conus_hucs, huc_list).squeeze()
-
     indices_j, indices_i = np.where(sel_hucs > 0)
-
     return conus_hucs, sel_hucs, indices_j, indices_i
 
 
 def indices_to_ij(conus_hucs, indices_j, indices_i):
-    # # Find the boundaries in the i and j directions
+    """Get the conus ij-bounds for the conus_hucs boundary defined by
+    indices_j and indices_i.
+
+    Args:
+        conus_hucs (numpy.ndarray): conus huc data
+        indices_j (numpy.ndarray): mask in the j direction for selected hucs
+        indices_i (numpy.ndarray): mask in the i direction for selected hucs
+
+    Returns:
+        A tuple of the form (imin, jmin, imax, jmax) representing the bounds
+        in conus_hucs defined by the two mask arrays indices_j and indices_i.
+    """
     imin = np.min(indices_i)
     imax = np.max(indices_i) + 1  # right bound inclusive
     arr_jmin = np.min(indices_j)
@@ -42,41 +59,68 @@ def indices_to_ij(conus_hucs, indices_j, indices_i):
     jmin = conus_hucs.shape[1] - arr_jmax
     jmax = conus_hucs.shape[1] - arr_jmin
 
-    ij_bounds = [imin, jmin, imax, jmax]
-
-    return ij_bounds
+    return (imin, jmin, imax, jmax)
 
 
 def huc_to_ij(huc_list, grid):
+    """Get the conus ij-bounds of the area defined by the the huc IDs
+       in huc_list in the conus grid. 
+       
+       All huc IDs in huc_list must be the same length (hucs of the same
+       level). Supported grids are "conus1" and "conus2".                                                                                                                                                        
+    Args:                                                                                                                                             
+        huc_list (list[str]): a list of huc IDs                                                                                                       
+        grid (str): "conus1" or "conus2"                                                                                                               
+    Returns:
+        A tuple of the form (imin, jmin, imax, jmax) representing the bounds
+        in the conus grid of the area defined by the huc IDs in huc_list.
+
+    Raises:                                                                                                                                                   AssertionError: If all huc IDs are not the same length.                                                                                           """
+    huc_len = len(huc_list[0])
+    assert all(
+        [len(huc) == huc_len for huc in huc_list]
+    ), "All huc IDs should have the same length!"
     conus_hucs, _, indices_j, indices_i = get_conus_hucs_indices(huc_list, grid)
-
-    ij_bounds = indices_to_ij(conus_hucs, indices_j, indices_i)
-
-    return ij_bounds
+    return indices_to_ij(conus_hucs, indices_j, indices_i)
 
 
-def latlon_to_ij(latlng_bounds, grid):
-    conus_map = ConusMap(grid.lower())  # Creating a ConusMap object
+def latlon_to_ij(latlon_bounds, grid):
+    """Get the conus ij-bounds of the area defined by the the latitute/longitude
+       bounds (latlon_bounds) in the conus grid. 
+       
+       Supported grids are "conus1" and "conus2".                                                                                                                                                        
+    Args:                                                                                                                                             
+        latlon_bounds (list[float]): list of the form [[lat1, lon1], [lat2, lon2]].
+            [lat1, lon1] and [lat2, lon2] are the two points defining the conus 
+            bounding box.
+        grid (str): "conus1" or "conus2"
+                                                                                                   
+    Returns:
+        A tuple of the form (imin, jmin, imax, jmax) representing the bounds
+        in the conus grid of the area defined by latlon_bounds.
+    """
+    conus_map = ConusMap(grid.lower())
     point0 = conus_map.map_to_grid(
-        latlng_bounds[0][1], latlng_bounds[0][0]
-    )  # The ConusMap object is used to transform from lat-lon to i-j indices
+        latlon_bounds[0][1], latlon_bounds[0][0]
+    )
     point1 = conus_map.map_to_grid(
-        latlng_bounds[1][1], latlng_bounds[1][0]
-    )  # from lat-lon to i-j indexes
+        latlon_bounds[1][1], latlon_bounds[1][0]
+    )
     imin, imax = [
         min(point0[0], point1[0]),
         max(point0[0], point1[0]),
-    ]  # Retrieving xmin, and xmax indices
+    ]
     jmin, jmax = [
         min(point0[1], point1[1]),
         max(point0[1], point1[1]),
-    ]  # Retrieving ymin, ymax indices
+    ]
 
-    ij_bounds = [imin, jmin, imax, jmax]
-    return ij_bounds
+    return (imin, jmin, imax, jmax)
 
 
 def create_mask_solid(huc_list, grid, write_dir):
+    """Docstring: TODO
+    """
     assert os.path.isdir(write_dir), "write_dir must be a directory"
 
     conus_hucs, sel_hucs, indices_j, indices_i = get_conus_hucs_indices(huc_list, grid)
@@ -146,9 +190,18 @@ def subset_static(
         "ss_pressure_head",
     ),
 ):
-    assert os.path.isdir(write_dir), "write_dir must be a directory"
+    """Subset static inputs from dataset required to do a baseline run.
 
-    # getting paths and writing subset pfbs for static parameters
+    Args:
+        ij_bounds (Tuple[int]): bounding box for subset
+        dataset (str): dataset name e.g. "conus1_domain"
+        write_dir (str): directory where the subset files will be written
+        var_list (List[str]): list of variables to subset from the dataset
+
+    Raises:
+        AssertionError: If write_dir is not a valid directory.
+    """
+    assert os.path.isdir(write_dir), "write_dir must be a directory"
     for var in var_list:
         entry = data_access.get_catalog_entry(
             dataset=dataset, file_type="pfb", period="static", variable=var
@@ -157,12 +210,29 @@ def subset_static(
             subset_data = data_access.get_ndarray(entry, grid_bounds=ij_bounds)
             write_pfb(os.path.join(write_dir, f"{var}.pfb"), subset_data, dist=False)
             print(f"Wrote {var}.pfb in specified directory.")
-
         else:
             print(f"{var} not found in dataset {dataset}")
 
 
 def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
+    """Subset the initial pressure file.
+
+    This represent the pressure one hour before midnight on the day before the start
+    date of the simulation.
+
+    Args:
+        ij_bounds (Tuple[int]): bounding box for subset
+        dataset (str): dataset name e.g. "conus1_baseline_mod"
+        write_dir (str): directory where the subset file will be written
+        time_zone (str): time_zone to calculate initial pressure datetime. Defaults to "UTC".
+
+    Returns:
+        The filename of the subset file, which includes datetime information, so that it can be
+        used by later functions (e.g. edit_runscript_for_subset)
+
+    Raises:
+        AssertionError: If write_dir is not a valid directory.
+    """
     assert os.path.isdir(write_dir), "write_dir must be a directory"
 
     entry = data_access.get_catalog_entry(
@@ -369,6 +439,27 @@ def edit_drvclmin(
 
 
 def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir):
+    """Get and subset the forcing files filtered by grid, dataset and start/end dates.
+
+    The forcing filenames will be adjusted if the start date does not coincide with the
+    start of the water year (Oct 1st), so that they match what a parflow simulation expects.
+
+    Args:
+        ij_bounds (Tuple[int]): bounding box for subset
+        grid (str): "conus1" or "conus2"
+        start (str): start date (inclusive), in the form 'yyyy-mm-dd'
+        end (str): end date (exlusive), in the form 'yyyy-mm-dd'
+        dataset (str): forcing dataset name e.g. "NLDAS2"
+        write_dir (str): directory where the subset file will be written
+
+    Returns:
+        A dictionary in which the keys are the forcing variables and the values are lists of 
+        subset file paths. The return value is useful for logging purposes and can be discarded
+        otherwise.
+
+    Raises:
+        AssertionError: If write_dir is not a valid directory.
+    """
     assert os.path.isdir(write_dir), "write_dir must be a directory"
 
     var_list = (
@@ -423,6 +514,25 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir):
 
 
 def adjust_filename_hours(filename, day):
+    """Adjust the forcing filename hours so that they match what a parflow simulation expects
+    on each day of the simulation.
+
+    The first day of the simulation the hours will be "*.000001_to_000024.*", the second day 
+    the hours will be "*.000025_to_000048.*" and so on. This is in case the first day of simulation
+    does not coincide with the first day of the water year (Oct 1st), as the dataset filenames
+    assume day 1 is Oct 1st. The input and output filenames must match the regular expression
+    "*.*.[0-9]{6}_to_[0-9]{6}.*"
+
+    Args:
+        filename (str): original forcing filename
+        day (int): day relative to the start date of forcing file subsetting
+
+    Returns:
+        The forcing filename with adjusted hours.
+
+    Raises:
+        AssertionError: If the input or output filename string do not match the above regex.
+    """
     assert day >= 1
     s1, s2, s3, s4 = filename.split(".")
     assert s1 != '' and s2 != '' and s4 != '', "invalid forcing filename"
@@ -439,7 +549,29 @@ def adjust_filename_hours(filename, day):
 def edit_runscript_for_subset(
     ij_bounds, runscript_path, write_dir, runname=None, forcing_dir=None
 ):
-    assert os.path.isdir(write_dir), "write_dir must be a directory"
+    """Set up a new parflow run from a template file.
+
+    This function will return the correct template file to do your run based on the grid, 
+    if you're doing spin-up and if you're using a solid file for input. The runname and 
+    forcing directory keys will be reset for your new run. If the runname is None and
+    write_dir is the directory containing runscript_path, the original template file will 
+    be overwritten.
+
+    Args:
+        ij_bounds (Tuple[int]): bounding box for subset
+        runscript_path (str): path to the original template file
+        write_dir (str): directory where the new template file will be written
+        runname (str): name for the new parflow run
+        forcing_dir (str): path to the directory containing the subset forcing files 
+
+    Returns:
+        Path to the new template file that will be created. 
+
+    Raises:
+        AssertionError: If write_dir is not a valid directory or runscript_path is not
+        a valid file path.
+    """
+    assert os.path.isdir(write_dir), "write_dir must be a director"
     assert os.path.isfile(runscript_path), "runscript_path must be a valid file path"
 
     # load in the reference pfidb or yaml specified by the user
@@ -489,6 +621,17 @@ def edit_runscript_for_subset(
 
 
 def copy_static_files(read_dir, write_dir):
+    """Copy all files from read_dir to write_dir.
+
+    Args:
+        read_dir (str): read-from directory path
+        write_dir (str): write-to directory path
+
+    Raises:
+        AssertionError: If read_dir or write_dir is not a valid directory path.
+    """
+    assert os.path.isdir(read_dir), "read_dir must be a directory"
+    assert os.path.isdir(write_dir), "write_dir must be a directory"
     for filename in os.listdir(read_dir):
         file_path = os.path.join(read_dir, filename)
         if os.path.isfile(file_path):
@@ -584,10 +727,6 @@ def dist_run(P, Q, runscript_path, write_dir, dist_clim_forcing=True):
 
     _, file_extension = os.path.splitext(runscript_path)
     run.write(working_directory=write_dir, file_format=f"{file_extension[1:]}")
-
-
-def create_job_script():
-    pass
 
 
 def restart_run(runscript_path):
