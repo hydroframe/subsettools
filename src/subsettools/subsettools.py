@@ -263,6 +263,23 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
 
 
 def config_clm(ij_bounds, start, end, dataset, write_dir):
+    """Get and subset the clm drivers associated with the run dataset.
+       
+    vegm, vep and drv_clmin files will be written in the specified static
+    input directory. For consistency, dataset must be the same dataset that 
+    is passed to subset_press_init().
+
+    Args:
+        ij_bounds (Tuple[int]): bounding box for subset
+        start (str): start date (inclusive), in the form 'yyyy-mm-dd'
+        end (str): end date (exlusive), in the form 'yyyy-mm-dd'
+        dataset (str): dataset name e.g. "conus1_baseline_mod"
+        write_dir (str): directory where the subset files will be written
+
+    Returns:
+        The filename of the subset file, which includes datetime information, 
+        so that it can be used by later functions (e.g. edit_runscript_for_subset).
+    """
     assert os.path.isdir(write_dir), "write_dir must be a directory"
 
     file_type_list = ["vegp", "vegm", "drv_clm"]
@@ -291,16 +308,15 @@ def config_clm(ij_bounds, start, end, dataset, write_dir):
 
 
 def subset_vegm(path, ij_bounds):
-    # read in the target vegm file
+    """ Docstring: TODO
+    """
     vegm = read_clm(path, type="vegm")  # returns (j,i,k)
     vegm = np.transpose(vegm, (2, 0, 1))  # transpose to k,j,i
 
     imin, jmin, imax, jmax = ij_bounds
-    # slice based on the i,j indices
     vegm = vegm[:, jmin:jmax, imin:imax]  # slicing on k,j,i
 
-    # generate the i, j indices necessary for the vegm file based on the shape of the subset data
-    nj, ni = vegm.shape[1:]
+    _, nj, ni = vegm.shape
     indices = np.indices((nj, ni)) + 1
     indices = indices[::-1, :, :]
     vegm = np.vstack([indices, vegm])  # stack x,y indices on vegm
@@ -312,16 +328,15 @@ def subset_vegm(path, ij_bounds):
 
 
 def write_land_cover(land_cover_data, write_dir):
-    """Write the land cover file in vegm format
-    Parameters
-    ----------
-    land_cover_data : ndarray
-        formatted vegm data (2d array)
-    out_file : str
-        path and name to write output
-    Returns
-    -------
-    None
+    """ Write the land cover file in vegm format
+
+    Args:
+        land_cover_data (ndarray): formatted vegm data (2d array)
+        write_dir (str): path to output directory
+
+    Returns:
+        out_file (str):
+            path to output vegm file.
     """
     heading = (
         "x y lat lon sand clay color fractional coverage of grid, by vegetation class (Must/Should Add to "
@@ -376,6 +391,8 @@ def edit_drvclmin(
     vegp_name="drv_vegp.dat",
     vegm_name="drv_vegm.dat",
 ):
+    """Docstring: TODO
+    """
     write_path = os.path.join(write_dir, "drv_clmin.dat")
     shutil.copyfile(read_path, write_path)
     with open(write_path, "r") as f:
@@ -774,6 +791,8 @@ def dist_run(P, Q, runscript_path, write_dir, dist_clim_forcing=True):
 
 
 def restart_run(runscript_path):
+    """Docstring: TODO
+    """
     pf_dir = os.path.dirname(runscript_path)
     file_name, file_extension = os.path.splitext(runscript_path)
     file_extension = file_extension[1:]
