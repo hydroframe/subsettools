@@ -1,3 +1,6 @@
+"""This module contains functions for accessing the template runscripts.
+"""
+
 from importlib import resources
 
 
