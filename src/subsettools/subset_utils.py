@@ -1,3 +1,6 @@
+"""This module contains helper functions for the subsetting module.
+"""
+
 import os
 import shutil
 import re
