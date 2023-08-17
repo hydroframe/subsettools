@@ -1,3 +1,6 @@
+"""This module contains subsetting functions for Parflow runs.
+"""
+
 import os
 import shutil
 import pathlib
@@ -6,28 +9,35 @@ from datetime import datetime, timedelta
 
 import numpy as np
 import pytz
-import re
 from hydrodata.national_mapping.map_wgs84 import ConusMap
 from hydrodata.data_catalog import data_access
 from parflow import Run
-from parflow.tools.io import read_clm, read_pfb, write_pfb
-from .subset_utils import *
+from parflow.tools.io import read_pfb, write_pfb
+from .subset_utils import (
+    get_conus_hucs_indices,
+    indices_to_ij,
+    subset_vegm,
+    write_land_cover,
+    edit_drvclmin,
+    adjust_filename_hours,
+)
 
 
 def huc_to_ij(huc_list, grid):
     """Get the conus ij-bounds of the area defined by the the huc IDs
-       in huc_list in the conus grid. 
-       
+       in huc_list in the conus grid.
+
        All huc IDs in huc_list must be the same length (hucs of the same
-       level). Supported grids are "conus1" and "conus2".                                                                                                                                                        
-    Args:                                                                                                                                             
-        huc_list (list[str]): a list of huc IDs                                                                                                       
-        grid (str): "conus1" or "conus2"                                                                                                               
+       level). Supported grids are "conus1" and "conus2".
+    Args:
+        huc_list (list[str]): a list of huc IDs
+        grid (str): "conus1" or "conus2"
     Returns:
         A tuple of the form (imin, jmin, imax, jmax) representing the bounds
         in the conus grid of the area defined by the huc IDs in huc_list.
 
-    Raises:                                                                                                                                                   AssertionError: If all huc IDs are not the same length.                                                                                           """
+    Raises:                                                                                                                                                   AssertionError: If all huc IDs are not the same length.
+    """
     huc_len = len(huc_list[0])
     assert all(
         [len(huc) == huc_len for huc in huc_list]
@@ -38,26 +48,22 @@ def huc_to_ij(huc_list, grid):
 
 def latlon_to_ij(latlon_bounds, grid):
     """Get the conus ij-bounds of the area defined by the the latitute/longitude
-       bounds (latlon_bounds) in the conus grid. 
-       
-       Supported grids are "conus1" and "conus2".                                                                                                                                                        
-    Args:                                                                                                                                             
+       bounds (latlon_bounds) in the conus grid.
+
+       Supported grids are "conus1" and "conus2".
+    Args:
         latlon_bounds (list[float]): list of the form [[lat1, lon1], [lat2, lon2]].
-            [lat1, lon1] and [lat2, lon2] are the two points defining the conus 
+            [lat1, lon1] and [lat2, lon2] are the two points defining the conus
             bounding box.
         grid (str): "conus1" or "conus2"
-                                                                                                   
+
     Returns:
         A tuple of the form (imin, jmin, imax, jmax) representing the bounds
         in the conus grid of the area defined by latlon_bounds.
     """
     conus_map = ConusMap(grid.lower())
-    point0 = conus_map.map_to_grid(
-        latlon_bounds[0][1], latlon_bounds[0][0]
-    )
-    point1 = conus_map.map_to_grid(
-        latlon_bounds[1][1], latlon_bounds[1][0]
-    )
+    point0 = conus_map.map_to_grid(latlon_bounds[0][1], latlon_bounds[0][0])
+    point1 = conus_map.map_to_grid(latlon_bounds[1][1], latlon_bounds[1][0])
     imin, imax = [
         min(point0[0], point1[0]),
         max(point0[0], point1[0]),
@@ -71,8 +77,7 @@ def latlon_to_ij(latlon_bounds, grid):
 
 
 def create_mask_solid(huc_list, grid, write_dir):
-    """Docstring: TODO
-    """
+    """Docstring: TODO"""
     assert os.path.isdir(write_dir), "write_dir must be a directory"
 
     conus_hucs, sel_hucs, indices_j, indices_i = get_conus_hucs_indices(huc_list, grid)
@@ -216,9 +221,9 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
 
 def config_clm(ij_bounds, start, end, dataset, write_dir):
     """Get and subset the clm drivers associated with the run dataset.
-       
+
     vegm, vep and drv_clmin files will be written in the specified static
-    input directory. For consistency, dataset must be the same dataset that 
+    input directory. For consistency, dataset must be the same dataset that
     is passed to subset_press_init().
 
     Args:
@@ -229,7 +234,7 @@ def config_clm(ij_bounds, start, end, dataset, write_dir):
         write_dir (str): directory where the subset files will be written
 
     Returns:
-        The filename of the subset file, which includes datetime information, 
+        The filename of the subset file, which includes datetime information,
         so that it can be used by later functions (e.g. edit_runscript_for_subset).
     """
     assert os.path.isdir(write_dir), "write_dir must be a directory"
@@ -274,7 +279,7 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir):
         write_dir (str): directory where the subset file will be written
 
     Returns:
-        A dictionary in which the keys are the forcing variables and the values are lists of 
+        A dictionary in which the keys are the forcing variables and the values are lists of
         subset file paths. The return value is useful for logging purposes and can be discarded
         otherwise.
 
@@ -339,10 +344,10 @@ def edit_runscript_for_subset(
 ):
     """Set up a new parflow run from a template file.
 
-    This function will return the correct runscript file to do your run based on the grid, 
-    if you're doing spin-up and if you're using a solid file for input. The runname and 
+    This function will return the correct runscript file to do your run based on the grid,
+    if you're doing spin-up and if you're using a solid file for input. The runname and
     forcing directory keys will be reset for your new run. If the runname is None and
-    write_dir is the directory containing runscript_path, the original template file will 
+    write_dir is the directory containing runscript_path, the original template file will
     be overwritten.
 
     Args:
@@ -350,10 +355,10 @@ def edit_runscript_for_subset(
         runscript_path (str): path to the original template file
         write_dir (str): directory where the new template file will be written
         runname (str): name for the new parflow run
-        forcing_dir (str): path to the directory containing the subset forcing files 
+        forcing_dir (str): path to the directory containing the subset forcing files
 
     Returns:
-        Path to the new runscript file that will be created. 
+        Path to the new runscript file that will be created.
 
     Raises:
         AssertionError: If write_dir is not a valid directory or runscript_path is not
@@ -441,7 +446,7 @@ def change_filename_values(
 ):
     """Change the filenames of input files.
 
-    The provided arguments will reset the corresponding parflow keys in the new 
+    The provided arguments will reset the corresponding parflow keys in the new
     runscript. If the runname is None and write_dir is the directory containing
     runscript_path, the original template file will be overwritten.
 
@@ -459,12 +464,12 @@ def change_filename_values(
         evap_trans (str): new evapotranspiration filename
 
     Returns:
-        Path to the new runscript file that will be created. 
+        Path to the new runscript file that will be created.
 
     Raises:
         AssertionError: If write_dir is not a valid directory or runscript_path is not
         a valid file path.
-    """    
+    """
     assert os.path.isdir(write_dir), "write_dir must be a directory"
     assert os.path.isfile(
         runscript_path
@@ -514,7 +519,7 @@ def change_filename_values(
 def dist_run(P, Q, runscript_path, write_dir, dist_clim_forcing=True):
     """Distribute parflow input files.
 
-    This function will distribute static input files to P grids in the 
+    This function will distribute static input files to P grids in the
     x direction and Q grids in the y direction. If dist_clim_forcing
     is true, forcing files will be distributed as well according to the
     same topology.
@@ -529,7 +534,7 @@ def dist_run(P, Q, runscript_path, write_dir, dist_clim_forcing=True):
     Raises:
         AssertionError: If write_dir is not a valid directory or runscript_path is not
         a valid file path.
-    """    
+    """
     assert os.path.isdir(write_dir), "write_dir must be a directory"
     assert os.path.isfile(runscript_path), "runscript_path must be a valid file path"
 
@@ -562,8 +567,7 @@ def dist_run(P, Q, runscript_path, write_dir, dist_clim_forcing=True):
 
 
 def restart_run(runscript_path):
-    """Docstring: TODO
-    """
+    """Docstring: TODO"""
     pf_dir = os.path.dirname(runscript_path)
     file_name, file_extension = os.path.splitext(runscript_path)
     file_extension = file_extension[1:]
