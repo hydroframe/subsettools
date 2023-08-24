@@ -1,6 +1,10 @@
 # subsettools
 
+## Usage
+
 Subsetting tools and utilities for ParFlow simulations.
+
+- TODO
 
 ## Installation
 
@@ -31,10 +35,6 @@ If you want to download a single notebook, copy the notebook title from the gith
 ```bash
 $ curl https://raw.githubusercontent.com/hydroframe/subsettools/main/docs/example_notebooks/<notebook_title>.ipynb -o <notebook_title>.ipynb
 ```
-
-## Usage
-
-- TODO
 
 ## Contributing
 
