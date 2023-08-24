@@ -1,6 +1,6 @@
 # subsettools
 
-Subsetting tools and utilities for ParFlow
+Subsetting tools and utilities for ParFlow simulations.
 
 ## Installation
 
