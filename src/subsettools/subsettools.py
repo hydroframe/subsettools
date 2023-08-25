@@ -214,7 +214,7 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
     )
 
     out_file = f"{dataset}_{date_string}_press.pfb"
-    write_pfb(os.path.join(write_dir, out_file), subset_data, dist=False)
+    write_pfb(os.path.join(write_dir, out_file), subset_data[0, :, :, :], dist=False)
     print(f"Wrote {out_file} in specified directory.")
     return out_file
 
