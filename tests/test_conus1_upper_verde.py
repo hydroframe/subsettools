@@ -29,11 +29,12 @@ def setup_run(setup_dir_structure):
     reference_run = get_ref_yaml_path(grid, "transient", "solid")
 
     ij_bounds = huc_to_ij(huc_list=huc_list, grid=grid)
-
+    assert ij_bounds == (375, 239, 487, 329)
+    
     create_mask_solid(huc_list=huc_list, grid=grid, write_dir=static_write_dir)
-
+    
     subset_static(ij_bounds, dataset=var_ds, write_dir=static_write_dir)
-
+    
     init_press_filename = subset_press_init(
         ij_bounds,
         dataset=run_ds,
@@ -41,11 +42,18 @@ def setup_run(setup_dir_structure):
         write_dir=static_write_dir,
         time_zone="UTC",
     )
+    for path in pathlib.Path(static_write_dir).glob("*.pfb"):
+        filename = os.path.basename(path)
+        assert pf_test_file(
+            os.path.join(static_write_dir, filename),
+            os.path.join(correct_output_dir, filename),
+            "Max difference in " + filename,
+        )
 
     config_clm(
         ij_bounds, start=start, end=end, dataset=run_ds, write_dir=static_write_dir
     )
-
+    
     subset_forcing(
         ij_bounds,
         grid=grid,
@@ -54,6 +62,12 @@ def setup_run(setup_dir_structure):
         dataset=forcing_ds,
         write_dir=forcing_dir,
     )
+    for filename in os.listdir(forcing_dir):
+        assert pf_test_file(
+            os.path.join(forcing_dir, filename),
+            os.path.join(correct_output_dir, filename),
+            "Max difference in " + filename,
+        )
 
     target_runscript = edit_runscript_for_subset(
         ij_bounds,
