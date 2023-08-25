@@ -44,6 +44,7 @@ def setup_run(setup_dir_structure):
     )
     for path in pathlib.Path(static_write_dir).glob("*.pfb"):
         filename = os.path.basename(path)
+        print(">>>>> checking: " + filename)
         assert pf_test_file(
             os.path.join(static_write_dir, filename),
             os.path.join(correct_output_dir, filename),
@@ -63,6 +64,7 @@ def setup_run(setup_dir_structure):
         write_dir=forcing_dir,
     )
     for filename in os.listdir(forcing_dir):
+        print(">>>>> checking: " + filename)
         assert pf_test_file(
             os.path.join(forcing_dir, filename),
             os.path.join(correct_output_dir, filename),
