@@ -80,6 +80,14 @@ def subset_vegm(path, ij_bounds):
 
 
 def reshape_ndarray_to_vegm_format(data):
+    """Reshape ndarray returned by datacatalog to vegm format.
+
+    Args:
+        data (ndarray): raw subset vegm data (2d array)
+
+    Returns:
+        Ndarray reshaped to vegm format.
+    """
     _, nj, ni = data.shape
     indices = np.indices((nj, ni)) + 1
     indices = indices[::-1, :, :]
