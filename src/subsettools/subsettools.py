@@ -251,7 +251,7 @@ def config_clm(ij_bounds, start, end, dataset, write_dir):
             shutil.copyfile(file_path, os.path.join(write_dir, "drv_vegp.dat"))
             print("copied vegp")
         elif file_type == "vegm":
-            subset_data = data_access.get_ndarray(entry, ij_bounds)
+            subset_data = data_access.get_ndarray(entry, grid_bounds=ij_bounds)
             land_cover_data = reshape_ndarray_to_vegm_format(subset_data)
             write_land_cover(land_cover_data, write_dir)
             print("subset vegm")
