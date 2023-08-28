@@ -1,13 +1,28 @@
 # subsettools
 
-Subsetting tools and utilities for ParFlow
+## Usage
 
-There are two options to use subsettools: use it as part of the parflow-ml module on verde, or install it in a virtual environment of your own.
-If you want to use it within parflow-ml follow the 'Getting started' instructions, otherwise go to 'Installation'.
+Subsetting tools and utilities for ParFlow simulations.
+
+- TODO
+
+## Installation
+
+Subsettools can be installed in a python virtual environment with pip: 
+
+```bash
+$ pip install git+ssh://git@github.com/hydroframe/subsettools
+```
+
+Note for verde users: the subsettools package is part of the parflow-ml module, so you can access it via
+
+```bash
+$ module load parflow-ml
+```
 
 ## Getting started
 
-subsettools is already installed in the parflow-ml module on verde. You only need to get an example notebook from the repo and run it.
+A collection of examples using the subsettools API is provided in the example jupyter notebooks.
 
 To get the entire folder of example notebooks, start a terminal session, navigate to your chosen download location and do:
 
@@ -18,28 +33,8 @@ $ svn checkout https://github.com/hydroframe/subsettools/trunk/docs/example_note
 If you want to download a single notebook, copy the notebook title from the github URL and do:
 
 ```bash
-$ curl https://raw.githubusercontent.com/hydroframe/subsettools/main/docs/example_notebooks/<notebook_title>.ipynb -o example_notebook.ipynb
+$ curl https://raw.githubusercontent.com/hydroframe/subsettools/main/docs/example_notebooks/<notebook_title>.ipynb -o <notebook_title>.ipynb
 ```
-
-The notebook should now be in your chosen download location. \
-To run the notebook, go to verde.princeton.edu. From the interactive apps tab, choose "Jupyter". \
-"Number of hours": choose how many hours you want to run the notebook session. \
-"Anaconda3 version used for starting up jupyter interface": choose "parflow-ml" from the list of environments. \
-"Extra slurm options": --ntasks=N (where N is the number of required cores for the example notebook). In general, set ntasks to the number of processes you will need when you distribute the parflow run. \
-Finally, launch the notebook. Feel free to run through the whole notebook as it is, or play with the functions and change their arguments!
-
-
-## Installation outside verde
-
-Activate your chosen virtual environment, then do:
-
-```bash
-$ pip install git+ssh://git@github.com/hydroframe/subsettools
-```
-
-## Usage
-
-- TODO
 
 ## Contributing
 

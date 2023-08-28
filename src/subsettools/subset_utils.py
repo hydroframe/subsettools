@@ -61,7 +61,16 @@ def indices_to_ij(conus_hucs, indices_j, indices_i):
 
 
 def subset_vegm(path, ij_bounds):
-    """Docstring: TODO"""
+    """Read in vegm file and subset it according to ij_bounds.
+
+    Args:
+        path (str): path to read vegm file
+        ij_bounds (Tuple[int]): bounding box for subset
+
+    Returns:
+        vegm (ndarray):
+            Subset vegm data.
+    """
     vegm = read_clm(path, type="vegm")  # returns (j,i,k)
     vegm = np.transpose(vegm, (2, 0, 1))  # transpose to k,j,i
 
@@ -98,7 +107,7 @@ def reshape_ndarray_to_vegm_format(data):
 
 
 def write_land_cover(land_cover_data, write_dir):
-    """Write the land cover file in vegm format
+    """Write the land cover ndarray in vegm format.
 
     Args:
         land_cover_data (ndarray): formatted vegm data (2d array)
@@ -161,7 +170,27 @@ def edit_drvclmin(
     vegp_name="drv_vegp.dat",
     vegm_name="drv_vegm.dat",
 ):
-    """Docstring: TODO"""
+    """Edit the CLM driver file for the parflow simulation.
+
+    Args:
+        read_path (str): source file path
+        write_dir (str): directory where the new driver file will be written
+        start (str): start date (inclusive), in the form 'yyyy-mm-dd'
+        end (str): end date (exlusive), in the form 'yyyy-mm-dd'
+        startcode (int): startcode for the parflow simulation
+        vegp_name (str): vegp filename
+        vegm_name (str): vegm filename
+
+    Returns:
+        write_path (str):
+            path to the new CLM driver file.
+    
+    Raises:
+        AssertionError: If write_dir is not a valid directory.
+    """
+    assert (start is None and end is None) or (start is not None and end is not None)
+    assert os.path.isdir(write_dir)
+    
     write_path = os.path.join(write_dir, "drv_clmin.dat")
     shutil.copyfile(read_path, write_path)
     with open(write_path, "r") as f:
@@ -169,55 +198,31 @@ def edit_drvclmin(
 
     for i, line in enumerate(lines):
         if "vegtf" in line:
-            lines[
-                i
-            ] = f"vegtf           {vegm_name}                         Vegetation Tile Specification File\n"
+            lines[i] = f"{'vegtf':<15}{vegm_name:<37} Vegetation Tile Specification File\n"
         elif "vegpf" in line:
-            lines[
-                i
-            ] = f"vegpf           {vegp_name}                         Vegetation Type Parameter\n"
+            lines[i] = f"{'vegpf':<15}{vegp_name:<37} Vegetation Type Parameter\n"
         elif "startcode" in line:
-            lines[
-                i
-            ] = f"startcode       {startcode}                                    1=restart file, 2=defined\n"
+            lines[i] = f"{'startcode':<15}{startcode:<37} 1=restart file, 2=defined\n"
         elif "clm_ic" in line:
-            lines[
-                i
-            ] = f"clm_ic          {startcode}                                    1=restart file, 2=defined\n"
+            lines[i] = f"{'clm_ic':<15}{startcode:<37} 1=restart file, 2=defined\n"
 
     if start is not None:
-        startdt = datetime.strptime(start, "%Y-%m-%d")
-        sd = startdt.strftime("%d")
-        sm = startdt.strftime("%m")
-        enddt = datetime.strptime(end, "%Y-%m-%d")
-        ed = enddt.strftime("%d")
-        em = enddt.strftime("%m")
+        start_date = datetime.strptime(start, "%Y-%m-%d")
+        end_date = datetime.strptime(end, "%Y-%m-%d")
 
         for i, line in enumerate(lines):
             if "sda" in line:
-                lines[
-                    i
-                ] = f"sda            {sd}                                    Starting Day\n"
+                lines[i] = f"{'sda':<15}{start_date.day:<37} Starting Day\n"
             elif "smo" in line:
-                lines[
-                    i
-                ] = f"smo            {sm}                                    Starting Month\n"
+                lines[i] = f"{'smo':<15}{start_date.month:<37} Starting Month\n"
             elif "syr" in line:
-                lines[
-                    i
-                ] = f"syr            {startdt.year}                                  Starting Year\n"
+                lines[i] = f"{'syr':<15}{start_date.year:<37} Starting Year\n"
             elif "eda" in line:
-                lines[
-                    i
-                ] = f"eda            {ed}                                    Ending Day\n"
+                lines[i] = f"{'eda':<15}{end_date.day:<37} Ending Day\n"
             elif "emo" in line:
-                lines[
-                    i
-                ] = f"emo            {em}                                    Ending Month\n"
+                lines[i] = f"{'emo':<15}{end_date.month:<37} Ending Month\n"
             elif "eyr" in line:
-                lines[
-                    i
-                ] = f"eyr            {enddt.year}                                  Ending Year\n"
+                lines[i] = f"{'eyr':<15}{end_date.year:<37} Ending Year\n"
 
     with open(write_path, "w") as f:
         f.writelines(lines)
