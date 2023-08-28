@@ -79,6 +79,16 @@ def subset_vegm(path, ij_bounds):
     return vegm
 
 
+def reshape_ndarray_to_vegm_format(data):
+    _, nj, ni = data.shape
+    indices = np.indices((nj, ni)) + 1
+    indices = indices[::-1, :, :]
+    data = np.vstack([indices, data])  # stack x,y indices on vegm
+
+    # transpose and reshape back into expected 2D vegm file format for the subset
+    return data.transpose(1, 2, 0).reshape(-1, 25)
+
+
 def write_land_cover(land_cover_data, write_dir):
     """Write the land cover file in vegm format
 
