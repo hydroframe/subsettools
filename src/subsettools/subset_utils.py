@@ -54,10 +54,10 @@ def indices_to_ij(conus_hucs, indices_j, indices_i):
     arr_jmin = np.min(indices_j)
     arr_jmax = np.max(indices_j) + 1  # right bound inclusive
 
-    jmin = conus_hucs.shape[1] - arr_jmax
-    jmax = conus_hucs.shape[1] - arr_jmin
+    jmin = conus_hucs.shape[0] - arr_jmax
+    jmax = conus_hucs.shape[0] - arr_jmin
 
-    return (imin, jmin, imax, jmax)
+    return (int(imin), int(jmin), int(imax), int(jmax))
 
 
 def subset_vegm(path, ij_bounds):
