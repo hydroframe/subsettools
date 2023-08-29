@@ -2,9 +2,7 @@
 
 ## Usage
 
-Subsetting tools and utilities for ParFlow simulations.
-
-- TODO
+The subsettools package provides functions to simplify the process of setting up a modeling domain to run the hydrologic model ParFlow. The package allows the user to subset all required hydrogeologic and climate forcing datasets from Hydrodata. It also contains various functions to edit and run models. These capabilities allow for more rapid application of ParFlow to hydrologic simulation. 
 
 ## Installation
 
