@@ -35,10 +35,11 @@ $ curl https://raw.githubusercontent.com/hydroframe/subsettools/main/docs/exampl
 ```
 The current list of example notebooks with brief explanations is given below. If you would like more information or to explore the notebooks within readthedocs please go to the following:
 
-1. conus1_subsetting.ipynb - Subsets baseline CONUS1 hydrogeologic and initial pressure data from Hydrodata. It also subsets climate forcing (NLDAS2). The model set up is a transient simulation of ParFlow-CLM. CLM is the fully coupled climate model. 
-2. conus1_subsetting_spinup.ipynb - Subsets baseline CONUS1 hydrogeologic and initial pressure data from Hydrodata. TThis notebook shows the process of spinning up the subset domain to steady state with ParFlow only and uses a longterm recharge mask (PmE) as opposed to climate forcing.
-3. Stand-in for conus2 PF-CLM
-4. Stand-in for conus2 spin-up 
+1. conus1_subsetting.ipynb - Subsets data from the CONUS2 modeling domain stored on Hydrodata as well as climate forcing to perform a simulation with ParFlow-CLM, that is ParFlow fully coupled to the climate model
+. 
+2. conus1_subsetting_spinup.ipynb - Subsets data from the CONUS1 modeling domain stored on Hydrodata to perform a spin-up (model initialization) to steady state with only ParFlow and a longterm recharge mask (PmE).
+3. conus2_subsetting.ipynb - Subsets data from the CONUS2 modeling domain stored on Hydrodata as well as climate forcing to perform a simulation with ParFlow-CLM, that is ParFlow fully coupled to the climate model.
+4. conus2_subsetting_spinup.ipynb - Subsets data from the CONUS2 modeling domain stored on Hydrodata to perform a spin-up (model initialization) to steady state with only ParFlow and a longterm recharge mask (PmE).
 
 In addition to example notebooks, several reference .yaml files are provided at subsettools/src/subsettools/ref_yamls. You may use these as a template for a ParFlow (or ParFlow-CLM) run that most closely meets the specifications of the model you are trying to build. A list of currently provided run templates is provided below. The first word in the filename refers to the larger modeling domain to be subset from (either conus1 or conus2).The second part refers to pf_spinup, which is a model file set up for initializing a modeling domain with only parflow or pfclm_transient which is a model run with parflow fully linked to the climate model clm. The last specifies if the model file is for a box or solid file domain. You may always use your own .yaml or .pfidb that defines your model with the subsettools package.
 
