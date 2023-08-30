@@ -9,7 +9,6 @@ from datetime import datetime, timedelta
 
 import numpy as np
 import pytz
-from hydrodata.national_mapping.map_wgs84 import ConusMap
 from hydroframe.data_catalog import data_access
 from parflow import Run
 from parflow.tools.io import read_pfb, write_pfb
@@ -61,9 +60,9 @@ def latlon_to_ij(latlon_bounds, grid):
         A tuple of the form (imin, jmin, imax, jmax) representing the bounds
         in the conus grid of the area defined by latlon_bounds.
     """
-    conus_map = ConusMap(grid.lower())
-    point0 = conus_map.map_to_grid(latlon_bounds[0][1], latlon_bounds[0][0])
-    point1 = conus_map.map_to_grid(latlon_bounds[1][1], latlon_bounds[1][0])
+    grid = grid.lower()
+    point0 = data_access.latlng_to_grid(grid, latlon_bounds[0][1], latlon_bounds[0][0])
+    point1 = data_access.latlng_to_grid(grid, latlon_bounds[1][1], latlon_bounds[1][0])
     imin, imax = [
         min(point0[0], point1[0]),
         max(point0[0], point1[0]),
