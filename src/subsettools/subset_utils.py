@@ -7,7 +7,7 @@ import re
 from datetime import datetime
 
 import numpy as np
-from hydrodata.data_catalog import data_access
+from hydroframe.data_catalog import data_access
 from parflow.tools.io import read_clm
 
 
