@@ -162,8 +162,7 @@ def write_land_cover(land_cover_data, write_dir):
 
 
 def edit_drvclmin(
-    read_path,
-    write_dir,
+    file_path,
     start=None,
     end=None,
     startcode=2,
@@ -173,27 +172,19 @@ def edit_drvclmin(
     """Edit the CLM driver file for the parflow simulation.
 
     Args:
-        read_path (str): source file path
-        write_dir (str): directory where the new driver file will be written
+        file_path (str): clm driver file path
         start (str): start date (inclusive), in the form 'yyyy-mm-dd'
         end (str): end date (exlusive), in the form 'yyyy-mm-dd'
         startcode (int): startcode for the parflow simulation
         vegp_name (str): vegp filename
         vegm_name (str): vegm filename
-
-    Returns:
-        write_path (str):
-            path to the new CLM driver file.
     
     Raises:
-        AssertionError: If write_dir is not a valid directory.
+        AssertionError: If one of start or end is None and the other is not.
     """
     assert (start is None and end is None) or (start is not None and end is not None)
-    assert os.path.isdir(write_dir)
     
-    write_path = os.path.join(write_dir, "drv_clmin.dat")
-    shutil.copyfile(read_path, write_path)
-    with open(write_path, "r") as f:
+    with open(file_path, "r") as f:
         lines = f.readlines()
 
     for i, line in enumerate(lines):
@@ -224,9 +215,9 @@ def edit_drvclmin(
             elif "eyr" in line:
                 lines[i] = f"{'eyr':<15}{end_date.year:<37} Ending Year\n"
 
-    with open(write_path, "w") as f:
+    with open(file_path, "w") as f:
         f.writelines(lines)
-    return write_path
+
 
 
 def adjust_filename_hours(filename, day):
