@@ -240,23 +240,37 @@ def config_clm(ij_bounds, start, end, dataset, write_dir):
     file_type_list = ["vegp", "vegm", "drv_clm"]
     for file_type in file_type_list:
         print(f"processing {file_type}")
-        entry = data_access.get_catalog_entries(
-            dataset=dataset, file_type=file_type, variable="clm_run", period="static"
-        )[0]
-        file_path = data_access.get_file_paths(entry)[0]
-        print(file_path)
         if file_type == "vegp":
-            shutil.copyfile(file_path, os.path.join(write_dir, "drv_vegp.dat"))
+            data_access.get_raw_file(
+                os.path.join(write_dir, "drv_vegp.dat"),
+                dataset=dataset,
+                file_type=file_type,
+                variable="clm_run",
+                period="static"
+            ) 
             print("copied vegp")
         elif file_type == "vegm":
+            entry = data_access.get_catalog_entries(
+                dataset=dataset,
+                file_type=file_type,
+                variable="clm_run",
+                period="static"
+            )[0]
             subset_data = data_access.get_ndarray(entry, grid_bounds=ij_bounds)
             land_cover_data = reshape_ndarray_to_vegm_format(subset_data)
             write_land_cover(land_cover_data, write_dir)
             print("subset vegm")
         elif file_type == "drv_clm":
+            file_path = os.path.join(write_dir, "drv_clmin.dat")
+            data_access.get_raw_file(file_path,
+                                     dataset=dataset,
+                                     file_type=file_type,
+                                     variable="clm_run",
+                                     period="static"
+            )
+            print("copied drv_clmin")
             edit_drvclmin(
-                read_path=file_path,
-                write_dir=write_dir,
+                file_path=file_path,
                 start=start,
                 end=end,
             )
