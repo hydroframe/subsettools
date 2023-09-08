@@ -125,7 +125,6 @@ def create_mask_solid(huc_list, grid, write_dir):
             "--z-top",
             z_total,
         ],
-        capture_output=True,
         check=True,
     )
 
