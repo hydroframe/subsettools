@@ -241,12 +241,15 @@ def config_clm(ij_bounds, start, end, dataset, write_dir):
     for file_type in file_type_list:
         print(f"processing {file_type}")
         entry = data_access.get_catalog_entries(
-            dataset=dataset, file_type=file_type, variable="clm_run", period="static"
-        )[0]
+            dataset=dataset, file_type=file_type, variable="clm_run", period="static")[0]
         file_path = data_access.get_file_paths(entry)[0]
         print(file_path)
         if file_type == "vegp":
-            shutil.copyfile(file_path, os.path.join(write_dir, "drv_vegp.dat"))
+            data_access.get_raw_file(os.path.join(write_dir, "drv_vegp.dat"),
+                                     dataset=dataset,
+                                     file_type=file_type,
+                                     variable="clm_run",
+                                     period="static") 
             print("copied vegp")
         elif file_type == "vegm":
             subset_data = data_access.get_ndarray(entry, grid_bounds=ij_bounds)
