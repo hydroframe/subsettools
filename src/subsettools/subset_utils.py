@@ -1,5 +1,5 @@
 """This module contains helper functions for the subsetting module.
-"""
+0;256;0c"""
 
 import os
 import shutil
@@ -7,7 +7,7 @@ import re
 from datetime import datetime
 
 import numpy as np
-from hydroframe.data_catalog import data_access
+from hf_hydrodata import gridded
 from parflow.tools.io import read_clm
 
 
@@ -27,10 +27,10 @@ def get_conus_hucs_indices(huc_list, grid):
     """
     huc_len = len(huc_list[0])
     huc_list = [int(huc) for huc in huc_list]
-    entry = data_access.get_catalog_entry(
+    entry = gridded.get_catalog_entry(
         dataset="huc_mapping", grid=grid.lower(), file_type="tiff"
     )
-    conus_hucs = data_access.get_ndarray(entry, level=str(huc_len))
+    conus_hucs = gridded.get_ndarray(entry, level=str(huc_len))
     sel_hucs = np.isin(conus_hucs, huc_list).squeeze()
     indices_j, indices_i = np.where(sel_hucs > 0)
     return conus_hucs, sel_hucs, indices_j, indices_i
