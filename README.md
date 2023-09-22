@@ -45,7 +45,8 @@ Note: Only CONUS1 examples are currently being supported, but CONUS2 examples wi
 1. conus1_subsetting.ipynb - Subsets a CONUS1 domain and runs a transient simulation with ParFlow-CLM.
 2. conus1_subsetting_spinup.ipynb - Subsets a CONUS1 domain and performs a model initialization (spin up) with ParFlow.
 
-In addition to example notebooks, several reference .yaml files are provided at subsettools/src/subsettools/ref_yamls. You may use these as a template for a ParFlow (or ParFlow-CLM) run that most closely meets the specifications of the model you are trying to build. 
+In addition to example notebooks, several reference .yaml files are provided at subsettools/src/subsettools/ref_yamls. You may use these as a template for a ParFlow run that most closely meets the specifications of the model you are trying to build. Additional details can be found in the package Read the Docs (linked above) under the Template runscripts tab. 
+
 A list of currently provided run templates is provided below:
 
 1. conus1_pf_spinup_box.yaml
