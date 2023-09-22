@@ -24,7 +24,7 @@ Detailed documentation can be found at:
 
 https://hydroframesubsettools.readthedocs.io/en/latest/#
 
-#### Example Notebooks
+### Example Notebooks
 
 In addition, a collection of example jupyter notebooks using the subsettools API are provided in this package.
 
@@ -42,12 +42,12 @@ $ curl https://raw.githubusercontent.com/hydroframe/subsettools/main/docs/exampl
 
 The current list of example notebooks is given below. A more detailed explanation of each notebook and how it should be used can be found in the Example notebooks tab at the Read the Docs link above. 
 
-Note: Only CONUS1 examples are currently being supported, but CONUS2 examples will be added in the future. 
+*Note: Only CONUS1 examples are currently being supported, but CONUS2 examples will be added in the future.* 
 
 1. conus1_subsetting.ipynb - Subsets a CONUS1 domain and runs a transient simulation with ParFlow-CLM.
 2. conus1_subsetting_spinup.ipynb - Subsets a CONUS1 domain and performs a model initialization (spin up) with ParFlow.
 
-#### Template Model Runscripts
+### Template Model Runscripts
 
 In addition to example notebooks, several reference .yaml files are provided at subsettools/src/subsettools/ref_yamls. You may use these as a template for a ParFlow run that most closely meets the specifications of the model you are trying to build. Additional details can be found in the package Read the Docs (linked above) under the Template runscripts tab. 
 
