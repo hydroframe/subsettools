@@ -6,7 +6,7 @@ Below are descriptions regarding example Jupyter notebookes using the subsettool
 ### Information Regarding the CONUS1 domain
 
 The example notebooks in the following section subset datasets from the baseline CONUS1 model (conus1_baseline_mod and conus1_domain) stored on the database Hydrodata. 
-Please refer to the following Read the Docs for more information on CONUS datasets contained on hydrodata: [Dataset Information](https://hydroframe-ml.github.io/readthedocs/tables/dataset.html)
+Please refer to [Dataset Information](https://hydroframe-ml.github.io/readthedocs/tables/dataset.html) for more information about CONUS datasets contained on hydrodata.
 
 CONUS1 is a box domain over the contiguous United States. It does not cover areas near the coasts. This model has 4 soil layers (top 2 meters) and 1 geologic layer that is 100 m thick. The cell size is 1 kilometer. Please refer to and cite the following DOIs if you want more details or to release work with the datasets used in the example notebooks: 10.5194/gmd-14-7223-2021; 10.1016/j.advwatres.2015.04.008; 10.1002/2014WR016774; 10.1002/2015GL066916.  
 
