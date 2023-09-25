@@ -49,7 +49,7 @@ The current list of example notebooks is given below. A more detailed explanatio
 
 ### Template Model Runscripts
 
-In addition to example notebooks, several reference .yaml files are provided at subsettools/src/subsettools/ref_yamls. You may use these as a template for a ParFlow run that most closely meets the specifications of the model you are trying to build. Additional details can be found in the package Read the Docs (linked above) under the Template runscripts tab. 
+In addition to example notebooks, several reference .yaml files are provided with the subsettools package. You may use these as a template for a ParFlow run that most closely meets the specifications of the model you are trying to build. Additional details can be found in the package documentation (linked above) under the `Template runscripts` tab. 
 
 A list of currently provided run templates is provided below:
 
