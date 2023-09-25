@@ -76,7 +76,16 @@ def latlon_to_ij(latlon_bounds, grid):
 
 
 def create_mask_solid(huc_list, grid, write_dir):
-    """Docstring: TODO"""
+    """Create mask and solid input files for the ParFlow simulation.  
+
+    Args:  
+        huc_list (list[str]): a list of huc IDs  
+        grid (str): "conus1" or "conus2"  
+        write_dir (str): directory path where the mask and solid files will be written  
+
+    Raises:  
+        AssertionError: If write_dir is not a valid directory.  
+    """
     assert os.path.isdir(write_dir), "write_dir must be a directory"
 
     conus_hucs, sel_hucs, indices_j, indices_i = get_conus_hucs_indices(huc_list, grid)
