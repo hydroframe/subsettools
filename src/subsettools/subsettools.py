@@ -34,8 +34,8 @@ def huc_to_ij(huc_list, grid):
     Returns:
         A tuple of the form (imin, jmin, imax, jmax) representing the bounds
         in the conus grid of the area defined by the huc IDs in huc_list.
-
-    Raises:                                                                                                                                                   AssertionError: If all huc IDs are not the same length.
+    Raises:
+        AssertionError: If all huc IDs are not the same length.
     """
     huc_len = len(huc_list[0])
     assert all(
@@ -383,8 +383,7 @@ def edit_runscript_for_subset(
         Path to the new runscript file that will be created.
 
     Raises:
-        AssertionError: If write_dir is not a valid directory or runscript_path is not
-        a valid file path.
+       AssertionError: If write_dir is not a valid directory or runscript_path is not a valid file path.
     """
     assert os.path.isdir(write_dir), "write_dir must be a director"
     assert os.path.isfile(runscript_path), "runscript_path must be a valid file path"
@@ -489,8 +488,7 @@ def change_filename_values(
         Path to the new runscript file that will be created.
 
     Raises:
-        AssertionError: If write_dir is not a valid directory or runscript_path is not
-        a valid file path.
+        AssertionError: If write_dir is not a valid directory or runscript_path is not a valid file path.
     """
     assert os.path.isdir(write_dir), "write_dir must be a directory"
     assert os.path.isfile(
@@ -554,8 +552,7 @@ def dist_run(P, Q, runscript_path, write_dir, dist_clim_forcing=True):
         dist_clim_forcing (bool): if true, distribute forcing files
 
     Raises:
-        AssertionError: If write_dir is not a valid directory or runscript_path is not
-        a valid file path.
+        AssertionError: If write_dir is not a valid directory or runscript_path is not a valid file path.
     """
     assert os.path.isdir(write_dir), "write_dir must be a directory"
     assert os.path.isfile(runscript_path), "runscript_path must be a valid file path"

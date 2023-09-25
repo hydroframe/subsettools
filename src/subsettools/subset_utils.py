@@ -68,7 +68,7 @@ def subset_vegm(path, ij_bounds):
         ij_bounds (Tuple[int]): bounding box for subset
 
     Returns:
-        vegm (ndarray):
+        ndarray:
             Subset vegm data.
     """
     vegm = read_clm(path, type="vegm")  # returns (j,i,k)
@@ -114,7 +114,7 @@ def write_land_cover(land_cover_data, write_dir):
         write_dir (str): path to output directory
 
     Returns:
-        out_file (str):
+        str:
             path to output vegm file.
     """
     heading = (
