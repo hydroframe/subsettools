@@ -20,9 +20,9 @@ $ module load parflow-ml
 
 ## Getting started
 
-Detailed documentation can be found at https://hydroframesubsettools.readthedocs.io/en/latest/.
+Detailed documentation can be found at [Read the Docs](https://hydroframesubsettools.readthedocs.io/en/latest/).
 
-You will need to register on https://hydrogen.princeton.edu/pin before you can use the hydrodata utilities.
+You will need to register on the [hydrogen website](https://hydrogen.princeton.edu/pin) before you can use the hydrodata utilities.
 
 ### Example Notebooks
 
