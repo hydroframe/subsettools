@@ -1,5 +1,5 @@
 """This module contains helper functions for the subsetting module.
-0;256;0c"""
+"""
 
 import os
 import shutil
