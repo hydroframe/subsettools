@@ -22,7 +22,7 @@ $ module load parflow-ml
 
 Detailed documentation can be found at: 
 
-https://hydroframesubsettools.readthedocs.io/en/latest/#
+https://hydroframesubsettools.readthedocs.io/en/latest/
 
 ### Example Notebooks
 
