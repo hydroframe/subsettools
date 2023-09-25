@@ -1,5 +1,5 @@
 """This module contains subsetting functions for Parflow runs.
-0;256;0c"""
+"""
 
 import os
 import shutil
@@ -577,39 +577,3 @@ def dist_run(P, Q, runscript_path, write_dir, dist_clim_forcing=True):
 
     _, file_extension = os.path.splitext(runscript_path)
     run.write(working_directory=write_dir, file_format=f"{file_extension[1:]}")
-
-
-def restart_run(runscript_path):
-    """Docstring: TODO"""
-    pf_dir = os.path.dirname(runscript_path)
-    file_name, file_extension = os.path.splitext(runscript_path)
-    file_extension = file_extension[1:]
-    run = Run.from_definition(runscript_path)
-    runname = run.get_name()
-
-    dump_interval = run.TimingInfo.DumpInterval
-
-    path_to_tcl = pf_dir + "/clm_restart.tcl"
-    lines = open(path_to_tcl, "r").readlines()[0]
-    istep = [int(i) for i in lines.split() if i.isdigit()][0]
-    print(istep)
-
-    press_base = runname + ".out.press.{:05d}.pfb"
-    print(press_base)
-    restart_press = press_base.format(istep - 2)
-    run.Geom.domain.ICPressure.FileName = restart_press
-    print(f"Initial Press filename changed to: {run.Geom.domain.ICPressure.FileName}")
-
-    # update pf timing (needs to be done no matter how you're running pf)
-    run.TimingInfo.StartCount = istep - 1
-    run.TimingInfo.StartTime = (istep - 1) * dump_interval
-
-    print(f"start time is now: {run.TimingInfo.StartTime}")
-    print(f"start count is now: {run.TimingInfo.StartCount}")
-
-    if run.Solver.LSM == "CLM":
-        edit_drvclmin(read_path=f"{pf_dir}/drv_clmin.dat", startcode=1)
-
-        print(f"Overwrote drv_clmin.dat (changed startcode to 1 (restart file))")
-
-    run.write(working_directory=pf_dir, file_format=f"{file_extension}")
