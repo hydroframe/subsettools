@@ -9,7 +9,7 @@ The subsettools package provides functions that simplify the process of setting 
 Subsettools can be installed in a python virtual environment with pip: 
 
 ```bash
-$ pip install git+ssh://git@github.com/hydroframe/subsettools
+$ pip install git+https://github.com/hydroframe/subsettools.git
 ```
 
 Note for verde users: the subsettools package is part of the parflow-ml module, so you can access it via
