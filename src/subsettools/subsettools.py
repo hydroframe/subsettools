@@ -181,12 +181,13 @@ def subset_static(
 def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
     """Subset the initial pressure file.
 
-    This represent the pressure one hour before midnight on the day before the start
+    This represents the pressure one hour before midnight on the day before the start
     date of the simulation.
 
     Args:
         ij_bounds (Tuple[int]): bounding box for subset
         dataset (str): dataset name e.g. "conus1_baseline_mod"
+        date (str): simulation start date, in the form 'yyyy-mm-dd'
         write_dir (str): directory where the subset file will be written
         time_zone (str): time_zone to calculate initial pressure datetime. Defaults to "UTC".
 
@@ -202,20 +203,20 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
     entry = gridded.get_catalog_entry(
         dataset=dataset, file_type="pfb", variable="pressure_head", period="hourly"
     )
-
-    # assumes time is UTC 0 like CONUS runs, so can remain time unaware and grab the right pressure
-    new_date = datetime.strptime(date, "%Y-%m-%d") - timedelta(hours=1)
+    
     if entry is None:
-        print(f"No pressure file found for {new_date} in dataset {dataset}")
+        print(f"No pressure file found for in dataset {dataset}")
         return None
-
+    
+    new_date = datetime.strptime(date, "%Y-%m-%d") - timedelta(hours=1)
+    print(f"Date: {new_date} in timezone {time_zone}")
+    
     if time_zone != "UTC":
-        print(f"Converting the requested datetime from UTC0 to {time_zone}")
-        new_date = new_date.replace(tzinfo=pytz.UTC).astimezone(
-            pytz.timezone(time_zone)
-        )
+        print(f"Converting the requested datetime from {time_zone} to UTC")
+        new_date = new_date.replace(tzinfo=pytz.timezone(time_zone)).astimezone(pytz.UTC).replace(tzinfo=None)
+        print(f"New date: {new_date} in timezone UTC")
+        
     date_string = new_date.strftime("%Y.%m.%d:%H.%M.%S_UTC0")
-
     subset_data = gridded.get_ndarray(
         entry, grid_bounds=ij_bounds, start_time=new_date
     )
@@ -286,7 +287,7 @@ def config_clm(ij_bounds, start, end, dataset, write_dir):
             print("edited drv_clmin")
 
 
-def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir):
+def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir, time_zone="UTC"):
     """Get and subset the forcing files filtered by grid, dataset and start/end dates.
 
     The forcing filenames will be adjusted if the start date does not coincide with the
@@ -299,6 +300,7 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir):
         end (str): end date (exlusive), in the form 'yyyy-mm-dd'
         dataset (str): forcing dataset name e.g. "NLDAS2"
         write_dir (str): directory where the subset file will be written
+        timezone (str): timezone information for start and end dates
 
     Returns:
         A dictionary in which the keys are the forcing variables and the values are lists of
@@ -321,40 +323,40 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir):
         "north_windspeed",
     )
     outputs = {}
-
+    start_date = datetime.strptime(start, "%Y-%m-%d")
+    end_date = datetime.strptime(end, "%Y-%m-%d")
+    if time_zone != "UTC":
+        start_date = start_date.replace(tzinfo=pytz.timezone(time_zone)).astimezone(pytz.UTC).replace(tzinfo=None)
+        end_date = end_date.replace(tzinfo=pytz.timezone(time_zone)).astimezone(pytz.UTC).replace(tzinfo=None)
+    
     for var in var_list:
-        entries = gridded.get_catalog_entry(
+        entry = gridded.get_catalog_entry(
             dataset=dataset, variable=var, grid=grid, file_type="pfb", period="hourly"
         )
 
         day = 1
-        start_date = datetime.strptime(start, "%Y-%m-%d")
-        end_date = datetime.strptime(end, "%Y-%m-%d")
+        date = start_date
         delta = timedelta(days=1)
         outputs[var] = []
         print(f"Reading {var} pfb sequence")
 
-        while start_date < end_date:
+        while date < end_date:
             subset_data = gridded.get_ndarray(
-                entries,
-                start_time=start_date,
-                end_time=start_date + delta,
+                entry,
+                start_time=date,
+                end_time=date + delta,
                 grid_bounds=ij_bounds,
             )
             paths = gridded.get_file_paths(
-                entries, start_time=start_date, end_time=start_date + delta
+                entry, start_time=date, end_time=date + delta
             )
-            write_paths = [
-                os.path.join(
-                    write_dir, adjust_filename_hours(os.path.basename(path), day)
-                )
-                for path in paths
-            ]
-            outputs[var] += write_paths
-            for path in write_paths:
-                write_pfb(path, subset_data[:, :, :], dist=False)
-                day = day + 1
-            start_date = start_date + delta
+            outputs[var] += paths
+            write_path = os.path.join(write_dir,
+                                      adjust_filename_hours(os.path.basename(paths[0]),day)
+            )
+            write_pfb(write_path, subset_data[:, :, :], dist=False)
+            day = day + 1
+            date = start_date + delta
 
         print(f"Finished writing {var} to folder")
 
