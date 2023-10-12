@@ -356,7 +356,7 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir, time_zone="U
             )
             write_pfb(write_path, subset_data[:, :, :], dist=False)
             day = day + 1
-            date = start_date + delta
+            date = date + delta
 
         print(f"Finished writing {var} to folder")
 
