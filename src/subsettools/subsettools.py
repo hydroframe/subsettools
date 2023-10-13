@@ -341,23 +341,45 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir, time_zone="U
         print(f"Reading {var} pfb sequence")
 
         while date < end_date:
-            subset_data = gridded.get_ndarray(
-                entry,
-                start_time=date,
-                end_time=date + delta,
-                grid_bounds=ij_bounds,
-            )
+            start_time = date
+            end_time = date + delta
+            # we need to distinguish between UTC and non-UTC as the datacatalog returns the wrong answer
+            # for requests that start reading from the middle of a file and span multiple files
+            if time_zone == "UTC":
+                subset_data = gridded.get_ndarray(
+                    entry,
+                    start_time=start_time,
+                    end_time=end_time,
+                    grid_bounds=ij_bounds,
+                )
+            else:
+                next_day_midnight = datetime(end_time.year, end_time.month, end_time.day)
+                data1 = gridded.get_ndarray(
+                    entry,
+                    start_time=start_time,
+                    end_time=next_day_midnight,
+                    grid_bounds=ij_bounds,
+                )
+                data2 = gridded.get_ndarray(
+                    entry,
+                    start_time=next_day_midnight,
+                    end_time=end_time,
+                    grid_bounds=ij_bounds,
+                )                
+                subset_data = np.concatenate((data1, data2), axis=0)
+
+            assert subset_data.shape[0] == 24, "attempted to write more than 24 hours of data to a pfb file"
+                
             paths = gridded.get_file_paths(
-                entry, start_time=date, end_time=date + delta
+                entry, start_time=start_time, end_time=end_time
             )
             outputs[var] += paths
             write_path = os.path.join(write_dir,
                                       adjust_filename_hours(os.path.basename(paths[0]),day)
             )
             write_pfb(write_path, subset_data[:, :, :], dist=False)
-            day = day + 1
             date = date + delta
-
+            day = day + 1
         print(f"Finished writing {var} to folder")
 
     return outputs
