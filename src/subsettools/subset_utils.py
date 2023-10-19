@@ -4,7 +4,7 @@
 import os
 import shutil
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 import numpy as np
 from hf_hydrodata import gridded
@@ -200,7 +200,7 @@ def edit_drvclmin(
 
     if start is not None:
         start_date = datetime.strptime(start, "%Y-%m-%d")
-        end_date = datetime.strptime(end, "%Y-%m-%d")
+        end_date = datetime.strptime(end, "%Y-%m-%d") - timedelta(hours=1)
         if time_zone != "UTC":
             start_date = start_date.replace(tzinfo=pytz.timezone(time_zone)).astimezone(pytz.UTC).replace(tzinfo=None)
             end_date = end_date.replace(tzinfo=pytz.timezone(time_zone)).astimezone(pytz.UTC).replace(tzinfo=None)
