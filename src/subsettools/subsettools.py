@@ -227,7 +227,7 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
     return out_file
 
 
-def config_clm(ij_bounds, start, end, dataset, write_dir):
+def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
     """Get and subset the clm drivers associated with the run dataset.
 
     vegm, vep and drv_clmin files will be written in the specified static
@@ -283,6 +283,7 @@ def config_clm(ij_bounds, start, end, dataset, write_dir):
                 file_path=file_path,
                 start=start,
                 end=end,
+                time_zone=time_zone
             )
             print("edited drv_clmin")
 
