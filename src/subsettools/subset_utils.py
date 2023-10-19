@@ -176,6 +176,7 @@ def edit_drvclmin(
         file_path (str): clm driver file path
         start (str): start date (inclusive), in the form 'yyyy-mm-dd'
         end (str): end date (exlusive), in the form 'yyyy-mm-dd'
+        time_zone (str): time_zone used to calculate start/end dates. Defaults to "UTC".
         startcode (int): startcode for the parflow simulation
         vegp_name (str): vegp filename
         vegm_name (str): vegm filename
