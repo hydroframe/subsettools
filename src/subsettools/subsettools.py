@@ -8,7 +8,6 @@ import subprocess
 from datetime import datetime, timedelta
 
 import numpy as np
-import pytz
 from hf_hydrodata import grid, gridded
 from parflow import Run
 from parflow.tools.io import read_pfb, write_pfb
@@ -19,6 +18,7 @@ from .subset_utils import (
     write_land_cover,
     edit_drvclmin,
     adjust_filename_hours,
+    get_UTC_time,
 )
 
 
@@ -208,13 +208,8 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
         print(f"No pressure file found for in dataset {dataset}")
         return None
     
-    new_date = datetime.strptime(date, "%Y-%m-%d") - timedelta(hours=1)
-    print(f"Date: {new_date} in timezone {time_zone}")
-    
-    if time_zone != "UTC":
-        print(f"Converting the requested datetime from {time_zone} to UTC")
-        new_date = new_date.replace(tzinfo=pytz.timezone(time_zone)).astimezone(pytz.UTC).replace(tzinfo=None)
-        print(f"New date: {new_date} in timezone UTC")
+    new_date = get_UTC_time(date, time_zone) - timedelta(hours=1)
+    print(f"UTC Date: {new_date}")
         
     date_string = new_date.strftime("%Y.%m.%d:%H.%M.%S_UTC0")
     subset_data = gridded.get_ndarray(
@@ -324,11 +319,8 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir, time_zone="U
         "north_windspeed",
     )
     outputs = {}
-    start_date = datetime.strptime(start, "%Y-%m-%d")
-    end_date = datetime.strptime(end, "%Y-%m-%d")
-    if time_zone != "UTC":
-        start_date = start_date.replace(tzinfo=pytz.timezone(time_zone)).astimezone(pytz.UTC).replace(tzinfo=None)
-        end_date = end_date.replace(tzinfo=pytz.timezone(time_zone)).astimezone(pytz.UTC).replace(tzinfo=None)
+    start_date = get_UTC_time(start, time_zone)
+    end_date = get_UTC_time(end, time_zone)
     
     for var in var_list:
         entry = gridded.get_catalog_entry(

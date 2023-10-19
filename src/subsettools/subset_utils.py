@@ -199,11 +199,8 @@ def edit_drvclmin(
             lines[i] = f"{'clm_ic':<15}{startcode:<37} 1=restart file, 2=defined\n"
 
     if start is not None:
-        start_date = datetime.strptime(start, "%Y-%m-%d")
-        end_date = datetime.strptime(end, "%Y-%m-%d") - timedelta(hours=1)
-        if time_zone != "UTC":
-            start_date = start_date.replace(tzinfo=pytz.timezone(time_zone)).astimezone(pytz.UTC).replace(tzinfo=None)
-            end_date = end_date.replace(tzinfo=pytz.timezone(time_zone)).astimezone(pytz.UTC).replace(tzinfo=None)
+        start_date = get_UTC_time(start, time_zone)
+        end_date = get_UTC_time(end, time_zone) - timedelta(hours=1)
             
         for i, line in enumerate(lines):
             if "shr" in line:
@@ -259,3 +256,19 @@ def adjust_filename_hours(filename, day):
     s3 = start + "_to_" + end
     assert pattern.fullmatch(s3) is not None, "invalid adjusted forcing filename"
     return ".".join([s1, s2, s3, s4])
+
+
+def get_UTC_time(date_string, time_zone):
+    """Convert the given date and time_zone to UTC time. 
+
+    Args:
+        date_string (str): date in the form 'yyyy-mm-dd'
+        time_zone (str):
+
+    Returns:
+        A timezone-unaware datetime object representing the time in UTC.
+    """    
+    date = datetime.strptime(date_string, "%Y-%m-%d")
+    if time_zone != "UTC":
+        date = date.replace(tzinfo=pytz.timezone(time_zone)).astimezone(pytz.UTC).replace(tzinfo=None)
+    return date
