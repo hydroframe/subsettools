@@ -5,8 +5,7 @@ from importlib import resources
 
 
 def get_ref_yaml_path(grid, mode, input_file_type):
-    """Get the correct template (yaml) runscript path based on grid, mode
-    and input file type.
+    """Get the correct template (yaml) runscript path based on grid, mode and input file type.
 
     Args:
         grid (str): "conus1" or "conus2"

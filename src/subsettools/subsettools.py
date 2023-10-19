@@ -23,17 +23,19 @@ from .subset_utils import (
 
 
 def huc_to_ij(huc_list, grid):
-    """Get the conus ij-bounds of the area defined by the the huc IDs
-       in huc_list in the conus grid.
+    """Get the grid ij-bounds of the area defined by the the huc IDs in huc_list.
 
        All huc IDs in huc_list must be the same length (hucs of the same
        level). Supported grids are "conus1" and "conus2".
+
     Args:
         huc_list (list[str]): a list of huc IDs
         grid (str): "conus1" or "conus2"
+
     Returns:
         A tuple of the form (imin, jmin, imax, jmax) representing the bounds
         in the conus grid of the area defined by the huc IDs in huc_list.
+
     Raises:
         AssertionError: If all huc IDs are not the same length.
     """
@@ -46,10 +48,10 @@ def huc_to_ij(huc_list, grid):
 
 
 def latlon_to_ij(latlon_bounds, grid):
-    """Get the conus ij-bounds of the area defined by the the latitute/longitude
-       bounds (latlon_bounds) in the conus grid.
+    """Get the conus ij-bounds of the area defined by the the latitute/longitude bounds (latlon_bounds) in the conus grid.
 
        Supported grids are "conus1" and "conus2".
+
     Args:
         latlon_bounds (list[float]): list of the form [[lat1, lon1], [lat2, lon2]].
             [lat1, lon1] and [lat2, lon2] are the two points defining the conus
