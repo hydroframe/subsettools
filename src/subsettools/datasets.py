@@ -2,9 +2,10 @@
 """
 
 from importlib import resources
+import os
+import shutil
 
-
-def get_ref_yaml_path(grid, mode, input_file_type):
+def get_ref_yaml_path(grid, mode, input_file_type, write_dir):
     """Get the correct template (yaml) runscript path based on grid, mode and input file type.
 
     Args:
@@ -18,6 +19,7 @@ def get_ref_yaml_path(grid, mode, input_file_type):
     assert grid in ["conus1", "conus2"], "invalid grid provided"
     assert mode in ["transient", "spinup"], "invalid mode"
     assert input_file_type in ["box", "solid"], "invalid input file type"
+    assert os.path.isdir(write_dir), "write_dir must be a directory"
 
     if mode == "transient":
         mode = "_pfclm_" + mode + "_"
@@ -26,5 +28,5 @@ def get_ref_yaml_path(grid, mode, input_file_type):
 
     filename = grid + mode + input_file_type + ".yaml"
     with resources.path("subsettools.ref_yamls", filename) as f:
-        data_file_path = f
-    return data_file_path
+        shutil.copy(f, write_dir)
+    return os.path.join(write_dir, filename)

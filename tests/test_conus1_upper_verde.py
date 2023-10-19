@@ -26,7 +26,7 @@ def setup_run(setup_dir_structure):
     run_ds = "conus1_baseline_mod"
     var_ds = "conus1_domain"
     forcing_ds = "NLDAS2"
-    reference_run = get_ref_yaml_path(grid, "transient", "solid")
+    reference_run = get_ref_yaml_path(grid, "transient", "solid", static_write_dir)
 
     ij_bounds = huc_to_ij(huc_list=huc_list, grid=grid)
     assert ij_bounds == (375, 239, 487, 329)
