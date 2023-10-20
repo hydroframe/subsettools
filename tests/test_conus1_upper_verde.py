@@ -74,7 +74,6 @@ def setup_run(setup_dir_structure):
     target_runscript = edit_runscript_for_subset(
         ij_bounds,
         runscript_path=reference_run,
-        write_dir=pf_out_dir,
         runname=run_name,
         forcing_dir=forcing_dir,
     )
@@ -83,7 +82,6 @@ def setup_run(setup_dir_structure):
 
     target_runscript = change_filename_values(
         runscript_path=target_runscript,
-        write_dir=pf_out_dir,
         init_press=init_press_filename,
     )
 
@@ -104,7 +102,6 @@ def test_conus1_upper_verde(setup_run, remove_output_files, P, Q):
         P,
         Q,
         runscript_path=target_runscript,
-        write_dir=pf_out_dir,
         dist_clim_forcing=True,
     )
 

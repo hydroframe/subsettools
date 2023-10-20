@@ -544,27 +544,34 @@ def change_filename_values(
     return file_path
 
 
-def dist_run(P, Q, runscript_path, write_dir, dist_clim_forcing=True):
+def dist_run(P, Q, runscript_path, working_dir=None, dist_clim_forcing=True):
     """Distribute parflow input files.
 
     This function will distribute static input files to P grids in the
     x direction and Q grids in the y direction. If dist_clim_forcing
     is true, forcing files will be distributed as well according to the
-    same topology.
+    same topology. If working_dir is different that the directory containing
+    the runscript file, the edited runscipt file will be written to working_dir.
 
     Args:
         P (int): number of grids (processes) to create in the x direction
         Q (int): number of grids (processes) to create in the y direction
         runscript_path (str): path to the runscript file (yaml or pfidb)
-        write_dir (str): directory where the new template file will be written
+        working_dir (str): directory containing the files to be distributed.
+            If it is None, it defaults to the directory containing the runscript file.
         dist_clim_forcing (bool): if true, distribute forcing files
 
+    Returns:
+        Path to the edited runscript file that will be created.
+
     Raises:
-        AssertionError: If write_dir is not a valid directory or runscript_path is not a valid file path.
+        AssertionError: If runscript_path is not a valid file path.
     """
-    assert os.path.isdir(write_dir), "write_dir must be a directory"
     assert os.path.isfile(runscript_path), "runscript_path must be a valid file path"
 
+    if working_dir is None:
+        working_dir = os.path.dirname(runscript_path)
+    
     run = Run.from_definition(runscript_path)
 
     run.Process.Topology.P = P
@@ -578,7 +585,7 @@ def dist_run(P, Q, runscript_path, write_dir, dist_clim_forcing=True):
     else:
         print("no forcing dir provided, only distributing static inputs")
 
-    static_input_paths = pathlib.Path(write_dir).glob("*.pfb")
+    static_input_paths = pathlib.Path(working_dir).glob("*.pfb")
     max_nz = 0
     for path in static_input_paths:
         input_array = read_pfb(path)
@@ -590,4 +597,5 @@ def dist_run(P, Q, runscript_path, write_dir, dist_clim_forcing=True):
     run.ComputationalGrid.NZ = max_nz
 
     _, file_extension = os.path.splitext(runscript_path)
-    run.write(working_directory=write_dir, file_format=f"{file_extension[1:]}")
+    file_path, _ = run.write(working_directory=working_dir, file_format=f"{file_extension[1:]}")
+    return file_path

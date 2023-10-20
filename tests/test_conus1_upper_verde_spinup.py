@@ -48,7 +48,6 @@ def test_conus1_upper_verde_spinup(setup_dir_structure, remove_output_files):
         P=P,
         Q=Q,
         runscript_path=target_runscript,
-        write_dir=pf_out_dir,
         dist_clim_forcing=False,
     )
 
