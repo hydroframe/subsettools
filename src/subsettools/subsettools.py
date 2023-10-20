@@ -369,14 +369,14 @@ def edit_runscript_for_subset(
     """Edit the parflow runscript keys.
 
     The geometry, runname and forcing directory keys will be reset in the new runscript. 
-    If the runname is None and write_dir is the directory containing runscript_path, the 
-    original template file will be overwritten.
+    If the runname is None and write_dir is the directory containing the runscript file, the 
+    runscript file will be overwritten.
 
     Args:
         ij_bounds (Tuple[int]): bounding box for subset
-        runscript_path (str): absolute path to the original template file
+        runscript_path (str): absolute path to the parflow runscript file.
         write_dir (str): directory where the new template file will be written.
-            If it is None, defaults to the directory containing runscript_path.
+            If it is None, defaults to the directory containing the runscript.
         runname (str): name for the new parflow run. If it is None, defaults to 
             the runscript's previous runname.
         forcing_dir (str): path to the directory containing the subset forcing files.
@@ -459,7 +459,7 @@ def copy_static_files(read_dir, write_dir):
 
 def change_filename_values(
     runscript_path,
-    write_dir,
+    write_dir=None,
     runname=None,
     slopex=None,
     slopey=None,
@@ -474,11 +474,12 @@ def change_filename_values(
 
     The provided arguments will reset the corresponding parflow keys in the new
     runscript. If the runname is None and write_dir is the directory containing
-    runscript_path, the original template file will be overwritten.
+    the runscript file, the runscript file will be overwritten.
 
     Args:
         runscript_path (str): path to the runscript file (yaml or pfidb)
-        write_dir (str): directory where the new template file will be written
+        write_dir (str): directory where the new template file will be written. If
+            it is None, defaults to the directory containing the runscript file.
         runname (str): name of the new parflow run
         slopex (str): new slopex filename
         slopey (str): new slopey filename
@@ -493,12 +494,14 @@ def change_filename_values(
         Path to the new runscript file that will be created.
 
     Raises:
-        AssertionError: If write_dir is not a valid directory or runscript_path is not a valid file path.
+        AssertionError: If runscript_path is not a valid file path.
     """
-    assert os.path.isdir(write_dir), "write_dir must be a directory"
     assert os.path.isfile(
         runscript_path
     ), "runscript_path must be a valid path to an existing file"
+
+    if write_dir is None:
+        write_dir = os.path.dirname(runscript_path)
 
     _, file_extension = os.path.splitext(runscript_path)
     run = Run.from_definition(runscript_path)
