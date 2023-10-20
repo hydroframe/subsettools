@@ -364,32 +364,35 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir):
 
 
 def edit_runscript_for_subset(
-    ij_bounds, runscript_path, write_dir, runname=None, forcing_dir=None
+    ij_bounds, runscript_path, write_dir=None, runname=None, forcing_dir=None
 ):
-    """Set up a new parflow run from a template file.
+    """Edit the parflow runscript keys.
 
-    This function will return the correct runscript file to do your run based on the grid,
-    if you're doing spin-up and if you're using a solid file for input. The runname and
-    forcing directory keys will be reset for your new run. If the runname is None and
-    write_dir is the directory containing runscript_path, the original template file will
-    be overwritten.
+    The geometry, runname and forcing directory keys will be reset in the new runscript. 
+    If the runname is None and write_dir is the directory containing runscript_path, the 
+    original template file will be overwritten.
 
     Args:
         ij_bounds (Tuple[int]): bounding box for subset
-        runscript_path (str): path to the original template file
-        write_dir (str): directory where the new template file will be written
-        runname (str): name for the new parflow run
-        forcing_dir (str): path to the directory containing the subset forcing files
+        runscript_path (str): absolute path to the original template file
+        write_dir (str): directory where the new template file will be written.
+            If it is None, defaults to the directory containing runscript_path.
+        runname (str): name for the new parflow run. If it is None, defaults to 
+            the runscript's previous runname.
+        forcing_dir (str): path to the directory containing the subset forcing files.
+            If it is None, defaults to the runscript's previous forcing directory path.
 
     Returns:
         Path to the new runscript file that will be created.
 
     Raises:
-       AssertionError: If write_dir is not a valid directory or runscript_path is not a valid file path.
+       AssertionError: If runscript_path is not a valid file path.
     """
-    assert os.path.isdir(write_dir), "write_dir must be a director"
     assert os.path.isfile(runscript_path), "runscript_path must be a valid file path"
 
+    if write_dir is None:
+        write_dir = os.path.dirname(runscript_path)
+    
     # load in the reference pfidb or yaml specified by the user
     run = Run.from_definition(runscript_path)
     _, file_extension = os.path.splitext(runscript_path)
