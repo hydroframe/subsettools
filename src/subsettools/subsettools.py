@@ -364,32 +364,35 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir):
 
 
 def edit_runscript_for_subset(
-    ij_bounds, runscript_path, write_dir, runname=None, forcing_dir=None
+    ij_bounds, runscript_path, write_dir=None, runname=None, forcing_dir=None
 ):
-    """Set up a new parflow run from a template file.
+    """Edit the parflow runscript keys.
 
-    This function will return the correct runscript file to do your run based on the grid,
-    if you're doing spin-up and if you're using a solid file for input. The runname and
-    forcing directory keys will be reset for your new run. If the runname is None and
-    write_dir is the directory containing runscript_path, the original template file will
-    be overwritten.
+    The geometry, runname and forcing directory keys will be reset in the new runscript. 
+    If the runname is None and write_dir is the directory containing the runscript file, the 
+    runscript file will be overwritten.
 
     Args:
         ij_bounds (Tuple[int]): bounding box for subset
-        runscript_path (str): path to the original template file
-        write_dir (str): directory where the new template file will be written
-        runname (str): name for the new parflow run
-        forcing_dir (str): path to the directory containing the subset forcing files
+        runscript_path (str): absolute path to the parflow runscript file.
+        write_dir (str): directory where the new template file will be written.
+            If it is None, defaults to the directory containing the runscript.
+        runname (str): name for the new parflow run. If it is None, defaults to 
+            the runscript's previous runname.
+        forcing_dir (str): path to the directory containing the subset forcing files.
+            If it is None, defaults to the runscript's previous forcing directory path.
 
     Returns:
         Path to the new runscript file that will be created.
 
     Raises:
-       AssertionError: If write_dir is not a valid directory or runscript_path is not a valid file path.
+       AssertionError: If runscript_path is not a valid file path.
     """
-    assert os.path.isdir(write_dir), "write_dir must be a director"
     assert os.path.isfile(runscript_path), "runscript_path must be a valid file path"
 
+    if write_dir is None:
+        write_dir = os.path.dirname(runscript_path)
+    
     # load in the reference pfidb or yaml specified by the user
     run = Run.from_definition(runscript_path)
     _, file_extension = os.path.splitext(runscript_path)
@@ -436,7 +439,7 @@ def edit_runscript_for_subset(
     return file_path
 
 
-def copy_static_files(read_dir, write_dir):
+def copy_files(read_dir, write_dir):
     """Copy all files from read_dir to write_dir.
 
     Args:
@@ -456,7 +459,7 @@ def copy_static_files(read_dir, write_dir):
 
 def change_filename_values(
     runscript_path,
-    write_dir,
+    write_dir=None,
     runname=None,
     slopex=None,
     slopey=None,
@@ -471,11 +474,12 @@ def change_filename_values(
 
     The provided arguments will reset the corresponding parflow keys in the new
     runscript. If the runname is None and write_dir is the directory containing
-    runscript_path, the original template file will be overwritten.
+    the runscript file, the runscript file will be overwritten.
 
     Args:
         runscript_path (str): path to the runscript file (yaml or pfidb)
-        write_dir (str): directory where the new template file will be written
+        write_dir (str): directory where the new template file will be written. If
+            it is None, defaults to the directory containing the runscript file.
         runname (str): name of the new parflow run
         slopex (str): new slopex filename
         slopey (str): new slopey filename
@@ -490,12 +494,14 @@ def change_filename_values(
         Path to the new runscript file that will be created.
 
     Raises:
-        AssertionError: If write_dir is not a valid directory or runscript_path is not a valid file path.
+        AssertionError: If runscript_path is not a valid file path.
     """
-    assert os.path.isdir(write_dir), "write_dir must be a directory"
     assert os.path.isfile(
         runscript_path
     ), "runscript_path must be a valid path to an existing file"
+
+    if write_dir is None:
+        write_dir = os.path.dirname(runscript_path)
 
     _, file_extension = os.path.splitext(runscript_path)
     run = Run.from_definition(runscript_path)
@@ -538,27 +544,34 @@ def change_filename_values(
     return file_path
 
 
-def dist_run(P, Q, runscript_path, write_dir, dist_clim_forcing=True):
+def dist_run(P, Q, runscript_path, working_dir=None, dist_clim_forcing=True):
     """Distribute parflow input files.
 
     This function will distribute static input files to P grids in the
     x direction and Q grids in the y direction. If dist_clim_forcing
     is true, forcing files will be distributed as well according to the
-    same topology.
+    same topology. If working_dir is different that the directory containing
+    the runscript file, the edited runscipt file will be written to working_dir.
 
     Args:
         P (int): number of grids (processes) to create in the x direction
         Q (int): number of grids (processes) to create in the y direction
         runscript_path (str): path to the runscript file (yaml or pfidb)
-        write_dir (str): directory where the new template file will be written
+        working_dir (str): directory containing the files to be distributed.
+            If it is None, it defaults to the directory containing the runscript file.
         dist_clim_forcing (bool): if true, distribute forcing files
 
+    Returns:
+        Path to the edited runscript file that will be created.
+
     Raises:
-        AssertionError: If write_dir is not a valid directory or runscript_path is not a valid file path.
+        AssertionError: If runscript_path is not a valid file path.
     """
-    assert os.path.isdir(write_dir), "write_dir must be a directory"
     assert os.path.isfile(runscript_path), "runscript_path must be a valid file path"
 
+    if working_dir is None:
+        working_dir = os.path.dirname(runscript_path)
+    
     run = Run.from_definition(runscript_path)
 
     run.Process.Topology.P = P
@@ -572,7 +585,7 @@ def dist_run(P, Q, runscript_path, write_dir, dist_clim_forcing=True):
     else:
         print("no forcing dir provided, only distributing static inputs")
 
-    static_input_paths = pathlib.Path(write_dir).glob("*.pfb")
+    static_input_paths = pathlib.Path(working_dir).glob("*.pfb")
     max_nz = 0
     for path in static_input_paths:
         input_array = read_pfb(path)
@@ -584,4 +597,5 @@ def dist_run(P, Q, runscript_path, write_dir, dist_clim_forcing=True):
     run.ComputationalGrid.NZ = max_nz
 
     _, file_extension = os.path.splitext(runscript_path)
-    run.write(working_directory=write_dir, file_format=f"{file_extension[1:]}")
+    file_path, _ = run.write(working_directory=working_dir, file_format=f"{file_extension[1:]}")
+    return file_path

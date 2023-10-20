@@ -26,7 +26,7 @@ def setup_run(setup_dir_structure):
     run_ds = "conus1_baseline_mod"
     var_ds = "conus1_domain"
     forcing_ds = "NLDAS2"
-    reference_run = get_ref_yaml_path(grid, "transient", "solid")
+    reference_run = get_ref_yaml_path(grid, "transient", "solid", static_write_dir)
 
     ij_bounds = huc_to_ij(huc_list=huc_list, grid=grid)
     assert ij_bounds == (375, 239, 487, 329)
@@ -74,16 +74,14 @@ def setup_run(setup_dir_structure):
     target_runscript = edit_runscript_for_subset(
         ij_bounds,
         runscript_path=reference_run,
-        write_dir=pf_out_dir,
         runname=run_name,
         forcing_dir=forcing_dir,
     )
 
-    copy_static_files(read_dir=static_write_dir, write_dir=pf_out_dir)
+    copy_files(read_dir=static_write_dir, write_dir=pf_out_dir)
 
     target_runscript = change_filename_values(
         runscript_path=target_runscript,
-        write_dir=pf_out_dir,
         init_press=init_press_filename,
     )
 
@@ -104,7 +102,6 @@ def test_conus1_upper_verde(setup_run, remove_output_files, P, Q):
         P,
         Q,
         runscript_path=target_runscript,
-        write_dir=pf_out_dir,
         dist_clim_forcing=True,
     )
 

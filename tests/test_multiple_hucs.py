@@ -32,7 +32,7 @@ def test_multiple_hucs(setup_dir_structure, remove_output_files):
     forcing_ds = "NLDAS2"
     P = 1
     Q = 1
-    reference_run = get_ref_yaml_path(grid, "transient", "solid")
+    reference_run = get_ref_yaml_path(grid, "transient", "solid", static_write_dir)
 
     ij_bounds = huc_to_ij(huc_list=huc_list, grid=grid)
     create_mask_solid(huc_list=huc_list, grid=grid, write_dir=static_write_dir)
@@ -62,7 +62,7 @@ def test_multiple_hucs(setup_dir_structure, remove_output_files):
         runname=run_name,
         forcing_dir=forcing_dir,
     )
-    copy_static_files(read_dir=static_write_dir, write_dir=pf_out_dir)
+    copy_files(read_dir=static_write_dir, write_dir=pf_out_dir)
     target_runscript = change_filename_values(
         runscript_path=target_runscript,
         write_dir=pf_out_dir,
@@ -72,7 +72,7 @@ def test_multiple_hucs(setup_dir_structure, remove_output_files):
         P=P,
         Q=Q,
         runscript_path=target_runscript,
-        write_dir=pf_out_dir,
+        working_dir=pf_out_dir,
         dist_clim_forcing=True,
     )
 
