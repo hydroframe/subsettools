@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 import pytest
-from parflow.tools.fs import get_absolute_path, mkdir, rm
+from parflow.tools.fs import mkdir, rm
 
 
 @pytest.fixture(scope="module")
@@ -20,7 +20,7 @@ def setup_dir_structure():
         mkdir(forcing_dir)
         pf_out_dir = os.path.join(output_dir, run_name)
         mkdir(pf_out_dir)
-        correct_output_dir = get_absolute_path(os.path.join("tests", "correct_output", run_name))
+        correct_output_dir = os.path.abspath(os.path.join("tests", "correct_output", run_name))
         target_runscript = os.path.join(pf_out_dir, run_name + ".yaml")
         return (
             static_write_dir,

@@ -3,7 +3,7 @@ import pytest
 from subsettools import subsettools
 from subsettools.datasets import get_ref_yaml_path
 from parflow import Run
-from parflow.tools.fs import mkdir, get_absolute_path, rm
+from parflow.tools.fs import mkdir, rm
 
 @pytest.mark.parametrize(
     "huc_list, grid, result", [(["15060202"], "conus1", (375, 239, 487, 329))]
