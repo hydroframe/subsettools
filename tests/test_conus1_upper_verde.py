@@ -78,7 +78,7 @@ def setup_run(setup_dir_structure):
         forcing_dir=forcing_dir,
     )
 
-    copy_static_files(read_dir=static_write_dir, write_dir=pf_out_dir)
+    copy_files(read_dir=static_write_dir, write_dir=pf_out_dir)
 
     target_runscript = change_filename_values(
         runscript_path=target_runscript,

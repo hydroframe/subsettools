@@ -439,7 +439,7 @@ def edit_runscript_for_subset(
     return file_path
 
 
-def copy_static_files(read_dir, write_dir):
+def copy_files(read_dir, write_dir):
     """Copy all files from read_dir to write_dir.
 
     Args:
