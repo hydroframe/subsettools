@@ -6,15 +6,16 @@ import os
 import shutil
 
 def get_ref_yaml_path(grid, mode, input_file_type, write_dir):
-    """Get the correct template (yaml) runscript path based on grid, mode and input file type.
+    """Get a ParFlow template runscript based on grid, mode and input file type.
 
     Args:
         grid (str): "conus1" or "conus2"
         mode (str): "spinup" or "transient"
         input_file_type (str): "box" or "solid"
+        write_dir (str): directory where the template runscript file will be copied
 
     Returns:
-        pathlib.Path: Path to the template runscript.
+        str: Path to the template runscript.
     """
     assert grid in ["conus1", "conus2"], "invalid grid provided"
     assert mode in ["transient", "spinup"], "invalid mode"
