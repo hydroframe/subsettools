@@ -387,10 +387,11 @@ def edit_runscript_for_subset(
         Path to the new runscript file that will be created.
 
     Raises:
-       AssertionError: If runscript_path is not a valid file path.
+       AssertionError: If runscript_path is not a valid file path or if forcing_dir is not a valid directory path.
     """
     assert os.path.isfile(runscript_path), "runscript_path must be a valid file path"
-
+    assert os.path.isdir(forcing_dir), "forcing_dir must be a valid directory path"
+    
     if write_dir is None:
         write_dir = os.path.dirname(runscript_path)
     
