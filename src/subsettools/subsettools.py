@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 
 import numpy as np
 import pytz
+import hf_hydrodata
 from hf_hydrodata import grid, gridded
 from parflow import Run
 from parflow.tools.io import read_pfb, write_pfb
@@ -63,8 +64,8 @@ def latlon_to_ij(latlon_bounds, grid):
         in the conus grid of the area defined by latlon_bounds.
     """
     grid = grid.lower()
-    point0 = grid.from_latlon(grid, latlon_bounds[0][1], latlon_bounds[0][0])
-    point1 = grid.from_latlon(grid, latlon_bounds[1][1], latlon_bounds[1][0])
+    point0 = hf_hydrodata.grid.from_latlon(grid, latlon_bounds[0][1], latlon_bounds[0][0])
+    point1 = hf_hydrodata.grid.from_latlon(grid, latlon_bounds[1][1], latlon_bounds[1][0])
     imin, imax = [
         min(point0[0], point1[0]),
         max(point0[0], point1[0]),
