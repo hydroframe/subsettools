@@ -73,6 +73,7 @@ def test_change_filename_values_1(tmp_path):
     test_dir.mkdir()
     old_runscript = get_ref_yaml_path("conus1", "transient", "box", test_dir)
     test_file = test_dir / "slope_x.pfb"
+    test_file.write_bytes(b'Binary file contents')    
     new_runscript = subsettools.change_filename_values(old_runscript,
                                                        runname="my_new_run",
                                                        slopex=str(test_file)
@@ -93,6 +94,7 @@ def test_change_filename_values_2(tmp_path):
     test_dir.mkdir()
     old_runscript = get_ref_yaml_path("conus1", "transient", "box", test_dir)
     test_file = test_dir / "slope_x.pfb"
+    test_file.write_bytes(b'Binary file contents')
     new_runscript = subsettools.change_filename_values(old_runscript,
                                                        slopex=str(test_file)
     )
