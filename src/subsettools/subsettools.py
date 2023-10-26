@@ -10,7 +10,6 @@ from datetime import datetime, timedelta
 import numpy as np
 import pytz
 import hf_hydrodata
-from hf_hydrodata import grid, gridded
 from parflow import Run
 from parflow.tools.io import read_pfb, write_pfb
 from .subset_utils import (
@@ -170,11 +169,11 @@ def subset_static(
     """
     assert os.path.isdir(write_dir), "write_dir must be a directory"
     for var in var_list:
-        entry = gridded.get_catalog_entry(
+        entry = hf_hydrodata.gridded.get_catalog_entry(
             dataset=dataset, file_type="pfb", period="static", variable=var
         )
         if entry is not None:
-            subset_data = gridded.get_ndarray(entry, grid_bounds=ij_bounds)
+            subset_data = hf_hydrodata.gridded.get_ndarray(entry, grid_bounds=ij_bounds)
             write_pfb(os.path.join(write_dir, f"{var}.pfb"), subset_data, dist=False)
             print(f"Wrote {var}.pfb in specified directory.")
         else:
@@ -202,7 +201,7 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
     """
     assert os.path.isdir(write_dir), "write_dir must be a directory"
 
-    entry = gridded.get_catalog_entry(
+    entry = hf_hydrodata.gridded.get_catalog_entry(
         dataset=dataset, file_type="pfb", variable="pressure_head", period="hourly"
     )
 
@@ -219,7 +218,7 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
         )
     date_string = new_date.strftime("%Y.%m.%d:%H.%M.%S_UTC0")
 
-    subset_data = gridded.get_ndarray(
+    subset_data = hf_hydrodata.gridded.get_ndarray(
         entry, grid_bounds=ij_bounds, start_time=new_date
     )
 
@@ -253,7 +252,7 @@ def config_clm(ij_bounds, start, end, dataset, write_dir):
     for file_type in file_type_list:
         print(f"processing {file_type}")
         if file_type == "vegp":
-            gridded.get_raw_file(
+            hf_hydrodata.gridded.get_raw_file(
                 os.path.join(write_dir, "drv_vegp.dat"),
                 dataset=dataset,
                 file_type=file_type,
@@ -262,19 +261,19 @@ def config_clm(ij_bounds, start, end, dataset, write_dir):
             ) 
             print("copied vegp")
         elif file_type == "vegm":
-            entry = gridded.get_catalog_entries(
+            entry = hf_hydrodata.gridded.get_catalog_entries(
                 dataset=dataset,
                 file_type=file_type,
                 variable="clm_run",
                 period="static"
             )[0]
-            subset_data = gridded.get_ndarray(entry, grid_bounds=ij_bounds)
+            subset_data = hf_hydrodata.gridded.get_ndarray(entry, grid_bounds=ij_bounds)
             land_cover_data = reshape_ndarray_to_vegm_format(subset_data)
             write_land_cover(land_cover_data, write_dir)
             print("subset vegm")
         elif file_type == "drv_clm":
             file_path = os.path.join(write_dir, "drv_clmin.dat")
-            gridded.get_raw_file(file_path,
+            hf_hydrodata.gridded.get_raw_file(file_path,
                                      dataset=dataset,
                                      file_type=file_type,
                                      variable="clm_run",
@@ -326,7 +325,7 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir):
     outputs = {}
 
     for var in var_list:
-        entries = gridded.get_catalog_entry(
+        entries = hf_hydrodata.gridded.get_catalog_entry(
             dataset=dataset, variable=var, grid=grid, file_type="pfb", period="hourly"
         )
 
@@ -338,13 +337,13 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir):
         print(f"Reading {var} pfb sequence")
 
         while start_date < end_date:
-            subset_data = gridded.get_ndarray(
+            subset_data = hf_hydrodata.gridded.get_ndarray(
                 entries,
                 start_time=start_date,
                 end_time=start_date + delta,
                 grid_bounds=ij_bounds,
             )
-            paths = gridded.get_file_paths(
+            paths = hf_hydrodata.gridded.get_file_paths(
                 entries, start_time=start_date, end_time=start_date + delta
             )
             write_paths = [
