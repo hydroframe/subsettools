@@ -64,8 +64,8 @@ def latlon_to_ij(latlon_bounds, grid):
         in the conus grid of the area defined by latlon_bounds.
     """
     grid = grid.lower()
-    point0 = hf_hydrodata.grid.from_latlon(grid, latlon_bounds[0][1], latlon_bounds[0][0])
-    point1 = hf_hydrodata.grid.from_latlon(grid, latlon_bounds[1][1], latlon_bounds[1][0])
+    point0 = hf_hydrodata.grid.to_ij(grid, latlon_bounds[0][0], latlon_bounds[0][1])
+    point1 = hf_hydrodata.grid.to_ij(grid, latlon_bounds[1][0], latlon_bounds[1][1])
     imin, imax = [
         min(point0[0], point1[0]),
         max(point0[0], point1[0]),
@@ -390,7 +390,8 @@ def edit_runscript_for_subset(
        AssertionError: If runscript_path is not a valid file path or if forcing_dir is not a valid directory path.
     """
     assert os.path.isfile(runscript_path), "runscript_path must be a valid file path"
-    assert os.path.isdir(forcing_dir), "forcing_dir must be a valid directory path"
+    if forcing_dir is not None:
+        assert os.path.isdir(forcing_dir), "forcing_dir must be a valid directory path"
     
     if write_dir is None:
         write_dir = os.path.dirname(runscript_path)
