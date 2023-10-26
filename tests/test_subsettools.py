@@ -67,6 +67,20 @@ def test_edit_runscript_for_subset_2(tmp_path):
     assert run.Geom.domain.Upper.Y == 15000
 
 
+def test_edit_runscript_for_subset_3(tmp_path):
+    """Check that exception is raised if forcing_dir is invalid."""
+    test_dir = tmp_path / "test"
+    test_dir.mkdir()
+    runscript = get_ref_yaml_path("conus1", "transient", "box", test_dir)
+    forcing_dir = os.path.join(tmp_path, "forcing")
+    with pytest.raises(Exception) as e_info:
+        runscript = subsettools.edit_runscript_for_subset((10, 10, 25, 25),
+                                                          runscript,
+                                                          runname="my_new_run",
+                                                          forcing_dir=forcing_dir
+        )
+    
+
 def test_change_filename_values_1(tmp_path):
     """Check the edited fiedls of the runscript file."""
     test_dir = tmp_path / "test"
