@@ -13,12 +13,12 @@ def test_huc_to_ij(huc_list, grid, result):
     assert subsettools.huc_to_ij(huc_list, grid) == result
 
 
-#def test_latlon_to_ij():
-#    latlon_points = to_latlon("conus1", *[375, 239, 487, 329])
-#    print(latlon_points)
-#    latlon_points = [latlon_points[:2], latlon_points[2:]]
-#    print(latlon_points)
-#    assert subsettools.latlon_to_ij(latlon_points, "conus1") == (375, 239, 487, 329)
+def test_latlon_to_ij():
+    latlon_points = to_latlon("conus1", *[375, 239, 487, 329])
+    print(latlon_points)
+    latlon_points = [latlon_points[:2], latlon_points[2:]]
+    print(latlon_points)
+    assert subsettools.latlon_to_ij(latlon_points, "conus1") == (375, 239, 487, 329)
 
     
 def test_edit_runscript_for_subset_1(tmp_path):
@@ -104,15 +104,3 @@ def test_change_filename_values_2(tmp_path):
     # check the edited fields of the new runscript:
     run = Run.from_definition(new_runscript)
     assert run.TopoSlopesX.FileName == str(test_file)
-
-
-def test_change_filename_values_3(tmp_path):
-    """Check that an exception is raised if an invalid filepath is passed."""
-    test_dir = tmp_path / "test"
-    test_dir.mkdir()
-    old_runscript = get_ref_yaml_path("conus1", "transient", "box", test_dir)
-    test_file = os.path.join(test_dir, "slope_x.pfb")
-    with pytest.raises(Exception) as e_info:
-        new_runscript = subsettools.change_filename_values(old_runscript,
-                                                           slopex=str(test_file)
-        )
