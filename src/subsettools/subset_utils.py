@@ -4,8 +4,8 @@
 import os
 import shutil
 import re
-from datetime import datetime
-
+from datetime import datetime, timedelta
+import pytz
 import numpy as np
 from hf_hydrodata import gridded
 from parflow.tools.io import read_clm
@@ -163,6 +163,7 @@ def edit_drvclmin(
     file_path,
     start=None,
     end=None,
+    time_zone="UTC",
     startcode=2,
     vegp_name="drv_vegp.dat",
     vegm_name="drv_vegm.dat",
@@ -173,6 +174,7 @@ def edit_drvclmin(
         file_path (str): clm driver file path
         start (str): start date (inclusive), in the form 'yyyy-mm-dd'
         end (str): end date (exlusive), in the form 'yyyy-mm-dd'
+        time_zone (str): time_zone used to calculate start/end dates. Defaults to "UTC".
         startcode (int): startcode for the parflow simulation
         vegp_name (str): vegp filename
         vegm_name (str): vegm filename
@@ -196,16 +198,20 @@ def edit_drvclmin(
             lines[i] = f"{'clm_ic':<15}{startcode:<37} 1=restart file, 2=defined\n"
 
     if start is not None:
-        start_date = datetime.strptime(start, "%Y-%m-%d")
-        end_date = datetime.strptime(end, "%Y-%m-%d")
-
+        start_date = get_UTC_time(start, time_zone)
+        end_date = get_UTC_time(end, time_zone) - timedelta(hours=1)
+            
         for i, line in enumerate(lines):
+            if "shr" in line:
+                lines[i] = f"{'shr':<15}{start_date.hour:<37} Starting Hour\n"
             if "sda" in line:
                 lines[i] = f"{'sda':<15}{start_date.day:<37} Starting Day\n"
             elif "smo" in line:
                 lines[i] = f"{'smo':<15}{start_date.month:<37} Starting Month\n"
             elif "syr" in line:
                 lines[i] = f"{'syr':<15}{start_date.year:<37} Starting Year\n"
+            elif "ehr" in line:
+                lines[i] = f"{'ehr':<15}{end_date.hour:<37} Ending Hour\n"
             elif "eda" in line:
                 lines[i] = f"{'eda':<15}{end_date.day:<37} Ending Day\n"
             elif "emo" in line:
@@ -248,3 +254,19 @@ def adjust_filename_hours(filename, day):
     s3 = start + "_to_" + end
     assert pattern.fullmatch(s3) is not None, "invalid adjusted forcing filename"
     return ".".join([s1, s2, s3, s4])
+
+
+def get_UTC_time(date_string, time_zone):
+    """Convert the given date and time_zone to UTC time. 
+
+    Args:
+        date_string (str): date in the form 'yyyy-mm-dd'
+        time_zone (str):
+
+    Returns:
+        A timezone-unaware datetime object representing the time in UTC.
+    """    
+    date = datetime.strptime(date_string, "%Y-%m-%d")
+    if time_zone != "UTC":
+        date = date.replace(tzinfo=pytz.timezone(time_zone)).astimezone(pytz.UTC).replace(tzinfo=None)
+    return date
