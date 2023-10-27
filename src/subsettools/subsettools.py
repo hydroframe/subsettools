@@ -8,7 +8,7 @@ import subprocess
 from datetime import datetime, timedelta
 
 import numpy as np
-from hf_hydrodata import grid, gridded
+import hf_hydrodata
 from parflow import Run
 from parflow.tools.io import read_pfb, write_pfb
 from .subset_utils import (
@@ -23,17 +23,19 @@ from .subset_utils import (
 
 
 def huc_to_ij(huc_list, grid):
-    """Get the conus ij-bounds of the area defined by the the huc IDs
-       in huc_list in the conus grid.
+    """Get the grid ij-bounds of the area defined by the the huc IDs in huc_list.
 
        All huc IDs in huc_list must be the same length (hucs of the same
        level). Supported grids are "conus1" and "conus2".
+
     Args:
         huc_list (list[str]): a list of huc IDs
         grid (str): "conus1" or "conus2"
+
     Returns:
         A tuple of the form (imin, jmin, imax, jmax) representing the bounds
         in the conus grid of the area defined by the huc IDs in huc_list.
+
     Raises:
         AssertionError: If all huc IDs are not the same length.
     """
@@ -46,10 +48,10 @@ def huc_to_ij(huc_list, grid):
 
 
 def latlon_to_ij(latlon_bounds, grid):
-    """Get the conus ij-bounds of the area defined by the the latitute/longitude
-       bounds (latlon_bounds) in the conus grid.
+    """Get the conus ij-bounds of the area defined by the the latitute/longitude bounds (latlon_bounds) in the conus grid.
 
        Supported grids are "conus1" and "conus2".
+
     Args:
         latlon_bounds (list[float]): list of the form [[lat1, lon1], [lat2, lon2]].
             [lat1, lon1] and [lat2, lon2] are the two points defining the conus
@@ -61,8 +63,8 @@ def latlon_to_ij(latlon_bounds, grid):
         in the conus grid of the area defined by latlon_bounds.
     """
     grid = grid.lower()
-    point0 = grid.from_latlon(grid, latlon_bounds[0][1], latlon_bounds[0][0])
-    point1 = grid.from_latlon(grid, latlon_bounds[1][1], latlon_bounds[1][0])
+    point0 = hf_hydrodata.grid.to_ij(grid, latlon_bounds[0][0], latlon_bounds[0][1])
+    point1 = hf_hydrodata.grid.to_ij(grid, latlon_bounds[1][0], latlon_bounds[1][1])
     imin, imax = [
         min(point0[0], point1[0]),
         max(point0[0], point1[0]),
@@ -167,11 +169,11 @@ def subset_static(
     """
     assert os.path.isdir(write_dir), "write_dir must be a directory"
     for var in var_list:
-        entry = gridded.get_catalog_entry(
+        entry = hf_hydrodata.gridded.get_catalog_entry(
             dataset=dataset, file_type="pfb", period="static", variable=var
         )
         if entry is not None:
-            subset_data = gridded.get_ndarray(entry, grid_bounds=ij_bounds)
+            subset_data = hf_hydrodata.gridded.get_ndarray(entry, grid_bounds=ij_bounds)
             write_pfb(os.path.join(write_dir, f"{var}.pfb"), subset_data, dist=False)
             print(f"Wrote {var}.pfb in specified directory.")
         else:
@@ -200,7 +202,7 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
     """
     assert os.path.isdir(write_dir), "write_dir must be a directory"
 
-    entry = gridded.get_catalog_entry(
+    entry = hf_hydrodata.gridded.get_catalog_entry(
         dataset=dataset, file_type="pfb", variable="pressure_head", period="hourly"
     )
     
@@ -212,7 +214,8 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
     print(f"UTC Date: {new_date}")
         
     date_string = new_date.strftime("%Y.%m.%d:%H.%M.%S_UTC0")
-    subset_data = gridded.get_ndarray(
+
+    subset_data = hf_hydrodata.gridded.get_ndarray(
         entry, grid_bounds=ij_bounds, start_time=new_date
     )
 
@@ -246,7 +249,7 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
     for file_type in file_type_list:
         print(f"processing {file_type}")
         if file_type == "vegp":
-            gridded.get_raw_file(
+            hf_hydrodata.gridded.get_raw_file(
                 os.path.join(write_dir, "drv_vegp.dat"),
                 dataset=dataset,
                 file_type=file_type,
@@ -255,19 +258,19 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
             ) 
             print("copied vegp")
         elif file_type == "vegm":
-            entry = gridded.get_catalog_entries(
+            entry = hf_hydrodata.gridded.get_catalog_entries(
                 dataset=dataset,
                 file_type=file_type,
                 variable="clm_run",
                 period="static"
             )[0]
-            subset_data = gridded.get_ndarray(entry, grid_bounds=ij_bounds)
+            subset_data = hf_hydrodata.gridded.get_ndarray(entry, grid_bounds=ij_bounds)
             land_cover_data = reshape_ndarray_to_vegm_format(subset_data)
             write_land_cover(land_cover_data, write_dir)
             print("subset vegm")
         elif file_type == "drv_clm":
             file_path = os.path.join(write_dir, "drv_clmin.dat")
-            gridded.get_raw_file(file_path,
+            hf_hydrodata.gridded.get_raw_file(file_path,
                                      dataset=dataset,
                                      file_type=file_type,
                                      variable="clm_run",
@@ -323,7 +326,7 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir, time_zone="U
     end_date = get_UTC_time(end, time_zone)
     
     for var in var_list:
-        entry = gridded.get_catalog_entry(
+        entry = hf_hydrodata.gridded.get_catalog_entry(
             dataset=dataset, variable=var, grid=grid, file_type="pfb", period="hourly"
         )
 
@@ -339,7 +342,7 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir, time_zone="U
             # we need to distinguish between UTC and non-UTC as the datacatalog returns the wrong answer
             # for requests that start reading from the middle of a file and span multiple files
             if time_zone == "UTC":
-                subset_data = gridded.get_ndarray(
+                subset_data = hf_hydrodata.gridded.get_ndarray(
                     entry,
                     start_time=start_time,
                     end_time=end_time,
@@ -347,13 +350,13 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir, time_zone="U
                 )
             else:
                 next_day_midnight = datetime(end_time.year, end_time.month, end_time.day)
-                data1 = gridded.get_ndarray(
+                data1 = hf_hydrodata.gridded.get_ndarray(
                     entry,
                     start_time=start_time,
                     end_time=next_day_midnight,
                     grid_bounds=ij_bounds,
                 )
-                data2 = gridded.get_ndarray(
+                data2 = hf_hydrodata.gridded.get_ndarray(
                     entry,
                     start_time=next_day_midnight,
                     end_time=end_time,
@@ -363,7 +366,7 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir, time_zone="U
 
             assert subset_data.shape[0] == 24, "attempted to write more than 24 hours of data to a pfb file"
                 
-            paths = gridded.get_file_paths(
+            paths = hf_hydrodata.gridded.get_file_paths(
                 entry, start_time=start_time, end_time=end_time
             )
             outputs[var] += paths
@@ -379,32 +382,37 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir, time_zone="U
 
 
 def edit_runscript_for_subset(
-    ij_bounds, runscript_path, write_dir, runname=None, forcing_dir=None
+    ij_bounds, runscript_path, write_dir=None, runname=None, forcing_dir=None
 ):
-    """Set up a new parflow run from a template file.
+    """Edit the parflow runscript keys.
 
-    This function will return the correct runscript file to do your run based on the grid,
-    if you're doing spin-up and if you're using a solid file for input. The runname and
-    forcing directory keys will be reset for your new run. If the runname is None and
-    write_dir is the directory containing runscript_path, the original template file will
-    be overwritten.
+    The geometry, runname and forcing directory keys will be reset in the new runscript. 
+    If the runname is None and write_dir is the directory containing the runscript file, the 
+    runscript file will be overwritten.
 
     Args:
         ij_bounds (Tuple[int]): bounding box for subset
-        runscript_path (str): path to the original template file
-        write_dir (str): directory where the new template file will be written
-        runname (str): name for the new parflow run
-        forcing_dir (str): path to the directory containing the subset forcing files
+        runscript_path (str): absolute path to the parflow runscript file.
+        write_dir (str): directory where the new template file will be written.
+            If it is None, defaults to the directory containing the runscript.
+        runname (str): name for the new parflow run. If it is None, defaults to 
+            the runscript's previous runname.
+        forcing_dir (str): path to the directory containing the subset forcing files.
+            If it is None, defaults to the runscript's previous forcing directory path.
 
     Returns:
         Path to the new runscript file that will be created.
 
     Raises:
-       AssertionError: If write_dir is not a valid directory or runscript_path is not a valid file path.
+       AssertionError: If runscript_path is not a valid file path or if forcing_dir is not a valid directory path.
     """
-    assert os.path.isdir(write_dir), "write_dir must be a director"
     assert os.path.isfile(runscript_path), "runscript_path must be a valid file path"
-
+    if forcing_dir is not None:
+        assert os.path.isdir(forcing_dir), "forcing_dir must be a valid directory path"
+    
+    if write_dir is None:
+        write_dir = os.path.dirname(runscript_path)
+    
     # load in the reference pfidb or yaml specified by the user
     run = Run.from_definition(runscript_path)
     _, file_extension = os.path.splitext(runscript_path)
@@ -451,7 +459,7 @@ def edit_runscript_for_subset(
     return file_path
 
 
-def copy_static_files(read_dir, write_dir):
+def copy_files(read_dir, write_dir):
     """Copy all files from read_dir to write_dir.
 
     Args:
@@ -471,7 +479,7 @@ def copy_static_files(read_dir, write_dir):
 
 def change_filename_values(
     runscript_path,
-    write_dir,
+    write_dir=None,
     runname=None,
     slopex=None,
     slopey=None,
@@ -486,11 +494,12 @@ def change_filename_values(
 
     The provided arguments will reset the corresponding parflow keys in the new
     runscript. If the runname is None and write_dir is the directory containing
-    runscript_path, the original template file will be overwritten.
+    the runscript file, the runscript file will be overwritten.
 
     Args:
         runscript_path (str): path to the runscript file (yaml or pfidb)
-        write_dir (str): directory where the new template file will be written
+        write_dir (str): directory where the new template file will be written. If
+            it is None, defaults to the directory containing the runscript file.
         runname (str): name of the new parflow run
         slopex (str): new slopex filename
         slopey (str): new slopey filename
@@ -505,12 +514,14 @@ def change_filename_values(
         Path to the new runscript file that will be created.
 
     Raises:
-        AssertionError: If write_dir is not a valid directory or runscript_path is not a valid file path.
+        AssertionError: If runscript_path is not a valid file path.
     """
-    assert os.path.isdir(write_dir), "write_dir must be a directory"
     assert os.path.isfile(
         runscript_path
     ), "runscript_path must be a valid path to an existing file"
+
+    if write_dir is None:
+        write_dir = os.path.dirname(runscript_path)
 
     _, file_extension = os.path.splitext(runscript_path)
     run = Run.from_definition(runscript_path)
@@ -553,27 +564,34 @@ def change_filename_values(
     return file_path
 
 
-def dist_run(P, Q, runscript_path, write_dir, dist_clim_forcing=True):
+def dist_run(P, Q, runscript_path, working_dir=None, dist_clim_forcing=True):
     """Distribute parflow input files.
 
     This function will distribute static input files to P grids in the
     x direction and Q grids in the y direction. If dist_clim_forcing
     is true, forcing files will be distributed as well according to the
-    same topology.
+    same topology. If working_dir is different that the directory containing
+    the runscript file, the edited runscipt file will be written to working_dir.
 
     Args:
         P (int): number of grids (processes) to create in the x direction
         Q (int): number of grids (processes) to create in the y direction
         runscript_path (str): path to the runscript file (yaml or pfidb)
-        write_dir (str): directory where the new template file will be written
+        working_dir (str): directory containing the files to be distributed.
+            If it is None, it defaults to the directory containing the runscript file.
         dist_clim_forcing (bool): if true, distribute forcing files
 
+    Returns:
+        Path to the edited runscript file that will be created.
+
     Raises:
-        AssertionError: If write_dir is not a valid directory or runscript_path is not a valid file path.
+        AssertionError: If runscript_path is not a valid file path.
     """
-    assert os.path.isdir(write_dir), "write_dir must be a directory"
     assert os.path.isfile(runscript_path), "runscript_path must be a valid file path"
 
+    if working_dir is None:
+        working_dir = os.path.dirname(runscript_path)
+    
     run = Run.from_definition(runscript_path)
 
     run.Process.Topology.P = P
@@ -587,7 +605,7 @@ def dist_run(P, Q, runscript_path, write_dir, dist_clim_forcing=True):
     else:
         print("no forcing dir provided, only distributing static inputs")
 
-    static_input_paths = pathlib.Path(write_dir).glob("*.pfb")
+    static_input_paths = pathlib.Path(working_dir).glob("*.pfb")
     max_nz = 0
     for path in static_input_paths:
         input_array = read_pfb(path)
@@ -599,4 +617,5 @@ def dist_run(P, Q, runscript_path, write_dir, dist_clim_forcing=True):
     run.ComputationalGrid.NZ = max_nz
 
     _, file_extension = os.path.splitext(runscript_path)
-    run.write(working_directory=write_dir, file_format=f"{file_extension[1:]}")
+    file_path, _ = run.write(working_directory=working_dir, file_format=f"{file_extension[1:]}")
+    return file_path

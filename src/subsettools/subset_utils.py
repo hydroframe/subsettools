@@ -12,8 +12,7 @@ from parflow.tools.io import read_clm
 
 
 def get_conus_hucs_indices(huc_list, grid):
-    """Get the huc datafile as an ndarray and three mask arrays
-    representing the selected hucs.
+    """Get the huc datafile as an ndarray and three mask arrays representing the selected hucs.
 
     Args:
         huc_list (list[str]): a list of huc IDs
@@ -37,8 +36,7 @@ def get_conus_hucs_indices(huc_list, grid):
 
 
 def indices_to_ij(conus_hucs, indices_j, indices_i):
-    """Get the conus ij-bounds for the conus_hucs boundary defined by
-    indices_j and indices_i.
+    """Get the conus ij-bounds for the conus_hucs boundary defined by indices_j and indices_i.
 
     Args:
         conus_hucs (numpy.ndarray): conus huc data
@@ -227,8 +225,7 @@ def edit_drvclmin(
 
 
 def adjust_filename_hours(filename, day):
-    """Adjust the forcing filename hours so that they match what a parflow simulation expects
-    on each day of the simulation.
+    """Adjust the forcing filename hours so that they match what a parflow simulation expects on each day of the simulation.
 
     The first day of the simulation the hours will be "*.000001_to_000024.*", the second day
     the hours will be "*.000025_to_000048.*" and so on. This is in case the first day of simulation

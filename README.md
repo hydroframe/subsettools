@@ -12,10 +12,12 @@ Subsettools can be installed in a python virtual environment with pip:
 $ pip install git+https://github.com/hydroframe/subsettools.git
 ```
 
-Note for verde users: the subsettools package is part of the parflow-ml module, so you can access it via
+In addition, we provide a reproducible computational environment using [MyBinder](https://mybinder.org/v2/gh/hydroframe/subsettools-binder/HEAD), where you can execute the example notebooks without the need to install the subsettools package or ParFlow. Please note that the MyBinder project has limited resources, so this is not an appropriate place to run large simulations - but it's a great environment to get started with the subsettools API.
+
+If you prefer using Docker, you can get an image with JupyterLab, subsettools and ParFlow installed from DockerHub with:
 
 ```bash
-$ module load parflow-ml
+$ docker pull george135/parflow:latest
 ```
 
 ## Getting started
@@ -26,19 +28,7 @@ You will need to register on the [hydrogen website](https://hydrogen.princeton.e
 
 ### Example Notebooks
 
-In addition, a collection of example jupyter notebooks using the subsettools API are provided in this package.
-
-To get the entire folder of example notebooks, start a terminal session, navigate to your chosen download location and do:
-
-```bash
-$ svn checkout https://github.com/hydroframe/subsettools/trunk/docs/example_notebooks
-```
-
-If you want to download a single notebook, copy the notebook title from the github URL and do:
-
-```bash
-$ curl https://raw.githubusercontent.com/hydroframe/subsettools/main/docs/example_notebooks/<notebook_title>.ipynb -o <notebook_title>.ipynb
-```
+In this section you can find a collection of example jupyter notebooks using the subsettools API. 
 
 The current list of example notebooks is given below. A more detailed explanation of each notebook and how it should be used can be found in the Example notebooks tab at the Read the Docs link above. 
 
