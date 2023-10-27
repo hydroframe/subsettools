@@ -1,6 +1,5 @@
 import pytest
 from subsettools import subsettools
-from parflow.tools.fs import mkdir, rm
 from parflow.tools.io import read_pfb
 import numpy as np
 import os
