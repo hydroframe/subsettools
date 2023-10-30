@@ -41,7 +41,7 @@ to stay the same).
 
 In this section you can find a collection of example workflows using the subsettools API. 
 
-The current list of example notebooks is given below. A more detailed explanation of each notebook and how it should be used can be found in the Example notebooks tab at the Read the Docs link above. 
+The current list of example notebooks is given below. A more detailed explanation of each notebook and how it should be used can be found in the Example notebooks tab. 
 
 *Note: Only CONUS1 examples are currently being supported, but CONUS2 examples will be added in the future.* 
 
