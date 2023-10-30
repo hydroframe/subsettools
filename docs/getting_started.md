@@ -1,6 +1,6 @@
-## Getting started
+# Getting started
 
-### Installation
+## Installation
 
 Subsettools can be installed in a python virtual environment with pip: 
 
@@ -16,7 +16,7 @@ If you prefer using Docker, you can get an image with JupyterLab, subsettools an
 $ docker pull george135/parflow:latest
 ```
 
-### Creating a HydroGEN API Account
+## Creating a HydroGEN API Account
 
 Users must create a HydroGEN API account and register their PIN before using the 
 ``hf_hydrodata`` package.
@@ -39,7 +39,7 @@ new 4-digit PIN is different from your previous 4-digit PIN (the PIN is allowed
 to stay the same).
 
 
-### Example Notebooks
+## Example Notebooks
 
 In this section you can find a collection of example workflows using the subsettools API. 
 
@@ -50,7 +50,7 @@ The current list of example notebooks is given below. A more detailed explanatio
 1. conus1_subsetting.ipynb - Subsets a CONUS1 domain and runs a transient simulation with ParFlow-CLM.
 2. conus1_subsetting_spinup.ipynb - Subsets a CONUS1 domain and performs a model initialization (spin up) with ParFlow.
 
-### Template Model Runscripts
+## Template Model Runscripts
 
 In addition to example notebooks, several reference .yaml files are provided with the subsettools package. 
 You may use these as a template for a ParFlow run that most closely meets the specifications of the model 
