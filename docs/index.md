@@ -23,6 +23,7 @@ Interested in contributing? Check out the contributing guidelines. Please note t
 :maxdepth: 2
 :hidden:
 
+getting_started.md
 example_notebooks/example_notebooks.md
 template_runscripts.md
 autoapi/index
