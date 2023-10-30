@@ -21,7 +21,7 @@ Please refer to and cite the following DOIs if you want more details or to relea
 #### Doing a transient simulation with ParFlow-CLM
 
 This notebook walks through an example of subsetting a HUC8 from the CONUS1 domain. This example will subset everything needed to do a transient run with ParFlow-CLM. 
-This is includes all hydrogeologic datasets and climate forcing data from NLDAS2 (see additional DOI: [10.1002/2016GL069964](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2016GL069964)). All of the data is written to a folder for the specified days to run. This example uses the template runscript conus1_pfclm_transient_solid.yaml stored in this repository and edits it to correspond with the domain subset. It also sets-up and performs the designed simulation. The result will be model output pressure and saturation pfbs according to the days specified.
+This is includes all hydrogeologic datasets and climate forcing data from NLDAS2 (see additional DOI: [10.1002/2016GL069964](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2016GL069964)). All of the data is written to a folder for the specified days to run. This example uses the template runscript conus1_pfclm_transient_solid.yaml and edits it to correspond with the domain subset. It also sets-up and performs the designed simulation. The result will be model output pressure and saturation pfbs according to the days specified.
 
 ```{toctree}
 :maxdepth: 1
