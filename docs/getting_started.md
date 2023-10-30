@@ -1,3 +1,5 @@
+## Getting started
+
 ### Installation
 
 Subsettools can be installed in a python virtual environment with pip: 
