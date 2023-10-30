@@ -20,7 +20,7 @@ Interested in contributing? Check out the contributing guidelines. Please note t
 
 
 ```{toctree}
-:maxdepth: 1
+:maxdepth: 2
 :hidden:
 
 getting_started.md
