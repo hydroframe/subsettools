@@ -25,7 +25,7 @@ $ docker pull george135/parflow:latest
 ## Creating a HydroGEN API Account
 
 Users must create a HydroGEN API account and register their PIN before using the 
-``hf_hydrodata`` package.
+``subsettools`` package.
 
 First, please visit our [HydroGEN PIN Page](https://hydrogen.princeton.edu/pin) to 
 sign up for an account and create a 4-digit PIN.
