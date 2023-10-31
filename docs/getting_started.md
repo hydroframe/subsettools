@@ -2,7 +2,13 @@
 
 ## Installation
 
-Subsettools can be installed in a python virtual environment with pip: 
+Subsettools can be installed in a python virtual environment with pip. You can get the latest stable release from PyPI with:
+
+```bash
+$ pip install subsettools
+```
+
+Or you can get the latest development version directly from GitHub with:
 
 ```bash
 $ pip install git+https://github.com/hydroframe/subsettools.git
