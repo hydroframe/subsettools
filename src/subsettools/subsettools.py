@@ -334,7 +334,7 @@ def subset_forcing(
     start_date = get_UTC_time(start, time_zone)
     end_date = get_UTC_time(end, time_zone)
     
-    threads = [Thread(target=_subset_forcing_variable, args=(variable, ij_bounds, grid, start_date, end_date, dataset, write_dir, time_zone))
+    threads = [Thread(target=_subset_forcing_variable, args=(variable, ij_bounds, grid, start_date, end_date, dataset, write_dir, time_zone, outputs))
         for variable in forcing_vars]
     
     for thread in threads:
@@ -346,7 +346,7 @@ def subset_forcing(
     return outputs
 
 
-def _subset_forcing_variable(variable, ij_bounds, grid, start_date, end_date, dataset, write_dir, time_zone="UTC"):
+def _subset_forcing_variable(variable, ij_bounds, grid, start_date, end_date, dataset, write_dir, time_zone="UTC", outputs={}):
     entry = hf_hydrodata.gridded.get_catalog_entry(
         dataset=dataset, variable=variable, grid=grid, file_type="pfb", period="hourly"
     )
@@ -354,7 +354,7 @@ def _subset_forcing_variable(variable, ij_bounds, grid, start_date, end_date, da
     day = 1
     date = start_date
     delta = timedelta(days=1)
-    output = []
+    outputs[variable] = []
     print(f"Reading {variable} pfb sequence")
     
     while date < end_date:
@@ -390,7 +390,7 @@ def _subset_forcing_variable(variable, ij_bounds, grid, start_date, end_date, da
         paths = hf_hydrodata.gridded.get_file_paths(
             entry, start_time=start_time, end_time=end_time
         )
-        output += paths
+        outputs[variable] += paths
         write_path = os.path.join(write_dir,
                                   adjust_filename_hours(os.path.basename(paths[0]),day)
         )
@@ -398,7 +398,7 @@ def _subset_forcing_variable(variable, ij_bounds, grid, start_date, end_date, da
         date = date + delta
         day = day + 1
     print(f"Finished writing {variable} to folder")
-    return output
+    
     
 def edit_runscript_for_subset(
     ij_bounds, runscript_path, write_dir=None, runname=None, forcing_dir=None
