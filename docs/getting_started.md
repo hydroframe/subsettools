@@ -2,7 +2,13 @@
 
 ## Installation
 
-Subsettools can be installed in a python virtual environment with pip: 
+Subsettools can be installed in a python virtual environment with pip. You can get the latest stable release from PyPI with:
+
+```bash
+$ pip install subsettools
+```
+
+Or you can get the latest development version directly from GitHub with:
 
 ```bash
 $ pip install git+https://github.com/hydroframe/subsettools.git
@@ -19,7 +25,7 @@ $ docker pull george135/parflow:latest
 ## Creating a HydroGEN API Account
 
 Users must create a HydroGEN API account and register their PIN before using the 
-``hf_hydrodata`` package.
+``subsettools`` package.
 
 First, please visit our [HydroGEN PIN Page](https://hydrogen.princeton.edu/pin) to 
 sign up for an account and create a 4-digit PIN.
