@@ -20,6 +20,7 @@ If you prefer using Docker, you can get an image with JupyterLab, subsettools an
 
 ```bash
 $ docker pull george135/parflow:latest
+$ docker run -dp 8888:8888 --platform=linux/amd64 george135/parflow:latest
 ```
 
 ## Creating a HydroGEN API Account
