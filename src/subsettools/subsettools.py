@@ -347,6 +347,8 @@ def subset_forcing(
 
 
 def _subset_forcing_variable(variable, ij_bounds, grid, start_date, end_date, dataset, write_dir, time_zone="UTC", outputs={}):
+    """Helper function for subset_forcing that subsets data for one variable for the specified dates and dataset."""
+    
     entry = hf_hydrodata.gridded.get_catalog_entry(
         dataset=dataset, variable=variable, grid=grid, file_type="pfb", period="hourly"
     )
