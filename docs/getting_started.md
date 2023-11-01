@@ -22,6 +22,7 @@ If you prefer using Docker, you can get an image with JupyterLab, subsettools an
 $ docker pull george135/parflow:latest
 $ docker run -dp 8888:8888 --platform=linux/amd64 george135/parflow:latest
 ```
+You should now be able use the container if you open a browser at http://localhost:8888/lab.
 
 ## Creating a HydroGEN API Account
 
