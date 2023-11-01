@@ -6,7 +6,7 @@ import shutil
 import pathlib
 import subprocess
 from datetime import datetime, timedelta
-
+from threading import Thread
 import numpy as np
 import hf_hydrodata
 from parflow import Run
@@ -286,7 +286,25 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
             print("edited drv_clmin")
 
 
-def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir, time_zone="UTC"):
+def subset_forcing(
+        ij_bounds,
+        grid,
+        start,
+        end,
+        dataset,
+        write_dir,
+        time_zone="UTC",
+        forcing_vars = (
+            "precipitation",
+            "downward_shortwave",
+            "downward_longwave",
+            "specific_humidity",
+            "air_temp",
+            "atmospheric_pressure",
+            "east_windspeed",
+            "north_windspeed",
+        )
+):
     """Get and subset the forcing files filtered by grid, dataset and start/end dates.
 
     The forcing filenames will be adjusted if the start date does not coincide with the
@@ -300,6 +318,7 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir, time_zone="U
         dataset (str): forcing dataset name e.g. "NLDAS2"
         write_dir (str): directory where the subset file will be written
         timezone (str): timezone information for start and end dates
+        forcing_vars (Tuple[str]): tuple of forcing variables to subset
 
     Returns:
         A dictionary in which the keys are the forcing variables and the values are lists of
@@ -311,76 +330,78 @@ def subset_forcing(ij_bounds, grid, start, end, dataset, write_dir, time_zone="U
     """
     assert os.path.isdir(write_dir), "write_dir must be a directory"
 
-    var_list = (
-        "precipitation",
-        "downward_shortwave",
-        "downward_longwave",
-        "specific_humidity",
-        "air_temp",
-        "atmospheric_pressure",
-        "east_windspeed",
-        "north_windspeed",
-    )
     outputs = {}
     start_date = get_UTC_time(start, time_zone)
     end_date = get_UTC_time(end, time_zone)
     
-    for var in var_list:
-        entry = hf_hydrodata.gridded.get_catalog_entry(
-            dataset=dataset, variable=var, grid=grid, file_type="pfb", period="hourly"
-        )
+    threads = [Thread(target=_subset_forcing_variable, args=(variable, ij_bounds, grid, start_date, end_date, dataset, write_dir, time_zone, outputs))
+        for variable in forcing_vars]
+    
+    for thread in threads:
+        thread.start()
 
-        day = 1
-        date = start_date
-        delta = timedelta(days=1)
-        outputs[var] = []
-        print(f"Reading {var} pfb sequence")
-
-        while date < end_date:
-            start_time = date
-            end_time = date + delta
-            # we need to distinguish between UTC and non-UTC as the datacatalog returns the wrong answer
-            # for requests that start reading from the middle of a file and span multiple files
-            if time_zone == "UTC":
-                subset_data = hf_hydrodata.gridded.get_ndarray(
-                    entry,
-                    start_time=start_time,
-                    end_time=end_time,
-                    grid_bounds=ij_bounds,
-                )
-            else:
-                next_day_midnight = datetime(end_time.year, end_time.month, end_time.day)
-                data1 = hf_hydrodata.gridded.get_ndarray(
-                    entry,
-                    start_time=start_time,
-                    end_time=next_day_midnight,
-                    grid_bounds=ij_bounds,
-                )
-                data2 = hf_hydrodata.gridded.get_ndarray(
-                    entry,
-                    start_time=next_day_midnight,
-                    end_time=end_time,
-                    grid_bounds=ij_bounds,
-                )                
-                subset_data = np.concatenate((data1, data2), axis=0)
-
-            assert subset_data.shape[0] == 24, "attempted to write more than 24 hours of data to a pfb file"
-                
-            paths = hf_hydrodata.gridded.get_file_paths(
-                entry, start_time=start_time, end_time=end_time
-            )
-            outputs[var] += paths
-            write_path = os.path.join(write_dir,
-                                      adjust_filename_hours(os.path.basename(paths[0]),day)
-            )
-            write_pfb(write_path, subset_data[:, :, :], dist=False)
-            date = date + delta
-            day = day + 1
-        print(f"Finished writing {var} to folder")
+    for thread in threads:
+        thread.join()
 
     return outputs
 
 
+def _subset_forcing_variable(variable, ij_bounds, grid, start_date, end_date, dataset, write_dir, time_zone="UTC", outputs={}):
+    """Helper function for subset_forcing that subsets data for one variable for the specified dates and dataset."""
+    
+    entry = hf_hydrodata.gridded.get_catalog_entry(
+        dataset=dataset, variable=variable, grid=grid, file_type="pfb", period="hourly"
+    )
+    
+    day = 1
+    date = start_date
+    delta = timedelta(days=1)
+    outputs[variable] = []
+    print(f"Reading {variable} pfb sequence")
+    
+    while date < end_date:
+        start_time = date
+        end_time = date + delta
+        # we need to distinguish between UTC and non-UTC as the datacatalog returns the wrong answer
+        # for requests that start reading from the middle of a file and span multiple files
+        if time_zone == "UTC":
+            subset_data = hf_hydrodata.gridded.get_ndarray(
+                entry,
+                start_time=start_time,
+                end_time=end_time,
+                grid_bounds=ij_bounds,
+            )
+        else:
+            next_day_midnight = datetime(end_time.year, end_time.month, end_time.day)
+            data1 = hf_hydrodata.gridded.get_ndarray(
+                entry,
+                start_time=start_time,
+                end_time=next_day_midnight,
+                grid_bounds=ij_bounds,
+            )
+            data2 = hf_hydrodata.gridded.get_ndarray(
+                entry,
+                start_time=next_day_midnight,
+                end_time=end_time,
+                grid_bounds=ij_bounds,
+            )                
+            subset_data = np.concatenate((data1, data2), axis=0)
+            
+        assert subset_data.shape[0] == 24, "attempted to write more than 24 hours of data to a pfb file"
+                
+        paths = hf_hydrodata.gridded.get_file_paths(
+            entry, start_time=start_time, end_time=end_time
+        )
+        outputs[variable] += paths
+        write_path = os.path.join(write_dir,
+                                  adjust_filename_hours(os.path.basename(paths[0]),day)
+        )
+        write_pfb(write_path, subset_data[:, :, :], dist=False)
+        date = date + delta
+        day = day + 1
+    print(f"Finished writing {variable} to folder")
+    
+    
 def edit_runscript_for_subset(
     ij_bounds, runscript_path, write_dir=None, runname=None, forcing_dir=None
 ):
