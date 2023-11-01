@@ -23,13 +23,14 @@ from .subset_utils import (
 
 
 def huc_to_ij(huc_list, grid):
-    """Get the grid ij-bounds of the area defined by the the huc IDs in huc_list.
+    """Get the grid ij-bounds of the area defined by the the HUC IDs in huc_list.
 
-       All huc IDs in huc_list must be the same length (hucs of the same
-       level). Supported grids are "conus1" and "conus2".
+       All HUC IDs in huc_list must be the same length (HUCs of the same
+       level). All HUCs should be adjacent. All Supported grids are "conus1" 
+       and "conus2".
 
     Args:
-        huc_list (list[str]): a list of huc IDs
+        huc_list (list[str]): a list of HUC IDs
         grid (str): "conus1" or "conus2"
 
     Returns:
@@ -37,7 +38,7 @@ def huc_to_ij(huc_list, grid):
         in the conus grid of the area defined by the huc IDs in huc_list.
 
     Raises:
-        AssertionError: If all huc IDs are not the same length.
+        AssertionError: If all HUC IDs are not the same length.
     """
     huc_len = len(huc_list[0])
     assert all(
@@ -81,7 +82,7 @@ def create_mask_solid(huc_list, grid, write_dir):
     """Create mask and solid input files for the ParFlow simulation.  
 
     Args:  
-        huc_list (list[str]): a list of huc IDs  
+        huc_list (list[str]): a list of HUC IDs  
         grid (str): "conus1" or "conus2"  
         write_dir (str): directory path where the mask and solid files will be written  
 
