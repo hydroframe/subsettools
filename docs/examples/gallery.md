@@ -1,5 +1,5 @@
 # Short examples
 
 ```{nbgallery}
-short_examples.ipynb
+subset_forcing_files.ipynb
 ```
