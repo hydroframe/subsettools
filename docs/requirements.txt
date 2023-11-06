@@ -2,3 +2,5 @@ myst-nb @ git+https://github.com/executablebooks/MyST-NB.git
 sphinx-autoapi
 sphinx-rtd-theme
 matplotlib==3.7.2
+nbsphinx
+sphinx_gallery
