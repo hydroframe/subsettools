@@ -25,6 +25,7 @@ Interested in contributing? Check out the contributing guidelines. Please note t
 
 getting_started.md
 example_notebooks/example_notebooks.md
+examples/gallery.md
 template_runscripts.md
 autoapi/index
 changelog.md
