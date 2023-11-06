@@ -37,3 +37,9 @@ This notebook will subset a HUC8 from the CONUS1 domain as in the conus1_subsett
 conus1_subsetting_spinup.ipynb
 ```
 
+#### Short examples
+
+```{toctree}
+:maxdepth: 1
+short_examples.ipynb
+```
