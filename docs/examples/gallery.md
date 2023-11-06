@@ -1,5 +1,5 @@
 # Short examples
 
 ```{nbgallery}
-notebooks/short_examples.ipynb
+short_examples.ipynb
 ```
