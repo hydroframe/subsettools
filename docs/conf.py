@@ -35,4 +35,4 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 #
 html_theme = "sphinx_rtd_theme"
 
-nb_execution_timeout = -1
+nb_execution_mode = 'off'
