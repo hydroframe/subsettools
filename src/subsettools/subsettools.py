@@ -239,6 +239,7 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
         end (str): end date (exlusive), in the form 'yyyy-mm-dd'
         dataset (str): dataset name e.g. "conus1_baseline_mod"
         write_dir (str): directory where the subset files will be written
+        timezone (str): timezone information for start and end dates 
 
     Returns:
         The filename of the subset file, which includes datetime information,
