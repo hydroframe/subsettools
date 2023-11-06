@@ -20,6 +20,8 @@ extensions = [
     "autoapi.extension",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
+    "nbsphinx",
+    "sphinx_gallery.load_style",
 ]
 autoapi_dirs = ["../src"]
 
