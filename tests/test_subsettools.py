@@ -5,7 +5,7 @@ from parflow.tools.io import read_pfb
 import numpy as np
 import os
 from subsettools.datasets import get_ref_yaml_path
-from hf_hydrodata.grid import to_latlon
+import hf_hydrodata
 from parflow import Run
 
 
@@ -38,10 +38,9 @@ def test_forcing_timezones(tmp_path):
 
     
 def test_latlon_to_ij():
-    latlon_points = to_latlon("conus1", *[375, 239, 487, 329])
-    print(latlon_points)
+    """Check that hf_hydrodata.grid.to_latlon and subsettools.latlon_to_ij are inverse to each other."""
+    latlon_points = hf_hydrodata.grid.to_latlon("conus1", *[375, 239, 487, 329])
     latlon_points = [latlon_points[:2], latlon_points[2:]]
-    print(latlon_points)
     assert subsettools.latlon_to_ij(latlon_points, "conus1") == (375, 239, 487, 329)
 
     
