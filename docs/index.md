@@ -14,7 +14,7 @@ Checkout our Getting Started guide for installation instructions and information
 
 CONUS1 is a box domain over the contiguous United States. It does not cover areas near the coasts. This model has 4 soil layers (top 2 meters) and 1 geologic layer that is 100 m thick. The cell size is 1 kilometer. 
 
-Please refer to [Dataset Information](https://hydroframe-ml.github.io/readthedocs/tables/dataset.html) for more details about the CONUS datasets contained on Hydrodata.
+Please refer to our [gridded datasets](https://maurice.princeton.edu/hydroframe/docs/gridded_data.html#dataset-type-parflow) for more details about the CONUS datasets contained on Hydrodata.
 
 Please refer to and cite the following DOIs if you want more details or to release work with the datasets used in the example notebooks:
 1. [10.5194/gmd-14-7223-2021](https://gmd.copernicus.org/articles/14/7223/2021/)
