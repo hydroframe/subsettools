@@ -54,7 +54,7 @@ def latlon_to_ij(latlon_bounds, grid):
        Supported grids are "conus1" and "conus2".
 
     Args:
-        latlon_bounds (list[float]): list of the form [[lat1, lon1], [lat2, lon2]].
+        latlon_bounds (List[List[float]]): list of the form [[lat1, lon1], [lat2, lon2]].
             [lat1, lon1] and [lat2, lon2] are the two points defining the conus
             bounding box.
         grid (str): "conus1" or "conus2"
@@ -64,6 +64,9 @@ def latlon_to_ij(latlon_bounds, grid):
         in the conus grid of the area defined by latlon_bounds.
     """
     grid = grid.lower()
+    assert grid in ["conus1", "conus2"], "invalid grid name"
+    assert len(latlon_bounds) == 2, "please provide 2 latlon points"
+    assert len(latlon_bounds[0]) == 2 and len(latlon_bounds[1]) == 2, "invalid latlon point"
     point0 = hf_hydrodata.grid.to_ij(grid, latlon_bounds[0][0], latlon_bounds[0][1])
     point1 = hf_hydrodata.grid.to_ij(grid, latlon_bounds[1][0], latlon_bounds[1][1])
     imin, imax = [
