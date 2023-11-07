@@ -1,17 +1,20 @@
-# subsettools overview
+# subsettools
 
 ## Introduction
 
 The subsettools package provides functions that simplify the process of setting up a modeling domain in the contiguous United States (CONUS) and running the hydrologic model ParFlow. The package allows the user to subset all required hydrogeologic and climate forcing datasets from the database Hydrodata. It also contains various functions to edit and run your subset model. These capabilities allow for more rapid and replicable application of ParFlow for hydrologic simulations.
 
-Checkout our Getting Started guide for installation instructions and information on the example workflows and templates provided with the package!
+Checkout our Getting Started guide for installation instructions and information on the tutorials, example workflows and templates provided with the package!
 
-## CONUS1 domain summary
+## Hydrodata overview
 
-The example notebooks in the following section subset datasets from the baseline CONUS1 model (conus1_baseline_mod and conus1_domain) stored on the database Hydrodata. 
-Please refer to [Dataset Information](https://hydroframe-ml.github.io/readthedocs/tables/dataset.html) for details about CONUS datasets contained on Hydrodata.
+>>> TODO: put information on Hydrodata and link to the docs: [Hydrodata documentation](https://maurice.princeton.edu/hydroframe/docs/index.html#). 
+
+## CONUS1 domain overview
 
 CONUS1 is a box domain over the contiguous United States. It does not cover areas near the coasts. This model has 4 soil layers (top 2 meters) and 1 geologic layer that is 100 m thick. The cell size is 1 kilometer. 
+
+Please refer to [Dataset Information](https://hydroframe-ml.github.io/readthedocs/tables/dataset.html) for more details about the CONUS datasets contained on Hydrodata.
 
 Please refer to and cite the following DOIs if you want more details or to release work with the datasets used in the example notebooks:
 1. [10.5194/gmd-14-7223-2021](https://gmd.copernicus.org/articles/14/7223/2021/)
@@ -19,13 +22,9 @@ Please refer to and cite the following DOIs if you want more details or to relea
 3. [10.1002/2014WR016774](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2014WR016774)
 4. [10.1002/2015GL066916](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2015GL066916)
 
-## CONUS2 domain summary
+## CONUS2 domain overview
 
 >>> TODO: put information on CONUS2 with references
-
-## Hydrodata information
-
->>> TODO: put information on Hydrodata and link to the docs: [Hydrodata documentation](https://maurice.princeton.edu/hydroframe/docs/index.html#). 
 
 ## Contributing
 
