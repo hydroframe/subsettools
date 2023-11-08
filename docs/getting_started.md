@@ -74,7 +74,9 @@ To get a template runscript provided with the package, you should use the `get_r
 
 ```python
 from subsettools.datasets import get_ref_yaml_path
-reference_run = get_ref_yaml_path(grid="conus1", mode="transient", input_file_type="solid", write_dir="/path/to/your/chosen/directory")
+reference_run = get_ref_yaml_path(grid="conus1", mode="transient", input_file_type="solid",
+                                  write_dir="/path/to/your/chosen/directory"
+                                 )
 ```
 
 *If you want to use your own runscript:*
