@@ -7,7 +7,7 @@
 # -- Project information -----------------------------------------------------
 
 project = "subsettools"
-copyright = "2023, George Artavanis, Amanda Triplett"
+copyright = "2023, The Hydroframe Project"
 author = "George Artavanis, Amanda Triplett"
 
 # -- General configuration ---------------------------------------------------
