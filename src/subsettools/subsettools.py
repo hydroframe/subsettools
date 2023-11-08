@@ -26,8 +26,9 @@ def huc_to_ij(huc_list, grid):
     """Get the grid ij-bounds of the area defined by the the HUC IDs in huc_list.
 
        All HUC IDs in huc_list must be the same length (HUCs of the same
-       level). All HUCs should be adjacent. All Supported grids are "conus1" 
-       and "conus2".
+       level). All HUCs should be adjacent. Supported grids are "conus1" 
+       and "conus2". If a HUC is only partially covered by the provided grid,
+       the grid bounds for the covered area will be returned.
 
     Args:
         huc_list (list[str]): a list of HUC IDs
@@ -39,12 +40,15 @@ def huc_to_ij(huc_list, grid):
 
     Raises:
         AssertionError: If all HUC IDs are not the same length.
+        ValueError: If the area defined by the provided HUCs is not part of the given grid.
     """
     huc_len = len(huc_list[0])
     assert all(
         [len(huc) == huc_len for huc in huc_list]
     ), "All huc IDs should have the same length!"
     conus_hucs, _, indices_j, indices_i = get_conus_hucs_indices(huc_list, grid)
+    if indices_i.size == 0 or indices_j.size == 0:
+        raise ValueError(f"The area defined by the provided HUCs is not part of the {grid} grid.")  
     return indices_to_ij(conus_hucs, indices_j, indices_i)
 
 
