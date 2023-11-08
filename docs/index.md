@@ -4,7 +4,7 @@
 
 The subsettools package provides functions that simplify the process of setting up a modeling domain in the contiguous United States (CONUS) and running the hydrologic model ParFlow. The package allows the user to subset all required hydrogeologic and climate forcing datasets from the database Hydrodata. It also contains various functions to edit and run your subset model. These capabilities allow for more rapid and replicable application of ParFlow for hydrologic simulations.
 
-Checkout our Getting Started guide for installation instructions and information on the tutorials, example workflows and templates provided with the package!
+Checkout our Getting Started guide for installation instructions, information on creating a Hydrogen account, setting up a ParFlow run from templates and more! The Tutorials section contains short examples, while the Example notebooks sections contains longer workflows that setup a ParFlow run at the end. The API reference contains the full list of available functions.
 
 ## Hydrodata overview
 
