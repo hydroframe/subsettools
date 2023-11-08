@@ -326,9 +326,8 @@ def subset_forcing(
         forcing_vars (Tuple[str]): tuple of forcing variables to subset
 
     Returns:
-        A dictionary in which the keys are the forcing variables and the values are lists of
-        subset file paths. The return value is useful for logging purposes and can be discarded
-        otherwise.
+        A dictionary in which the keys are the forcing variable names and the values are lists of
+        file paths where the subset data were written.
 
     Raises:
         AssertionError: If write_dir is not a valid directory.
@@ -406,10 +405,11 @@ def _subset_forcing_variable(variable, ij_bounds, grid, start_date, end_date, da
         paths = hf_hydrodata.gridded.get_file_paths(
             entry, start_time=start_time, end_time=end_time
         )
-        outputs[variable] += paths
+
         write_path = os.path.join(write_dir,
                                   adjust_filename_hours(os.path.basename(paths[0]),day)
         )
+        outputs[variable] += write_path
         write_pfb(write_path, subset_data[:, :, :], dist=False)
         date = date + delta
         day = day + 1
