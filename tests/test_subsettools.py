@@ -18,6 +18,20 @@ def test_huc_to_ij(huc_list, grid, result):
     assert subsettools.huc_to_ij(huc_list, grid) == result
 
     
+@pytest.mark.parametrize(
+    "huc_list, grid", [(["01010001"], "conus1"),
+                       (["01010001"], "conus2"),
+                       (["03130003"], "conus1"),
+                       (["1710"], "conus1"),
+                       (["01010002", "01010001"], "conus1"),
+    ]
+)
+def test_huc_to_ij_errors(huc_list, grid):
+    """Check that a ValueError is raised if a HUC is not part of the grid."""
+    with pytest.raises(ValueError) as e:
+        subsettools.huc_to_ij(huc_list, grid)
+    
+
 def test_forcing_timezones(tmp_path):
     "Check if we get the correct forcing (temperature) in EST time."
     utc = tmp_path / 'UTC_out'
