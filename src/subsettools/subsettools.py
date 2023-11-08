@@ -409,7 +409,7 @@ def _subset_forcing_variable(variable, ij_bounds, grid, start_date, end_date, da
         write_path = os.path.join(write_dir,
                                   adjust_filename_hours(os.path.basename(paths[0]),day)
         )
-        outputs[variable] += write_path
+        outputs[variable].append(write_path)
         write_pfb(write_path, subset_data[:, :, :], dist=False)
         date = date + delta
         day = day + 1
