@@ -314,20 +314,21 @@ def subset_forcing(
             "north_windspeed",
         )
 ):
-    """Get and subset the forcing files filtered by grid, dataset and start/end dates.
+    """Subset forcing files for a given box or point of interest.
 
-    The forcing filenames will be adjusted if the start date does not coincide with the
-    start of the water year (Oct 1st), so that they match what a parflow simulation expects.
+    Subset forcing data will be written out as pfb files formatted for a ParFlow run with 24 hours per forcing file. Per ParFlow-CLM convention separate files will be written for each variable following the standard clm variable naming convention. 
+
+    Forcing file outputs will be numbered starting with 0000 and data will start at midnight local time for the timezone that has been provided. If no timezone is provided it will default to midnight UTC.
 
     Args:
-        ij_bounds (Tuple[int]): bounding box for subset
-        grid (str): "conus1" or "conus2"
+        ij_bounds (Tuple[int]): bounding box for subset. This should be given as i,j index values where 0,0 is the lower left hand corner of a domain. ij_bounds are given to whatever grid is being used for the subset. Use the latlon_to_ij function to determine ij indices from lat long values.  
+        grid (str): The spatial grid that the ij indices are calculated relative to and that the subset data will be returned on. Possible values: "conus1" or "conus2"
         start (str): start date (inclusive), in the form 'yyyy-mm-dd'
         end (str): end date (exlusive), in the form 'yyyy-mm-dd'
-        dataset (str): forcing dataset name e.g. "NLDAS2"
+        dataset (str): forcing dataset name from the HydroData catalog e.g. "NLDAS2". 
         write_dir (str): directory where the subset file will be written
-        timezone (str): timezone information for start and end dates
-        forcing_vars (Tuple[str]): tuple of forcing variables to subset
+        timezone (str): timezone information for start and end dates. Data will be subset starting at midnight in the specified timezone.
+        forcing_vars (Tuple[str]): tuple of forcing variables to subset. By default all 8 variables needed to run ParFlow-CLM will be subset. 
 
     Returns:
         A dictionary in which the keys are the forcing variable names and the values are lists of
