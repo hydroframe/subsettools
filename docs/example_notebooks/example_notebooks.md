@@ -16,7 +16,7 @@ conus1_subsetting_transient.ipynb
 
 #### Performing a model initialization (spin up) with ParFlow
 
-This notebook will subset a HUC8 from the CONUS1 domain as in the conus1_subsetting.ipynb example. However, it does not subset climate forcing data as it is an example of model initialization or spin up. 
+This notebook will subset a HUC8 from the CONUS1 domain as in the above example. However, it does not subset climate forcing data as it is an example of model initialization or spin up. 
 
 ```{toctree}
 :maxdepth: 1
