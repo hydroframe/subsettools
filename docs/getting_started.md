@@ -46,20 +46,39 @@ You only need to re-register this PIN with the `register_api_pin` method if the
 new 4-digit PIN is different from your previous 4-digit PIN (the PIN is allowed
 to stay the same).
 
+## Building a ParFlow run from a Template Runscript
 
-## Example Notebooks
+In order to run ParFlow, you must have a model object in the form of a .pfidb or .yaml file. 
+These files can be generated initially from a python script using pftools keys.
+The template runscripts provided with the subsettools package are all in .yaml format and provide examples of common use configurations for ParFlow. You may use these as a template for a ParFlow run that most closely meets the specifications of the model 
+you are trying to build. 
 
-In this section you can find a collection of example workflows using the subsettools API. 
+We recommend a user select a template runscript corresponding to following three guidelines:
+ 
+1. Select a source data domain you wish to subset from:
+   a. CONUS1
+   b. CONUS2
+   
+2. Select an input file type:
+   a. Solid file (if you are providing a HUC or HUC list)
+   b. A box domain (you are providing lat/lon coordinates)
+   
+3. Select a template corresponding to your planned way to run ParFlow:
+   a. Transient run, fully coupled to the climate model CLM
+   b. Model Initialization running ParFlow on its own with a longterm recharge (PmE) mask.
+   
+We provide 8 template runscripts which correspond to all unique combinations of the above three guidelines.
+These template runscripts have values set to the values used to run simulations of CONUS1 or CONUS2 in the past.
 
-The current list of example notebooks is given below. A more detailed explanation of each notebook and how it should be used can be found in the Example notebooks tab. 
+To get a template runscript provided with the package, you should use the `get_ref_yaml_path` function. The function will get the correct template runscript and write it to your chosen directory. For example, to get the template for a ParFlow-CLM coupled run on the CONUS1 grid with a solid input file, you can do:
 
-*Note: Only CONUS1 examples are currently being supported, but CONUS2 examples will be added in the future.* 
+```python
+from subsettools.datasets import get_ref_yaml_path
+reference_run = get_ref_yaml_path(grid="conus1", mode="transient", input_file_type="solid", write_dir="/path/to/your/chosen/directory")
+```
 
-1. conus1_subsetting.ipynb - Subsets a CONUS1 domain and runs a transient simulation with ParFlow-CLM.
-2. conus1_subsetting_spinup.ipynb - Subsets a CONUS1 domain and performs a model initialization (spin up) with ParFlow.
+*If you want to use your own runscript:*
 
-## Template Model Runscripts
+You can provide your own .pfidb or .yaml file to subsettools and are not required to use these templates to use the subsettools functions. 
+However, we encourage starting from one of these templates before making other changes to your model unless you are an experienced ParFlow user as it is possible the settings in your runscript will be incompatible with running data from the CONUS1 and 2 domains. 
 
-In addition to example notebooks, several reference .yaml files are provided with the subsettools package. 
-You may use these as a template for a ParFlow run that most closely meets the specifications of the model 
-you are trying to build. Additional details can be found under the Template runscripts tab. 
