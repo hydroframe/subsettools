@@ -2,6 +2,7 @@ from parflow import Run
 from parflow.tools.settings import set_working_directory
 from subsettools.subsettools import *
 from subsettools.datasets import get_ref_yaml_path
+import os
 
 from testutils import pf_test_file
 
@@ -28,7 +29,7 @@ def test_conus1_upper_verde_spinup(setup_dir_structure, remove_output_files):
     ij_bounds = huc_to_ij(huc_list=huc_list, grid=grid)
     create_mask_solid(huc_list=huc_list, grid=grid, write_dir=static_write_dir)
     subset_static(ij_bounds, dataset=var_ds, write_dir=static_write_dir)
-    init_press_filename = subset_press_init(
+    init_press_filepath = subset_press_init(
         ij_bounds,
         dataset=run_ds,
         date=start,
@@ -42,7 +43,7 @@ def test_conus1_upper_verde_spinup(setup_dir_structure, remove_output_files):
     target_runscript = change_filename_values(
         runscript_path=target_runscript,
         write_dir=pf_out_dir,
-        init_press=init_press_filename,
+        init_press=os.path.basename(init_press_filepath),
     )
     dist_run(
         P=P,

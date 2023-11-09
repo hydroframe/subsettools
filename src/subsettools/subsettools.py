@@ -93,6 +93,9 @@ def create_mask_solid(huc_list, grid, write_dir):
         grid (str): "conus1" or "conus2"  
         write_dir (str): directory path where the mask and solid files will be written  
 
+    Returns:
+        A dictionary of paths with keys ("mask", "mask_vtk", "solid") and values filepaths to the created files.
+
     Raises:  
         AssertionError: If write_dir is not a valid directory.  
     """
@@ -129,16 +132,18 @@ def create_mask_solid(huc_list, grid, write_dir):
     mask_file_path = os.path.join(write_dir, "mask.pfb")
     write_pfb(mask_file_path, mask_clip, dx=1000, dy=1000, dz=layz, dist=False)
     print("Wrote mask.pfb")
-
+    mask_vtk_path = os.path.join(write_dir, "mask_vtk.vtk")
+    solid_file_path = os.path.join(write_dir, "solidfile.pfsol")
+    
     subprocess.run(
         [
             os.path.join(os.environ["PARFLOW_DIR"], "bin", "pfmask-to-pfsol"),
             "--mask",
             mask_file_path,
             "--pfsol",
-            os.path.join(write_dir, "solidfile.pfsol"),
+            solid_file_path,
             "--vtk",
-            os.path.join(write_dir, "mask_vtk.vtk"),
+            mask_vtk_path,
             "--z-bottom",
             "0.0",
             "--z-top",
@@ -148,7 +153,8 @@ def create_mask_solid(huc_list, grid, write_dir):
     )
 
     print(f"Wrote solidfile.pfsol and mask_vtk.vtk with total z of {z_total} meters")
-
+    file_paths = {"mask": mask_file_path, "mask_vtk": mask_vtk_path, "solid": solid_file_path}
+    return file_paths 
 
 def subset_static(
     ij_bounds,
@@ -172,21 +178,28 @@ def subset_static(
         write_dir (str): directory where the subset files will be written
         var_list (List[str]): list of variables to subset from the dataset
 
+    Returns:
+        A dictionary in which the keys are the static variable names and the values are
+        file paths where the subset data were written.
+        
     Raises:
         AssertionError: If write_dir is not a valid directory.
     """
     assert os.path.isdir(write_dir), "write_dir must be a directory"
+    file_paths = {}
     for var in var_list:
         entry = hf_hydrodata.gridded.get_catalog_entry(
             dataset=dataset, file_type="pfb", period="static", variable=var
         )
         if entry is not None:
             subset_data = hf_hydrodata.gridded.get_ndarray(entry, grid_bounds=ij_bounds)
-            write_pfb(os.path.join(write_dir, f"{var}.pfb"), subset_data, dist=False)
+            file_path = os.path.join(write_dir, f"{var}.pfb")
+            write_pfb(file_path, subset_data, dist=False)
+            file_paths[var] = file_path
             print(f"Wrote {var}.pfb in specified directory.")
         else:
             print(f"{var} not found in dataset {dataset}")
-
+    return file_paths
 
 def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
     """Subset the initial pressure file.
@@ -202,7 +215,7 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
         time_zone (str): time_zone to calculate initial pressure datetime. Defaults to "UTC".
 
     Returns:
-        The filename of the subset file, which includes datetime information, so that it can be
+        The filepath of the subset file, which includes datetime information, so that it can be
         used by later functions (e.g. edit_runscript_for_subset)
 
     Raises:
@@ -227,10 +240,10 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
         entry, grid_bounds=ij_bounds, start_time=new_date
     )
 
-    out_file = f"{dataset}_{date_string}_press.pfb"
-    write_pfb(os.path.join(write_dir, out_file), subset_data[0, :, :, :], dist=False)
-    print(f"Wrote {out_file} in specified directory.")
-    return out_file
+    file_path = os.path.join(write_dir, f"{dataset}_{date_string}_press.pfb")
+    write_pfb(file_path, subset_data[0, :, :, :], dist=False)
+    print(f"Wrote {file_path} in specified directory.")
+    return file_path
 
 
 def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
@@ -249,22 +262,28 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
         timezone (str): timezone information for start and end dates 
 
     Returns:
-        The filename of the subset file, which includes datetime information,
-        so that it can be used by later functions (e.g. edit_runscript_for_subset).
+        A dictionary in which the keys are ("vegp", "vegm", "drv_clm") and the values are
+        file paths where the CLM files were written.
+
+    Raises:
+        AssertionError: If write_dir is not a valid directory.        
     """
     assert os.path.isdir(write_dir), "write_dir must be a directory"
 
     file_type_list = ["vegp", "vegm", "drv_clm"]
+    file_paths = {}
     for file_type in file_type_list:
         print(f"processing {file_type}")
         if file_type == "vegp":
+            file_path = os.path.join(write_dir, "drv_vegp.dat")
             hf_hydrodata.gridded.get_raw_file(
-                os.path.join(write_dir, "drv_vegp.dat"),
+                file_path,
                 dataset=dataset,
                 file_type=file_type,
                 variable="clm_run",
                 period="static"
-            ) 
+            )
+            file_paths[file_type] = file_path
             print("copied vegp")
         elif file_type == "vegm":
             entry = hf_hydrodata.gridded.get_catalog_entries(
@@ -275,7 +294,8 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
             )[0]
             subset_data = hf_hydrodata.gridded.get_ndarray(entry, grid_bounds=ij_bounds)
             land_cover_data = reshape_ndarray_to_vegm_format(subset_data)
-            write_land_cover(land_cover_data, write_dir)
+            file_path = write_land_cover(land_cover_data, write_dir)
+            file_paths[file_type] = file_path
             print("subset vegm")
         elif file_type == "drv_clm":
             file_path = os.path.join(write_dir, "drv_clmin.dat")
@@ -292,8 +312,9 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
                 end=end,
                 time_zone=time_zone
             )
+            file_paths[file_type] = file_path
             print("edited drv_clmin")
-
+    return file_paths
 
 def subset_forcing(
         ij_bounds,

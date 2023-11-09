@@ -37,7 +37,7 @@ def test_multiple_hucs(setup_dir_structure, remove_output_files):
     ij_bounds = huc_to_ij(huc_list=huc_list, grid=grid)
     create_mask_solid(huc_list=huc_list, grid=grid, write_dir=static_write_dir)
     subset_static(ij_bounds, dataset=var_ds, write_dir=static_write_dir)
-    init_press_filename = subset_press_init(
+    init_press_filepath = subset_press_init(
         ij_bounds,
         dataset=run_ds,
         date=start,
@@ -66,7 +66,7 @@ def test_multiple_hucs(setup_dir_structure, remove_output_files):
     target_runscript = change_filename_values(
         runscript_path=target_runscript,
         write_dir=pf_out_dir,
-        init_press=init_press_filename,
+        init_press=os.path.basename(init_press_filepath),
     )
     dist_run(
         P=P,
