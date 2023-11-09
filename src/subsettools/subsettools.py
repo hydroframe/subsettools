@@ -9,15 +9,14 @@ from datetime import datetime, timedelta
 from threading import Thread
 import numpy as np
 import hf_hydrodata
+import re
 from parflow import Run
 from parflow.tools.io import read_pfb, write_pfb
 from .subset_utils import (
     get_conus_hucs_indices,
     indices_to_ij,
-    reshape_ndarray_to_vegm_format,
     write_land_cover,
     edit_drvclmin,
-    adjust_filename_hours,
     get_UTC_time,
 )
 
@@ -293,7 +292,7 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
                 period="static"
             )[0]
             subset_data = hf_hydrodata.gridded.get_ndarray(entry, grid_bounds=ij_bounds)
-            land_cover_data = reshape_ndarray_to_vegm_format(subset_data)
+            land_cover_data = _reshape_ndarray_to_vegm_format(subset_data)
             file_path = write_land_cover(land_cover_data, write_dir)
             file_paths[file_type] = file_path
             print("subset vegm")
@@ -315,6 +314,24 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
             file_paths[file_type] = file_path
             print("edited drv_clmin")
     return file_paths
+
+
+def _reshape_ndarray_to_vegm_format(data):
+    """Reshape ndarray returned by datacatalog to vegm format.
+
+    Parameters:
+        data (ndarray) – raw subset vegm data (2d array)
+
+    Returns:
+        Ndarray reshaped to vegm format.
+    """       
+    _, nj, ni = data.shape
+    indices = np.indices((nj, ni)) + 1
+    indices = indices[::-1, :, :]
+    data = np.vstack([indices, data])  # stack x,y indices on vegm                                                                              
+    # transpose and reshape back into expected 2D vegm file format for the subset                                                               
+    return data.transpose(1, 2, 0).reshape(-1, 25)
+
 
 def subset_forcing(
         ij_bounds,
@@ -433,13 +450,42 @@ def _subset_forcing_variable(variable, ij_bounds, grid, start_date, end_date, da
         )
 
         write_path = os.path.join(write_dir,
-                                  adjust_filename_hours(os.path.basename(paths[0]),day)
+                                  _adjust_filename_hours(os.path.basename(paths[0]),day)
         )
         outputs[variable].append(write_path)
         write_pfb(write_path, subset_data[:, :, :], dist=False)
         date = date + delta
         day = day + 1
     print(f"Finished writing {variable} to folder")
+    
+
+def _adjust_filename_hours(filename, day):
+    """Adjust the forcing filename hours so that they match what a parflow simulation expects on each day of the simulation.
+
+    The first day of the simulation the hours will be “.000001_to_000024.”, the second day the hours will be “.000025_to_000048.” and so on. 
+    This is in case the first day of simulation does not coincide with the first day of the water year (Oct 1st), as the dataset 
+    filenames assume day 1 is Oct 1st. The input and output filenames must match the regular expression “..[0-9]{6}_to_[0-9]{6}.*”
+
+    Parameters:
+        filename (str) – original forcing filename
+        day (int) – day relative to the start date of forcing file subsetting
+
+    Returns:
+        The forcing filename with adjusted hours.
+
+    Raises:
+        AssertionError – If the input or output filename string do not match the above regex.
+    """
+    assert day >= 1
+    s1, s2, s3, s4 = filename.split(".")
+    assert s1 != "" and s2 != "" and s4 != "", "invalid forcing filename"
+    pattern = re.compile("[0-9]{6}_to_[0-9]{6}")
+    assert pattern.fullmatch(s3) is not None, "invalid forcing filename"
+    start = str(24 * (day - 1) + 1).rjust(6, "0")
+    end = str(24 * day).rjust(6, "0")
+    s3 = start + "_to_" + end
+    assert pattern.fullmatch(s3) is not None, "invalid adjusted forcing filename"
+    return ".".join([s1, s2, s3, s4])
     
     
 def edit_runscript_for_subset(
