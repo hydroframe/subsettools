@@ -24,7 +24,8 @@ extensions = [
     "sphinx_gallery.load_style",
 ]
 autoapi_dirs = ["../src"]
-autoapi_options = ['members', 
+autoapi_options = ['members',
+                   'undoc-members',
                    'show-inheritance', 
                    'show-module-summary', 
                    'imported-members', 
