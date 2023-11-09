@@ -3,6 +3,7 @@ from parflow import Run
 from parflow.tools.settings import set_working_directory
 from subsettools.subsettools import *
 from subsettools.datasets import get_ref_yaml_path
+import os
 
 # remove this for newer parflow versions
 from testutils import pf_test_file
@@ -35,7 +36,7 @@ def setup_run(setup_dir_structure):
     
     subset_static(ij_bounds, dataset=var_ds, write_dir=static_write_dir)
     
-    init_press_filename = subset_press_init(
+    init_press_filepath = subset_press_init(
         ij_bounds,
         dataset=run_ds,
         date=start,
@@ -82,7 +83,7 @@ def setup_run(setup_dir_structure):
 
     target_runscript = change_filename_values(
         runscript_path=target_runscript,
-        init_press=init_press_filename,
+        init_press=os.path.basename(init_press_filepath),
     )
 
     return run_name, target_runscript, pf_out_dir, correct_output_dir

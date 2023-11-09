@@ -147,16 +147,16 @@ def write_land_cover(land_cover_data, write_dir):
         "18",
     )
     header = "\n".join([heading, " ".join(vegm_col_names)])
-    out_file = os.path.join(write_dir, "drv_vegm.dat")
+    file_path = os.path.join(write_dir, "drv_vegm.dat")
     np.savetxt(
-        fname=out_file,
+        fname=file_path,
         X=land_cover_data,
         delimiter=" ",
         comments="",
         header=header,
         fmt=["%d"] * 2 + ["%.6f"] * 2 + ["%.2f"] * 2 + ["%d"] * 19,
     )
-    return out_file
+    return file_path
 
 
 def edit_drvclmin(
