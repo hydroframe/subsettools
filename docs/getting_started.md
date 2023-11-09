@@ -70,13 +70,13 @@ We recommend a user select a template runscript corresponding to following three
 We provide 8 template runscripts which correspond to all unique combinations of the above three guidelines.
 These template runscripts have values set to the values used to run simulations of CONUS1 or CONUS2 in the past.
 
-To get a template runscript provided with the package, you should use the `get_ref_yaml_path` function (API reference [here](https://hydroframesubsettools.readthedocs.io/en/edit-docs/autoapi/subsettools/datasets/index.html#subsettools.datasets.get_ref_yaml_path)). The function will get the correct template runscript based on your choices and write it to your chosen directory. For example, to get the template for a ParFlow-CLM coupled run on the CONUS1 grid with a solid input file, you can do:
+To get a template runscript provided with the package, you should use the `get_template_runscript` function (API reference [here](https://hydroframesubsettools.readthedocs.io/en/edit-docs/autoapi/subsettools/datasets/index.html#subsettools.datasets.get_template_runscript)). The function will get the correct template runscript based on your choices and write it to your chosen directory. For example, to get the template for a ParFlow-CLM coupled run on the CONUS1 grid with a solid input file, you can do:
 
 ```python
-from subsettools.datasets import get_ref_yaml_path
-reference_run = get_ref_yaml_path(grid="conus1", mode="transient", input_file_type="solid",
-                                  write_dir="/path/to/your/chosen/directory"
-                                 )
+from subsettools.datasets import get_template_runscript
+reference_run = get_template_runscript(grid="conus1", mode="transient", input_file_type="solid",
+                                          write_dir="/path/to/your/chosen/directory"
+                                      )
 ```
 
 *If you want to use your own runscript:*

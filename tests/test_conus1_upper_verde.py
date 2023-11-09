@@ -2,7 +2,7 @@ import pytest
 from parflow import Run
 from parflow.tools.settings import set_working_directory
 from subsettools.subsettools import *
-from subsettools.datasets import get_ref_yaml_path
+from subsettools.datasets import get_template_runscript
 import os
 
 # remove this for newer parflow versions
@@ -27,7 +27,7 @@ def setup_run(setup_dir_structure):
     run_ds = "conus1_baseline_mod"
     var_ds = "conus1_domain"
     forcing_ds = "NLDAS2"
-    reference_run = get_ref_yaml_path(grid, "transient", "solid", static_write_dir)
+    reference_run = get_template_runscript(grid, "transient", "solid", static_write_dir)
 
     ij_bounds = huc_to_ij(huc_list=huc_list, grid=grid)
     assert ij_bounds == (375, 239, 487, 329)
