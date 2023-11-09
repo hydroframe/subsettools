@@ -4,7 +4,7 @@ from subsettools import subsettools
 from parflow.tools.io import read_pfb
 import numpy as np
 import os
-from subsettools.datasets import get_ref_yaml_path
+from subsettools.datasets import get_template_runscript
 import hf_hydrodata
 from parflow import Run
 
@@ -62,7 +62,7 @@ def test_edit_runscript_for_subset_1(tmp_path):
     """Check the edited fiedls of the runscript file."""
     test_dir = tmp_path / "test"
     test_dir.mkdir()
-    runscript = get_ref_yaml_path("conus1", "transient", "box", test_dir)
+    runscript = get_template_runscript("conus1", "transient", "box", test_dir)
     forcing_dir = tmp_path / "forcing"
     forcing_dir.mkdir()
     runscript = subsettools.edit_runscript_for_subset((10, 10, 25, 25),
@@ -85,7 +85,7 @@ def test_edit_runscript_for_subset_2(tmp_path):
     test_dir.mkdir()
     write_dir = tmp_path / "write"
     write_dir.mkdir()
-    runscript = get_ref_yaml_path("conus1", "transient", "box", test_dir)
+    runscript = get_template_runscript("conus1", "transient", "box", test_dir)
     filename = os.path.basename(runscript)
     forcing_dir = tmp_path / "forcing"
     forcing_dir.mkdir()
@@ -108,7 +108,7 @@ def test_edit_runscript_for_subset_3(tmp_path):
     """Check that exception is raised if forcing_dir is invalid."""
     test_dir = tmp_path / "test"
     test_dir.mkdir()
-    runscript = get_ref_yaml_path("conus1", "transient", "box", test_dir)
+    runscript = get_template_runscript("conus1", "transient", "box", test_dir)
     forcing_dir = os.path.join(tmp_path, "forcing")
     with pytest.raises(Exception) as e_info:
         runscript = subsettools.edit_runscript_for_subset((10, 10, 25, 25),
@@ -122,7 +122,7 @@ def test_change_filename_values_1(tmp_path):
     """Check the edited fiedls of the runscript file."""
     test_dir = tmp_path / "test"
     test_dir.mkdir()
-    old_runscript = get_ref_yaml_path("conus1", "transient", "box", test_dir)
+    old_runscript = get_template_runscript("conus1", "transient", "box", test_dir)
     test_file = test_dir / "slope_x.pfb"
     test_file.write_bytes(b'Binary file contents')    
     new_runscript = subsettools.change_filename_values(old_runscript,
@@ -143,7 +143,7 @@ def test_change_filename_values_2(tmp_path):
     """Check that the file is replaced if write_dir==None and runname==None"""
     test_dir = tmp_path / "test"
     test_dir.mkdir()
-    old_runscript = get_ref_yaml_path("conus1", "transient", "box", test_dir)
+    old_runscript = get_template_runscript("conus1", "transient", "box", test_dir)
     test_file = test_dir / "slope_x.pfb"
     test_file.write_bytes(b'Binary file contents')
     new_runscript = subsettools.change_filename_values(old_runscript,

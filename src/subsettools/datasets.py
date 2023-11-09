@@ -5,7 +5,7 @@ from importlib import resources
 import os
 import shutil
 
-def get_ref_yaml_path(grid, mode, input_file_type, write_dir):
+def get_template_runscript(grid, mode, input_file_type, write_dir):
     """Get a ParFlow template runscript based on grid, mode and input file type and write it to write_dir.
 
     Args:

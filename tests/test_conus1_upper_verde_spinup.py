@@ -1,7 +1,7 @@
 from parflow import Run
 from parflow.tools.settings import set_working_directory
 from subsettools.subsettools import *
-from subsettools.datasets import get_ref_yaml_path
+from subsettools.datasets import get_template_runscript
 import os
 
 from testutils import pf_test_file
@@ -24,7 +24,7 @@ def test_conus1_upper_verde_spinup(setup_dir_structure, remove_output_files):
     var_ds = "conus1_domain"
     P = 1
     Q = 1
-    reference_run = get_ref_yaml_path(grid, "spinup", "solid", static_write_dir)
+    reference_run = get_template_runscript(grid, "spinup", "solid", static_write_dir)
 
     ij_bounds = huc_to_ij(huc_list=huc_list, grid=grid)
     create_mask_solid(huc_list=huc_list, grid=grid, write_dir=static_write_dir)
