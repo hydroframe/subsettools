@@ -3,7 +3,6 @@
 
 import os
 import shutil
-import re
 from datetime import datetime, timedelta
 import pytz
 import numpy as np
@@ -15,7 +14,7 @@ def get_conus_hucs_indices(huc_list, grid):
     """Get the huc datafile as an ndarray and three mask arrays representing the selected hucs.
 
     Args:
-        huc_list (list[str]): a list of huc IDs
+        huc_list (List[str]): a list of huc IDs
         grid (str): "conus1" or "conus2"
 
     Returns:
@@ -84,24 +83,6 @@ def subset_vegm(path, ij_bounds):
     vegm = vegm.transpose(1, 2, 0).reshape(-1, 25)
 
     return vegm
-
-
-def reshape_ndarray_to_vegm_format(data):
-    """Reshape ndarray returned by datacatalog to vegm format.
-
-    Args:
-        data (ndarray): raw subset vegm data (2d array)
-
-    Returns:
-        Ndarray reshaped to vegm format.
-    """
-    _, nj, ni = data.shape
-    indices = np.indices((nj, ni)) + 1
-    indices = indices[::-1, :, :]
-    data = np.vstack([indices, data])  # stack x,y indices on vegm
-
-    # transpose and reshape back into expected 2D vegm file format for the subset
-    return data.transpose(1, 2, 0).reshape(-1, 25)
 
 
 def write_land_cover(land_cover_data, write_dir):
@@ -221,39 +202,6 @@ def edit_drvclmin(
 
     with open(file_path, "w") as f:
         f.writelines(lines)
-
-
-
-def adjust_filename_hours(filename, day):
-    """Adjust the forcing filename hours so that they match what a parflow simulation expects on each day of the simulation.
-
-    The first day of the simulation the hours will be "*.000001_to_000024.*", the second day
-    the hours will be "*.000025_to_000048.*" and so on. This is in case the first day of simulation
-    does not coincide with the first day of the water year (Oct 1st), as the dataset filenames
-    assume day 1 is Oct 1st. The input and output filenames must match the regular expression
-    "*.*.[0-9]{6}_to_[0-9]{6}.*"
-
-    Args:
-        filename (str): original forcing filename
-        day (int): day relative to the start date of forcing file subsetting
-
-    Returns:
-        The forcing filename with adjusted hours.
-
-    Raises:
-        AssertionError: If the input or output filename string do not match the above regex.
-    """
-    assert day >= 1
-    s1, s2, s3, s4 = filename.split(".")
-    assert s1 != "" and s2 != "" and s4 != "", "invalid forcing filename"
-    pattern = re.compile("[0-9]{6}_to_[0-9]{6}")
-    assert pattern.fullmatch(s3) is not None, "invalid forcing filename"
-
-    start = str(24 * (day - 1) + 1).rjust(6, "0")
-    end = str(24 * day).rjust(6, "0")
-    s3 = start + "_to_" + end
-    assert pattern.fullmatch(s3) is not None, "invalid adjusted forcing filename"
-    return ".".join([s1, s2, s3, s4])
 
 
 def get_UTC_time(date_string, time_zone):
