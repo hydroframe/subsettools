@@ -24,6 +24,11 @@ extensions = [
     "sphinx_gallery.load_style",
 ]
 autoapi_dirs = ["../src"]
+autoapi_options = ['members', 
+                   'show-inheritance', 
+                   'show-module-summary', 
+                   'imported-members', 
+                  ]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
