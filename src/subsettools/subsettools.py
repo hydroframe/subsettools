@@ -119,10 +119,20 @@ def latlon_to_ij(latlon_bounds, grid):
         A tuple of the form (imin, jmin, imax, jmax) representing the bounds
         in the conus grid of the area defined by latlon_bounds.
     """
+    if not isinstance(latlon_bounds, list):
+        raise TypeError("latlon_bounds must be a list")
+    if len(latlon_bounds) != 2:
+        raise ValueError("latlon_bounds must contain exactly two lat-lon points: [[lat1, lon1], [lat2, lon2]]")
+    for point in latlon_bounds:
+        if not (isinstance(point, list) and
+                len(point) == 2 and
+                all(isinstance(value, (int, float)) for value in point)):
+            raise ValueError("latlon_bounds must contain exactly two lat-lon points: [[lat1, lon1], [lat2, lon2]]")
+    if not isinstance(grid, str):
+        raise TypeError("grid must be a string")
     grid = grid.lower()
-    assert grid in ["conus1", "conus2"], "invalid grid name"
-    assert len(latlon_bounds) == 2, "please provide 2 latlon points"
-    assert len(latlon_bounds[0]) == 2 and len(latlon_bounds[1]) == 2, "invalid latlon point"
+    if grid not in ["conus1", "conus2"]:
+        raise ValueError("Supported grids are 'conus1' and 'conus2'")
     point0 = hf_hydrodata.grid.to_ij(grid, latlon_bounds[0][0], latlon_bounds[0][1])
     point1 = hf_hydrodata.grid.to_ij(grid, latlon_bounds[1][0], latlon_bounds[1][1])
     imin, imax = [
@@ -133,7 +143,6 @@ def latlon_to_ij(latlon_bounds, grid):
         min(point0[1], point1[1]),
         max(point0[1], point1[1]),
     ]
-
     return (imin, jmin, imax, jmax)
 
 
