@@ -13,8 +13,6 @@ import re
 from parflow import Run
 from parflow.tools.io import read_pfb, write_pfb
 from .subset_utils import (
-    get_conus_hucs_indices,
-    indices_to_ij,
     write_land_cover,
     edit_drvclmin,
     get_UTC_time,
@@ -38,17 +36,72 @@ def huc_to_ij(huc_list, grid):
         in the conus grid of the area defined by the huc IDs in huc_list.
 
     Raises:
-        AssertionError: If all HUC IDs are not the same length.
+        ValueError: If all HUC IDs are not the same length.
         ValueError: If the area defined by the provided HUCs is not part of the given grid.
     """
+    if not all(isinstance(huc, str) for huc in huc_list):
+        raise TypeError("All elements of huc_list must be strings")
+    if not isinstance(grid, str):
+        raise TypeError("grid must be a string")
+    if not all(huc.isdigit() for huc in huc_list):
+        raise ValueError("HUC IDs must contain only digits")
     huc_len = len(huc_list[0])
-    assert all(
-        [len(huc) == huc_len for huc in huc_list]
-    ), "All huc IDs should have the same length!"
-    conus_hucs, _, indices_j, indices_i = get_conus_hucs_indices(huc_list, grid)
+    if huc_len not in [2, 4, 6, 8, 10]:
+        raise ValueError("HUC IDs are 2, 4, 6, 8, or 10-digit")
+    if not all([len(huc) == huc_len for huc in huc_list]):
+        raise ValueError("All HUC IDs should have the same length")    
+    grid = grid.lower()
+    if grid not in ["conus1", "conus2"]:
+        raise ValueError("Supported grids are 'conus1' and 'conus2'")
+    conus_hucs, _, indices_j, indices_i = _get_conus_hucs_indices(huc_list, grid)
     if indices_i.size == 0 or indices_j.size == 0:
         raise ValueError(f"The area defined by the provided HUCs is not part of the {grid} grid.")  
-    return indices_to_ij(conus_hucs, indices_j, indices_i)
+    return _indices_to_ij(conus_hucs, indices_j, indices_i)
+
+
+def _get_conus_hucs_indices(huc_list, grid):
+    """Get the huc datafile as an ndarray and three mask arrays representing the selected hucs.
+    
+    Args:
+        huc_list (List[str]): a list of huc IDs 
+        grid (str): "conus1" or "conus2"                                                                                                
+
+    Returns:   
+        A tuple (conus_hucs, sel_hucs, indices_j, indices_i) where                                               
+        conus_hucs is an ndarray of the huc datafile, sel_hucs is
+        a mask array for the selected hucs, and indices_i and
+        indices_j mask arrays in the j and i directions.
+    """
+    huc_len = len(huc_list[0])
+    huc_list = [int(huc) for huc in huc_list]
+    entry = hf_hydrodata.gridded.get_catalog_entry(
+        dataset="huc_mapping", grid=grid.lower(), file_type="tiff"
+    )
+    conus_hucs = hf_hydrodata.gridded.get_ndarray(entry, level=str(huc_len))
+    sel_hucs = np.isin(conus_hucs, huc_list).squeeze()
+    indices_j, indices_i = np.where(sel_hucs > 0)
+    return conus_hucs, sel_hucs, indices_j, indices_i
+
+
+def _indices_to_ij(conus_hucs, indices_j, indices_i):
+    """Get the conus ij-bounds for the conus_hucs boundary defined by indices_j and indices_i.                                                  
+
+    Args:                                                                                                                           
+        conus_hucs (numpy.ndarray): conus huc data                                                                                             
+        indices_j (numpy.ndarray): mask in the j direction for selected hucs                                                                    
+        indices_i (numpy.ndarray): mask in the i direction for selected hucs                                                                   
+ 
+    Returns:                                                                                                         
+        A tuple of the form (imin, jmin, imax, jmax) representing the bounds                                                                    
+        in conus_hucs defined by the two mask arrays indices_j and indices_i.                                                                   
+    """
+    imin = np.min(indices_i)
+    imax = np.max(indices_i) + 1  # right bound inclusive                                                                                       
+    arr_jmin = np.min(indices_j)
+    arr_jmax = np.max(indices_j) + 1  # right bound inclusive                                                                                   
+    jmin = conus_hucs.shape[0] - arr_jmax
+    jmax = conus_hucs.shape[0] - arr_jmin
+    return (int(imin), int(jmin), int(imax), int(jmax))
 
 
 def latlon_to_ij(latlon_bounds, grid):
@@ -100,10 +153,10 @@ def create_mask_solid(huc_list, grid, write_dir):
     """
     assert os.path.isdir(write_dir), "write_dir must be a directory"
 
-    conus_hucs, sel_hucs, indices_j, indices_i = get_conus_hucs_indices(huc_list, grid)
+    conus_hucs, sel_hucs, indices_j, indices_i = _get_conus_hucs_indices(huc_list, grid)
     arr_jmin = np.min(indices_j)
     arr_jmax = np.max(indices_j) + 1  # right bound inclusive
-    ij_bounds = indices_to_ij(conus_hucs, indices_j, indices_i)
+    ij_bounds = _indices_to_ij(conus_hucs, indices_j, indices_i)
 
     nj = ij_bounds[3] - ij_bounds[1]
     ni = ij_bounds[2] - ij_bounds[0]

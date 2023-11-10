@@ -10,53 +10,6 @@ from hf_hydrodata import gridded
 from parflow.tools.io import read_clm
 
 
-def get_conus_hucs_indices(huc_list, grid):
-    """Get the huc datafile as an ndarray and three mask arrays representing the selected hucs.
-
-    Args:
-        huc_list (List[str]): a list of huc IDs
-        grid (str): "conus1" or "conus2"
-
-    Returns:
-        A tuple (conus_hucs, sel_hucs, indices_j, indices_i) where
-        conus_hucs is an ndarray of the huc datafile, sel_hucs is
-        a mask array for the selected hucs, and indices_i and
-        indices_j mask arrays in the j and i directions.
-    """
-    huc_len = len(huc_list[0])
-    huc_list = [int(huc) for huc in huc_list]
-    entry = gridded.get_catalog_entry(
-        dataset="huc_mapping", grid=grid.lower(), file_type="tiff"
-    )
-    conus_hucs = gridded.get_ndarray(entry, level=str(huc_len))
-    sel_hucs = np.isin(conus_hucs, huc_list).squeeze()
-    indices_j, indices_i = np.where(sel_hucs > 0)
-    return conus_hucs, sel_hucs, indices_j, indices_i
-
-
-def indices_to_ij(conus_hucs, indices_j, indices_i):
-    """Get the conus ij-bounds for the conus_hucs boundary defined by indices_j and indices_i.
-
-    Args:
-        conus_hucs (numpy.ndarray): conus huc data
-        indices_j (numpy.ndarray): mask in the j direction for selected hucs
-        indices_i (numpy.ndarray): mask in the i direction for selected hucs
-
-    Returns:
-        A tuple of the form (imin, jmin, imax, jmax) representing the bounds
-        in conus_hucs defined by the two mask arrays indices_j and indices_i.
-    """
-    imin = np.min(indices_i)
-    imax = np.max(indices_i) + 1  # right bound inclusive
-    arr_jmin = np.min(indices_j)
-    arr_jmax = np.max(indices_j) + 1  # right bound inclusive
-
-    jmin = conus_hucs.shape[0] - arr_jmax
-    jmax = conus_hucs.shape[0] - arr_jmin
-
-    return (int(imin), int(jmin), int(imax), int(jmax))
-
-
 def subset_vegm(path, ij_bounds):
     """Read in vegm file and subset it according to ij_bounds.
 
