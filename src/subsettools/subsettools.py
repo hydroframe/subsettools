@@ -352,38 +352,41 @@ def subset_forcing(
             "north_windspeed",
         )
 ):
-    """Subset forcing files for a given box or point of interest.
+"""Subset forcing files for a given box or point of interest.
 
-    Subset forcing data will be written out as pfb files formatted for a ParFlow run with 24 hours per forcing file. Per ParFlow-CLM convention separate files will be written for each variable following the standard clm variable naming convention. 
+Subset forcing data will be written out as pfb files formatted for a ParFlow run with 24 hours per forcing file. Per ParFlow-CLM convention separate files will be written for each variable following the standard clm variable naming convention. 
 
-    Forcing file outputs will be numbered starting with 0000 and data will start at midnight local time for the timezone that has been provided. If no timezone is provided it will default to midnight UTC.
+Forcing file outputs will be numbered starting with 0000 and data will start at midnight local time for the timezone that has been provided. If no timezone is provided it will default to midnight UTC.
 
-    Args:
-        ij_bounds (Tuple[int]): bounding box for subset. This should be given as i,j index values where 0,0 is the lower left hand corner of a domain. ij_bounds are given to whatever grid is being used for the subset. Use the latlon_to_ij function to determine ij indices from lat long values.  
-        grid (str): The spatial grid that the ij indices are calculated relative to and that the subset data will be returned on. Possible values: "conus1" or "conus2"
-        start (str): start date (inclusive), in the form 'yyyy-mm-dd'
-        end (str): end date (exlusive), in the form 'yyyy-mm-dd'
-        dataset (str): forcing dataset name from the HydroData catalog e.g. "NLDAS2". 
-        write_dir (str): directory where the subset file will be written
-        timezone (str): timezone information for start and end dates. Data will be subset starting at midnight in the specified timezone.
-        forcing_vars (Tuple[str]): tuple of forcing variables to subset. By default all 8 variables needed to run ParFlow-CLM will be subset. 
+Args:
+    ij_bounds (Tuple[int]): bounding box for subset. This should be given as i,j index values where 0,0 is the lower left hand corner of a domain. ij_bounds are given to whatever grid is being used for the subset. Use the latlon_to_ij function to determine ij indices from lat long values.  
+    grid (str): The spatial grid that the ij indices are calculated relative to and that the subset data will be returned on. Possible values: "conus1" or "conus2"
+    start (str): start date (inclusive), in the form 'yyyy-mm-dd'
+    end (str): end date (exlusive), in the form 'yyyy-mm-dd'
+    dataset (str): forcing dataset name from the HydroData catalog e.g. "NLDAS2". 
+    write_dir (str): directory where the subset file will be written
+    timezone (str): timezone information for start and end dates. Data will be subset starting at midnight in the specified timezone.
+    forcing_vars (Tuple[str]): tuple of forcing variables to subset. By default all 8 variables needed to run ParFlow-CLM will be subset. 
 
-    Returns:
-        A dictionary in which the keys are the forcing variable names and the values are lists of
-        file paths where the subset data were written.
+Returns:
+    A dictionary in which the keys are the forcing variable names and the values are lists of
+    file paths where the subset data were written.
 
-    Raises:
-        AssertionError: If write_dir is not a valid directory.
+Raises:
+    AssertionError: If write_dir is not a valid directory.
 
-    Examples:
-        >>> subset_forcing(ij_bounds=(1225, 1738, 1347, 1811), 
-                           grid="conus2", 
-                           start="2005-11-01", 
-                           end="2005-12-01", 
-                           dataset="CW3E", 
-                           write_dir="/path/to/your/chosen/directory",
-            )
-    """
+Example:
+
+.. code-block:: python
+
+    subset_forcing(ij_bounds=(1225, 1738, 1347, 1811), 
+                    grid="conus2", 
+                    start="2005-11-01", 
+                    end="2005-12-01", 
+                    dataset="CW3E", 
+                    write_dir="/path/to/your/chosen/directory",
+        )
+"""
     assert os.path.isdir(write_dir), "write_dir must be a directory"
 
     outputs = {}
