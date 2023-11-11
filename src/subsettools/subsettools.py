@@ -376,7 +376,7 @@ def subset_forcing(
         AssertionError: If write_dir is not a valid directory.
 
     Examples:
-            subset_forcing(ij_bounds=(1225, 1738, 1347, 1811), 
+        >>> subset_forcing(ij_bounds=(1225, 1738, 1347, 1811), 
                            grid="conus2", 
                            start="2005-11-01", 
                            end="2005-12-01", 
