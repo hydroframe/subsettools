@@ -1,2 +1,1 @@
-```{include} ./autoapi/subsettools/index.rst
-```
+.. include:: autoapi/subsettools/index.rst
