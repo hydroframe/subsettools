@@ -4,7 +4,7 @@
 import os 
 
 def _validate_huc_list(huc_list):
-    """Error checking for a user-provided list of HUC IDs for the functions huc_to_ij() and create_mask_solid()."""
+    """Check errors for a user-provided list of HUC IDs."""
     if not all(isinstance(huc, str) for huc in huc_list):
         raise TypeError("All elements of huc_list must be strings")
     if not all(huc.isdigit() for huc in huc_list):
@@ -17,7 +17,7 @@ def _validate_huc_list(huc_list):
     
 
 def _validate_grid(grid):
-    """Error checking for a user-provided grid argument."""
+    """Check errors for a user-provided grid argument."""
     if not isinstance(grid, str):
         raise TypeError("grid must be a string")
     grid = grid.lower()
@@ -26,5 +26,6 @@ def _validate_grid(grid):
 
 
 def _validate_dir(dir_name):
+    """Check that dir_name is a valid directory."""
     if not os.path.isdir(dir_name):
         raise FileNotFoundError(f"{dir_name} is not a valid existing directory") 

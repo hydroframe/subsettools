@@ -2,7 +2,7 @@
 """
 
 import os
-import shutil
+0;256;0cimport shutil
 import pathlib
 import subprocess
 from datetime import datetime, timedelta
@@ -148,7 +148,7 @@ def create_mask_solid(huc_list, grid, write_dir):
         A dictionary of paths with keys ("mask", "mask_vtk", "solid") and values filepaths to the created files.
 
     Raises:  
-        AssertionError: If write_dir is not a valid directory.  
+        FileNotFoundError: If write_dir is not a valid directory.  
     """
     _validate_huc_list(huc_list)
     _validate_grid(grid)
