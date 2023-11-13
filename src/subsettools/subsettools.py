@@ -17,6 +17,11 @@ from .subset_utils import (
     edit_drvclmin,
     get_UTC_time,
 )
+from .error_checking import (
+    _validate_huc_list,
+    _validate_grid,
+    _validate_dir,
+)
 
 
 def huc_to_ij(huc_list, grid):
@@ -39,21 +44,9 @@ def huc_to_ij(huc_list, grid):
         ValueError: If all HUC IDs are not the same length.
         ValueError: If the area defined by the provided HUCs is not part of the given grid.
     """
-    if not all(isinstance(huc, str) for huc in huc_list):
-        raise TypeError("All elements of huc_list must be strings")
-    if not isinstance(grid, str):
-        raise TypeError("grid must be a string")
-    if not all(huc.isdigit() for huc in huc_list):
-        raise ValueError("HUC IDs must contain only digits")
-    huc_len = len(huc_list[0])
-    if huc_len not in [2, 4, 6, 8, 10]:
-        raise ValueError("HUC IDs are 2, 4, 6, 8, or 10-digit")
-    if not all([len(huc) == huc_len for huc in huc_list]):
-        raise ValueError("All HUC IDs should have the same length")    
-    grid = grid.lower()
-    if grid not in ["conus1", "conus2"]:
-        raise ValueError("Supported grids are 'conus1' and 'conus2'")
-    conus_hucs, _, indices_j, indices_i = _get_conus_hucs_indices(huc_list, grid)
+    _validate_huc_list(huc_list)
+    _validate_grid(grid)
+    conus_hucs, _, indices_j, indices_i = _get_conus_hucs_indices(huc_list, grid.lower())
     if indices_i.size == 0 or indices_j.size == 0:
         raise ValueError(f"The area defined by the provided HUCs is not part of the {grid} grid.")  
     return _indices_to_ij(conus_hucs, indices_j, indices_i)
@@ -75,7 +68,7 @@ def _get_conus_hucs_indices(huc_list, grid):
     huc_len = len(huc_list[0])
     huc_list = [int(huc) for huc in huc_list]
     entry = hf_hydrodata.gridded.get_catalog_entry(
-        dataset="huc_mapping", grid=grid.lower(), file_type="tiff"
+        dataset="huc_mapping", grid=grid, file_type="tiff"
     )
     conus_hucs = hf_hydrodata.gridded.get_ndarray(entry, level=str(huc_len))
     sel_hucs = np.isin(conus_hucs, huc_list).squeeze()
@@ -119,6 +112,7 @@ def latlon_to_ij(latlon_bounds, grid):
         A tuple of the form (imin, jmin, imax, jmax) representing the bounds
         in the conus grid of the area defined by latlon_bounds.
     """
+    _validate_grid(grid)    
     if not isinstance(latlon_bounds, list):
         raise TypeError("latlon_bounds must be a list")
     if len(latlon_bounds) != 2:
@@ -128,11 +122,7 @@ def latlon_to_ij(latlon_bounds, grid):
                 len(point) == 2 and
                 all(isinstance(value, (int, float)) for value in point)):
             raise ValueError("latlon_bounds must contain exactly two lat-lon points: [[lat1, lon1], [lat2, lon2]]")
-    if not isinstance(grid, str):
-        raise TypeError("grid must be a string")
     grid = grid.lower()
-    if grid not in ["conus1", "conus2"]:
-        raise ValueError("Supported grids are 'conus1' and 'conus2'")
     point0 = hf_hydrodata.grid.to_ij(grid, latlon_bounds[0][0], latlon_bounds[0][1])
     point1 = hf_hydrodata.grid.to_ij(grid, latlon_bounds[1][0], latlon_bounds[1][1])
     imin, imax = [
@@ -160,9 +150,13 @@ def create_mask_solid(huc_list, grid, write_dir):
     Raises:  
         AssertionError: If write_dir is not a valid directory.  
     """
-    assert os.path.isdir(write_dir), "write_dir must be a directory"
-
+    _validate_huc_list(huc_list)
+    _validate_grid(grid)
+    _validate_dir(write_dir)
+    grid = grid.lower()
     conus_hucs, sel_hucs, indices_j, indices_i = _get_conus_hucs_indices(huc_list, grid)
+    if indices_i.size == 0 or indices_j.size == 0:
+        raise ValueError(f"The area defined by the provided HUCs is not part of the {grid} grid.")      
     arr_jmin = np.min(indices_j)
     arr_jmax = np.max(indices_j) + 1  # right bound inclusive
     ij_bounds = _indices_to_ij(conus_hucs, indices_j, indices_i)
@@ -171,7 +165,7 @@ def create_mask_solid(huc_list, grid, write_dir):
     ni = ij_bounds[2] - ij_bounds[0]
 
     # checks conus1 / 2 grid and assigns appripriate dz and z_total for making the mask and solid file
-    if grid.lower() == "conus1":
+    if grid  == "conus1":
         print("grid is conus1")
         layz = 100
         z_total = str(500)
@@ -195,27 +189,41 @@ def create_mask_solid(huc_list, grid, write_dir):
     print("Wrote mask.pfb")
     mask_vtk_path = os.path.join(write_dir, "mask_vtk.vtk")
     solid_file_path = os.path.join(write_dir, "solidfile.pfsol")
-    
-    subprocess.run(
-        [
-            os.path.join(os.environ["PARFLOW_DIR"], "bin", "pfmask-to-pfsol"),
-            "--mask",
-            mask_file_path,
-            "--pfsol",
-            solid_file_path,
-            "--vtk",
-            mask_vtk_path,
-            "--z-bottom",
-            "0.0",
-            "--z-top",
-            z_total,
-        ],
-        check=True,
-    )
+
+    try:
+        parflow_dir = os.environ["PARFLOW_DIR"]
+    except KeyError:
+        raise KeyError('The environment variable PARFLOW_DIR has not been defined. Please make sure you have ParFlow installed ' \
+                       'and os.environ["PARFLOW_DIR"] points to that installation.')
+    file_path = os.path.join(parflow_dir, "bin", "pfmask-to-pfsol")
+    if not os.path.exists(file_path):
+        raise FileNotFoundError('pfmask-to-pfsol file not found. Please make sure you have ParFlow installed ' \
+                       'and os.environ["PARFLOW_DIR"] points to that installation.')
+    try:
+        subprocess.run(
+            [
+                file_path,
+                "--mask",
+                mask_file_path,
+                "--pfsol",
+                solid_file_path,
+                "--vtk",
+                mask_vtk_path,
+                "--z-bottom",
+                "0.0",
+                "--z-top",
+                z_total,
+            ],
+            check=True,
+            capture_output=True,
+        )
+    except subprocess.CalledProcessError as e:
+        raise subprocess.CalledProcessError("pfmask-to-pfsol error:", e.stderr)
 
     print(f"Wrote solidfile.pfsol and mask_vtk.vtk with total z of {z_total} meters")
     file_paths = {"mask": mask_file_path, "mask_vtk": mask_vtk_path, "solid": solid_file_path}
     return file_paths 
+
 
 def subset_static(
     ij_bounds,
