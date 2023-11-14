@@ -3,7 +3,7 @@
 
 {% endif %}
 {{ obj.name }}
-=========={{ "=" * obj.name|length }}
+----------{{ "=" * obj.name|length }}
 
 .. py:module:: {{ obj.name }}
 
@@ -18,10 +18,10 @@
 {% set visible_subpackages = obj.subpackages|selectattr("display")|list %}
 {% if visible_subpackages %}
 Subpackages
------------
+~~~~~~~~~~~
 .. toctree::
    :titlesonly:
-   :maxdepth: 3
+   :maxdepth: 1
 	      
 {% for subpackage in visible_subpackages %}
    autoapi/{{ obj.name }}/{{ subpackage.short_name }}/index.rst
@@ -34,7 +34,7 @@ Subpackages
 {% set visible_submodules = obj.submodules|selectattr("display")|list %}
 {% if visible_submodules %}
 Submodules
-----------
+~~~~~~~~~~
 .. toctree::
    :titlesonly:
    :maxdepth: 1
@@ -55,8 +55,6 @@ Submodules
 {% set visible_children = obj.children|selectattr("display")|rejectattr("imported")|list %}
 {% endif %}
 {% if visible_children %}
-{{ obj.type|title }} Contents
-{{ "-" * obj.type|length }}---------
 
 {% set visible_classes = visible_children|selectattr("type", "equalto", "class")|list %}
 {% set visible_functions = visible_children|selectattr("type", "equalto", "function")|list %}
