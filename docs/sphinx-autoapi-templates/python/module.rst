@@ -3,7 +3,7 @@
 
 {% endif %}
 {{ obj.name }}
-=========={{ "=" * obj.name|length }}
+----------{{ "-" * obj.name|length }}
 
 .. py:module:: {{ obj.name }}
 
@@ -24,7 +24,7 @@ Subpackages
    :maxdepth: 3
 
 {% for subpackage in visible_subpackages %}
-   {{ subpackage.short_name }}/index.rst
+   {{ subpackage.short_name }}
 {% endfor %}
 
 
