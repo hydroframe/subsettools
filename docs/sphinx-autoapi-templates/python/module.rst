@@ -2,6 +2,17 @@
 :orphan:
 
 {% endif %}
+:py:mod:`{{ obj.name }}`
+----------{{ "=" * obj.name|length }}
+
+.. py:module:: {{ obj.name }}
+
+{% if obj.docstring %}
+.. autoapi-nested-parse::
+
+   {{ obj.docstring|indent(3) }}
+
+{% endif %}
 
 {% block subpackages %}
 {% set visible_subpackages = obj.subpackages|selectattr("display")|list %}
