@@ -42,7 +42,7 @@ Interested in contributing? Check out the contributing guidelines. Please note t
 getting_started.md
 examples/gallery.md
 example_notebooks/example_notebooks.md
-API_Reference.rst
+autoapi/index
 changelog.md
 contributing.md
 conduct.md
