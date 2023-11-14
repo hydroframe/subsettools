@@ -18,10 +18,13 @@
 {% set visible_subpackages = obj.subpackages|selectattr("display")|list %}
 {% if visible_subpackages %}
 Subpackages
------------
-
+~~~~~~~~~~~
+.. toctree::
+   :titlesonly:
+   :maxdepth: 3
+	      
 {% for subpackage in visible_subpackages %}
-   {{ subpackage.short_name }}
+   autoapi/{{ subpackage.short_name }}/index.rst
 {% endfor %}
 
 
@@ -31,7 +34,7 @@ Subpackages
 {% set visible_submodules = obj.submodules|selectattr("display")|list %}
 {% if visible_submodules %}
 Submodules
-----------
+~~~~~~~~~~
 .. toctree::
    :titlesonly:
    :maxdepth: 1
