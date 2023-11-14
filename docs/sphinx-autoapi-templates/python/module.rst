@@ -40,7 +40,7 @@ Submodules
    :maxdepth: 1
 
 {% for submodule in visible_submodules %}
-   {{ submodule.short_name }}/index.rst
+   autoapi/{{ obj.name }}/{{ submodule.short_name }}/index.rst
 {% endfor %}
 
 
