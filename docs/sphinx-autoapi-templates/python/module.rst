@@ -3,7 +3,7 @@
 
 {% endif %}
 {{ obj.name }}
-----------{{ "-" * obj.name|length }}
+=========={{ "=" * obj.name|length }}
 
 .. py:module:: {{ obj.name }}
 
@@ -18,7 +18,7 @@
 {% set visible_subpackages = obj.subpackages|selectattr("display")|list %}
 {% if visible_subpackages %}
 Subpackages
-~~~~~~~~~~~
+-----------
 .. toctree::
    :titlesonly:
    :maxdepth: 3
@@ -34,7 +34,7 @@ Subpackages
 {% set visible_submodules = obj.submodules|selectattr("display")|list %}
 {% if visible_submodules %}
 Submodules
-~~~~~~~~~~
+----------
 .. toctree::
    :titlesonly:
    :maxdepth: 1
