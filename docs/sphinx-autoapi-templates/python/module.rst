@@ -19,9 +19,6 @@
 {% if visible_subpackages %}
 Subpackages
 -----------
-.. toctree::
-   :titlesonly:
-   :maxdepth: 3
 
 {% for subpackage in visible_subpackages %}
    {{ subpackage.short_name }}
