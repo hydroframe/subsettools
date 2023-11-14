@@ -29,8 +29,7 @@ autoapi_options = ['members',
                    'show-inheritance', 
                    'show-module-summary', 
                    'imported-members', 
-                  ] 
-autoapi_add_toctree_entry = False
+                  ]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
