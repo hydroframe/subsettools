@@ -24,7 +24,7 @@ Subpackages
    :maxdepth: 3
 	      
 {% for subpackage in visible_subpackages %}
-   autoapi/{{ subpackage.short_name }}/index.rst
+   autoapi/ {{ obj.name }} / {{ subpackage.short_name }}/index.rst
 {% endfor %}
 
 
