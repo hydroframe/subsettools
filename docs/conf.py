@@ -25,6 +25,7 @@ extensions = [
 ]
 
 autoapi_dirs = ["../src"]
+autoapi_template_dir = './sphinx-autoapi-templates'
 autoapi_options = ['members',
                    'undoc-members',
                    'show-inheritance', 
