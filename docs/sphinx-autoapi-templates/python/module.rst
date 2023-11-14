@@ -2,7 +2,7 @@
 :orphan:
 
 {% endif %}
-:py:mod:{{ obj.name }}
+{{ obj.name }}
 ----------{{ "-" * obj.name|length }}
 
 {% if obj.docstring %}
