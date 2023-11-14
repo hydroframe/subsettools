@@ -36,7 +36,7 @@ Interested in contributing? Check out the contributing guidelines. Please note t
 
 
 ```{toctree}
-:maxdepth: 3
+:maxdepth: 4
 :hidden:
 
 getting_started.md
