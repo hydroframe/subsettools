@@ -3,7 +3,7 @@
 
 {% endif %}
 {{ obj.name }}
-----------{{ "-" * obj.name|length }}
+=========={{ "=" * obj.name|length }}
 
 .. py:module:: {{ obj.name }}
 
@@ -20,7 +20,7 @@
 Subpackages
 -----------
 .. toctree::
-
+   :titlesonly:
    :maxdepth: 3
 
 {% for subpackage in visible_subpackages %}
