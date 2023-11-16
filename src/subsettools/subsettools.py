@@ -4,6 +4,7 @@
 import os
 import shutil
 import pathlib
+import logging
 import subprocess
 from datetime import datetime, timedelta
 from threading import Thread
@@ -19,6 +20,12 @@ from .subset_utils import (
     edit_drvclmin,
     adjust_filename_hours,
     get_UTC_time,
+)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
 )
 
 
@@ -101,11 +108,11 @@ def create_mask_solid(huc_list, grid, write_dir):
 
     # checks conus1 / 2 grid and assigns appripriate dz and z_total for making the mask and solid file
     if grid.lower() == "conus1":
-        print("grid is conus1")
+        logging.info("grid is conus1")
         layz = 100
         z_total = str(500)
     else:
-        print("grid is conus2")
+        logging.info("grid is conus2")
         layz = 200
         z_total = str(2000)
     # could look this up in dC and get the information
@@ -121,7 +128,7 @@ def create_mask_solid(huc_list, grid, write_dir):
     mask_clip = mask_clip.astype(float)
     mask_file_path = os.path.join(write_dir, "mask.pfb")
     write_pfb(mask_file_path, mask_clip, dx=1000, dy=1000, dz=layz, dist=False)
-    print("Wrote mask.pfb")
+    logging.info("Wrote mask.pfb")
 
     subprocess.run(
         [
@@ -140,7 +147,7 @@ def create_mask_solid(huc_list, grid, write_dir):
         check=True,
     )
 
-    print(f"Wrote solidfile.pfsol and mask_vtk.vtk with total z of {z_total} meters")
+    logging.info(f"Wrote solidfile.pfsol and mask_vtk.vtk with total z of {z_total} meters")
 
 
 def subset_static(
@@ -176,9 +183,9 @@ def subset_static(
         if entry is not None:
             subset_data = hf_hydrodata.gridded.get_ndarray(entry, grid_bounds=ij_bounds)
             write_pfb(os.path.join(write_dir, f"{var}.pfb"), subset_data, dist=False)
-            print(f"Wrote {var}.pfb in specified directory.")
+            logging.info(f"Wrote {var}.pfb in specified directory.")
         else:
-            print(f"{var} not found in dataset {dataset}")
+            logging.info(f"{var} not found in dataset {dataset}")
 
 
 def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
@@ -208,11 +215,11 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
     )
     
     if entry is None:
-        print(f"No pressure file found for in dataset {dataset}")
+        logging.info(f"No pressure file found for in dataset {dataset}")
         return None
     
     new_date = get_UTC_time(date, time_zone) - timedelta(hours=1)
-    print(f"UTC Date: {new_date}")
+    logging.info(f"UTC Date: {new_date}")
         
     date_string = new_date.strftime("%Y.%m.%d:%H.%M.%S_UTC0")
 
@@ -222,7 +229,7 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
 
     out_file = f"{dataset}_{date_string}_press.pfb"
     write_pfb(os.path.join(write_dir, out_file), subset_data[0, :, :, :], dist=False)
-    print(f"Wrote {out_file} in specified directory.")
+    logging.info(f"Wrote {out_file} in specified directory.")
     return out_file
 
 
@@ -248,7 +255,7 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
 
     file_type_list = ["vegp", "vegm", "drv_clm"]
     for file_type in file_type_list:
-        print(f"processing {file_type}")
+        logging.info(f"processing {file_type}")
         if file_type == "vegp":
             hf_hydrodata.gridded.get_raw_file(
                 os.path.join(write_dir, "drv_vegp.dat"),
@@ -257,7 +264,7 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
                 variable="clm_run",
                 period="static"
             ) 
-            print("copied vegp")
+            logging.info("copied vegp")
         elif file_type == "vegm":
             entry = hf_hydrodata.gridded.get_catalog_entries(
                 dataset=dataset,
@@ -268,7 +275,7 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
             subset_data = hf_hydrodata.gridded.get_ndarray(entry, grid_bounds=ij_bounds)
             land_cover_data = reshape_ndarray_to_vegm_format(subset_data)
             write_land_cover(land_cover_data, write_dir)
-            print("subset vegm")
+            logging.info("subset vegm")
         elif file_type == "drv_clm":
             file_path = os.path.join(write_dir, "drv_clmin.dat")
             hf_hydrodata.gridded.get_raw_file(file_path,
@@ -277,14 +284,14 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
                                      variable="clm_run",
                                      period="static"
             )
-            print("copied drv_clmin")
+            logging.info("copied drv_clmin")
             edit_drvclmin(
                 file_path=file_path,
                 start=start,
                 end=end,
                 time_zone=time_zone
             )
-            print("edited drv_clmin")
+            logging.info("edited drv_clmin")
 
 
 def subset_forcing(
@@ -358,7 +365,7 @@ def _subset_forcing_variable(variable, ij_bounds, grid, start_date, end_date, da
     date = start_date
     delta = timedelta(days=1)
     outputs[variable] = []
-    print(f"Reading {variable} pfb sequence")
+    logging.info(f"Reading {variable} pfb sequence")
     
     while date < end_date:
         start_time = date
@@ -400,7 +407,7 @@ def _subset_forcing_variable(variable, ij_bounds, grid, start_date, end_date, da
         write_pfb(write_path, subset_data[:, :, :], dist=False)
         date = date + delta
         day = day + 1
-    print(f"Finished writing {variable} to folder")
+    logging.info(f"Finished writing {variable} to folder")
     
     
 def edit_runscript_for_subset(
@@ -440,41 +447,41 @@ def edit_runscript_for_subset(
     _, file_extension = os.path.splitext(runscript_path)
     if runname is not None:
         run.set_name(runname)
-        print(
+        logging.info(
             f"New runname: {runname} provided, a new {file_extension[1:]} file will be created"
         )
     else:
-        print(f"No runname provided, old {file_extension[1:]} file will be overwritten")
+        logging.info(f"No runname provided, old {file_extension[1:]} file will be overwritten")
 
     # checks if we're running with clm
     if forcing_dir is not None:
-        print(
+        logging.info(
             f"Climate forcing directory has been changed to {forcing_dir} in runscript."
         )
         run.Solver.CLM.MetFilePath = forcing_dir
     else:
-        print("No forcing directory provided, run.Solver.CLM.MetFilePath key not set")
+        logging.info("No forcing directory provided, run.Solver.CLM.MetFilePath key not set")
 
     # getting the subset ni/nj to update keys
     imin, jmin, imax, jmax = ij_bounds
     ni, nj = imax - imin, jmax - jmin
     run.ComputationalGrid.NY = int(nj)
     run.ComputationalGrid.NX = int(ni)
-    print(f"ComputationalGrid.NY set to {nj} and NX to {ni}")
+    logging.info(f"ComputationalGrid.NY set to {nj} and NX to {ni}")
 
     domain_type = run.GeomInput.domaininput.InputType
     if domain_type == "SolidFile":
-        print(
+        logging.info(
             "GeomInput.domaininput.InputType detected as SolidFile, no additional keys to change for subset"
         )
     else:
-        print(
+        logging.info(
             f"GeomInput.domaininput.InputType detected as Box, updating Geom.domain.Upper.X to {ni * 1000} and Y to {nj * 1000} to match subset"
         )
         run.Geom.domain.Upper.X = ni * 1000
         run.Geom.domain.Upper.Y = nj * 1000
 
-    print(f"Updated runscript written to {write_dir}")
+    logging.info(f"Updated runscript written to {write_dir}")
     file_path, _ = run.write(
         working_directory=write_dir, file_format=f"{file_extension[1:]}"
     )
@@ -549,37 +556,37 @@ def change_filename_values(
     run = Run.from_definition(runscript_path)
     if runname is not None:
         run.set_name(runname)
-        print(
+        logging.info(
             f"New runname: {runname} provided, a new {file_extension[1:]} file will be created"
         )
 
     # check which input files are not none, to update the key
     if slopex is not None:
         run.TopoSlopesX.FileName = slopex
-        print(f"X Slopes filename changed to {slopex}")
+        logging.info(f"X Slopes filename changed to {slopex}")
     if slopey is not None:
         run.TopoSlopesY.FileName = slopey
-        print(f"Y Slopes filename changed to {slopey}")
+        logging.info(f"Y Slopes filename changed to {slopey}")
     if solidfile is not None:
         run.GeomInput.domaininput.FileName = solidfile
-        print(f"Solidfile filename changed to {solidfile}")
+        logging.info(f"Solidfile filename changed to {solidfile}")
     if init_press is not None:
         run.Geom.domain.ICPressure.FileName = init_press
-        print(f"Initial pressure filename changed to {init_press}")
+        logging.info(f"Initial pressure filename changed to {init_press}")
     if indicator is not None:
         run.Geom.indi_input.FileName = indicator
-        print(f"Indicator filename changed to {indicator}")
+        logging.info(f"Indicator filename changed to {indicator}")
     if depth_to_bedrock is not None:
         run.Geom.domain.FBz.FileName = depth_to_bedrock
-        print(f"Depth to bedrock filename changed to {depth_to_bedrock}")
+        logging.info(f"Depth to bedrock filename changed to {depth_to_bedrock}")
     if mannings is not None:
         run.Mannings.FileName = mannings
-        print(f"Mannings filename changed to {mannings}")
+        logging.info(f"Mannings filename changed to {mannings}")
     if evap_trans is not None:
         run.Solver.EvapTrans.FileName = evap_trans
-        print(f"Evaptrans filename changed to {evap_trans}")
+        logging.info(f"Evaptrans filename changed to {evap_trans}")
 
-    print(f"Updated runscript written to {write_dir}")
+    logging.info(f"Updated runscript written to {write_dir}")
     file_path, _ = run.write(
         working_directory=write_dir, file_format=f"{file_extension[1:]}"
     )
@@ -610,7 +617,6 @@ def dist_run(P, Q, runscript_path, working_dir=None, dist_clim_forcing=True):
         AssertionError: If runscript_path is not a valid file path.
     """
     assert os.path.isfile(runscript_path), "runscript_path must be a valid file path"
-
     if working_dir is None:
         working_dir = os.path.dirname(runscript_path)
     
@@ -620,22 +626,22 @@ def dist_run(P, Q, runscript_path, working_dir=None, dist_clim_forcing=True):
     run.Process.Topology.Q = Q
 
     if dist_clim_forcing:
-        print("Distributing your climate forcing")
+        logging.info("Distributing your climate forcing")
         forcing_dir = run.Solver.CLM.MetFilePath
         for filename in pathlib.Path(forcing_dir).glob("*.pfb"):
             run.dist(filename)
     else:
-        print("no forcing dir provided, only distributing static inputs")
+        logging.info("no forcing dir provided, only distributing static inputs")
 
     static_input_paths = pathlib.Path(working_dir).glob("*.pfb")
-    max_nz = 0
+    max_nz = 5
     for path in static_input_paths:
         input_array = read_pfb(path)
         nz = input_array.shape[0]
         if nz > max_nz:
             max_nz = nz
         run.dist(path)
-        print(f"Distributed {os.path.basename(path)} with NZ {nz}")
+        logging.info(f"Distributed {os.path.basename(path)} with NZ {nz}")
     run.ComputationalGrid.NZ = max_nz
 
     _, file_extension = os.path.splitext(runscript_path)
