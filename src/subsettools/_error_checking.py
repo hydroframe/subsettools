@@ -2,6 +2,7 @@
 """
 
 import os 
+import re
 
 def _validate_huc_list(huc_list):
     """Check errors for a user-provided list of HUC IDs."""
@@ -42,3 +43,9 @@ def _validate_grid_bounds(grid_bounds):
         raise ValueError("bounds must contain four elements (imin, imax, jmin, jmax).")
 
     
+def _validate_date(date):
+    if not isinstance(date, str):
+        raise TypeError("date must be a string.")
+    pattern = re.compile(r'\d{4}-\d{2}-\d{2}$')
+    if not bool(pattern.match(date)):
+        raise ValueError("invalid date format.")

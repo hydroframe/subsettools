@@ -22,6 +22,7 @@ from ._error_checking import (
     _validate_grid,
     _validate_dir,
     _validate_grid_bounds,
+    _validate_date,
 )
 
 
@@ -278,6 +279,7 @@ def subset_static(
             print(f"{var} not found in dataset {dataset}")
     return file_paths
 
+
 def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
     """Subset the initial pressure file.
 
@@ -298,12 +300,17 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
     Raises:
         AssertionError: If write_dir is not a valid directory.
     """
-    assert os.path.isdir(write_dir), "write_dir must be a directory"
-
+    _validate_grid_bounds(ij_bounds)
+    if not isinstance(dataset, str):
+        raise TypeError("dataset name must be a string.")
+    _validate_date(date)
+    _validate_dir(write_dir)
+    if not isinstance(time_zone, str):
+        raise TypeError("time_zone must be a string.")
+    
     entry = hf_hydrodata.gridded.get_catalog_entry(
         dataset=dataset, file_type="pfb", variable="pressure_head", period="hourly"
     )
-    
     if entry is None:
         print(f"No pressure file found for in dataset {dataset}")
         return None
