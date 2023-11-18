@@ -4,7 +4,7 @@
 from importlib import resources
 import os
 import shutil
-from .error_checking import (
+from ._error_checking import (
     _validate_grid,
     _validate_dir,
 )

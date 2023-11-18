@@ -17,7 +17,7 @@ from .subset_utils import (
     edit_drvclmin,
     get_UTC_time,
 )
-from .error_checking import (
+from ._error_checking import (
     _validate_huc_list,
     _validate_grid,
     _validate_dir,
