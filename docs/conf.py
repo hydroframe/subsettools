@@ -23,13 +23,16 @@ extensions = [
     "nbsphinx",
     "sphinx_gallery.load_style",
 ]
+
 autoapi_dirs = ["../src"]
+autoapi_template_dir = './sphinx-autoapi-templates'
 autoapi_options = ['members',
                    'undoc-members',
                    'show-inheritance', 
                    'show-module-summary', 
                    'imported-members', 
                   ]
+autoapi_add_toctree_entry = False
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
