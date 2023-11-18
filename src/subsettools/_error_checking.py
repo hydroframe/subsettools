@@ -5,6 +5,8 @@ import os
 
 def _validate_huc_list(huc_list):
     """Check errors for a user-provided list of HUC IDs."""
+    if not isinstance(huc_list, list):
+        raise TypeError("huc_list must be a list.")
     if not all(isinstance(huc, str) for huc in huc_list):
         raise TypeError("All elements of huc_list must be strings")
     if not all(huc.isdigit() for huc in huc_list):
@@ -29,3 +31,14 @@ def _validate_dir(dir_name):
     """Check that dir_name is a valid directory."""
     if not os.path.isdir(dir_name):
         raise FileNotFoundError(f"{dir_name} is not a valid existing directory") 
+
+
+def _validate_grid_bounds(grid_bounds):
+    if not isinstance(grid_bounds, tuple):
+        raise TypeError("bounds must be a tuple.")
+    if not all(isinstance(val, (int, float)) for val in grid_bounds):
+        raise TypeError("bounds must contain integers or floats.")
+    if not len(grid_bounds) == 4:
+        raise ValueError("bounds must contain four elements (imin, imax, jmin, jmax).")
+
+    

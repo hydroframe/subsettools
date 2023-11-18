@@ -21,6 +21,7 @@ from ._error_checking import (
     _validate_huc_list,
     _validate_grid,
     _validate_dir,
+    _validate_grid_bounds,
 )
 
 
@@ -70,6 +71,8 @@ def _get_conus_hucs_indices(huc_list, grid):
     entry = hf_hydrodata.gridded.get_catalog_entry(
         dataset="huc_mapping", grid=grid, file_type="tiff"
     )
+    if entry is None:
+        raise ValueError(f"There is no HUC mapping entry for grid {grid}.")
     conus_hucs = hf_hydrodata.gridded.get_ndarray(entry, level=str(huc_len))
     sel_hucs = np.isin(conus_hucs, huc_list).squeeze()
     indices_j, indices_i = np.where(sel_hucs > 0)
@@ -254,7 +257,12 @@ def subset_static(
     Raises:
         AssertionError: If write_dir is not a valid directory.
     """
-    assert os.path.isdir(write_dir), "write_dir must be a directory"
+    _validate_grid_bounds(ij_bounds)
+    if not isinstance(dataset, str):
+        raise TypeError("dataset name must be a string.")
+    _validate_dir(write_dir)
+    if not all(isinstance(var, str) for var in var_list):
+        raise TypeError("All variable names should be strings.")
     file_paths = {}
     for var in var_list:
         entry = hf_hydrodata.gridded.get_catalog_entry(
