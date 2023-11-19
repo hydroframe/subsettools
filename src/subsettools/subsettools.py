@@ -614,14 +614,18 @@ def edit_runscript_for_subset(
         Path to the new runscript file that will be created.
 
     Raises:
-       AssertionError: If runscript_path is not a valid file path or if forcing_dir is not a valid directory path.
+        FileNotFoundError: If runscript_path is not an existing file or write_dir is not a valid directory.
     """
-    assert os.path.isfile(runscript_path), "runscript_path must be a valid file path"
-    if forcing_dir is not None:
-        assert os.path.isdir(forcing_dir), "forcing_dir must be a valid directory path"
-    
+    _validate_grid_bounds(ij_bounds)
+    if not os.path.isfile(runscript_path):
+        raise FileNotFoundError("runscript_path must be a valid file path")
     if write_dir is None:
         write_dir = os.path.dirname(runscript_path)
+    _validate_dir(write_dir)
+    if runname is not None and not isinstance(runname, str):
+        raise TypeError("runname must be a string.")
+    if forcing_dir is not None:
+        _validate_dir(forcing_dir)
     
     # load in the reference pfidb or yaml specified by the user
     run = Run.from_definition(runscript_path)
@@ -679,8 +683,8 @@ def copy_files(read_dir, write_dir):
     Raises:
         AssertionError: If read_dir or write_dir is not a valid directory path.
     """
-    assert os.path.isdir(read_dir), "read_dir must be a directory"
-    assert os.path.isdir(write_dir), "write_dir must be a directory"
+    _validate_dir(read_dir)
+    _validate_dir(write_dir)
     for filename in os.listdir(read_dir):
         file_path = os.path.join(read_dir, filename)
         if os.path.isfile(file_path):
