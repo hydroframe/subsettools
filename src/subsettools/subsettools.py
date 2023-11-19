@@ -728,14 +728,13 @@ def change_filename_values(
         Path to the new runscript file that will be created.
 
     Raises:
-        AssertionError: If runscript_path is not a valid file path.
+        FileNotFoundError: If runscript_path is not a valid file path or write_dir is not a valid directory.
     """
-    assert os.path.isfile(
-        runscript_path
-    ), "runscript_path must be a valid path to an existing file"
-
+    if not os.path.isfile(runscript_path):
+        raise FileNotFoundError("runscript_path must be a valid file path")
     if write_dir is None:
         write_dir = os.path.dirname(runscript_path)
+    _validate_dir(write_dir)
 
     _, file_extension = os.path.splitext(runscript_path)
     run = Run.from_definition(runscript_path)
@@ -744,7 +743,6 @@ def change_filename_values(
         print(
             f"New runname: {runname} provided, a new {file_extension[1:]} file will be created"
         )
-
     # check which input files are not none, to update the key
     if slopex is not None:
         run.TopoSlopesX.FileName = slopex
@@ -799,25 +797,30 @@ def dist_run(P, Q, runscript_path, working_dir=None, dist_clim_forcing=True):
         Path to the edited runscript file that will be created.
 
     Raises:
-        AssertionError: If runscript_path is not a valid file path.
+        FileNotFoundError: If runscript_path is not a valid file path or write_dir is not a valid directory.
     """
-    assert os.path.isfile(runscript_path), "runscript_path must be a valid file path"
-
+    if not isinstance(P, int) or P <= 0:
+        raise TypeError("P must be a positive integer.")
+    if not isinstance(Q, int) or Q <= 0:
+        raise TypeError("Q must be a positive integer.")
+    if not os.path.isfile(runscript_path):
+        raise FileNotFoundError("runscript_path must be a valid file path")    
     if working_dir is None:
         working_dir = os.path.dirname(runscript_path)
+    _validate_dir(working_dir)
     
     run = Run.from_definition(runscript_path)
-
     run.Process.Topology.P = P
     run.Process.Topology.Q = Q
 
     if dist_clim_forcing:
         print("Distributing your climate forcing")
         forcing_dir = run.Solver.CLM.MetFilePath
+        _validate_dir(forcing_dir)
         for filename in pathlib.Path(forcing_dir).glob("*.pfb"):
             run.dist(filename)
     else:
-        print("no forcing dir provided, only distributing static inputs")
+        print("no forcing directory provided, only distributing static inputs")
 
     static_input_paths = pathlib.Path(working_dir).glob("*.pfb")
     max_nz = 0
