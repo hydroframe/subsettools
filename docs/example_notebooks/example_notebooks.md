@@ -3,8 +3,6 @@ Example notebooks
 
 Below are descriptions regarding example Jupyter notebooks using the subsettools API. Currently, only there are only examples for subsetting the CONUS1 domain but notebooks supporting the subsetting of the CONUS2 domain will soon be supported. 
 
-### Example Notebook Descriptions
-
 #### Doing a transient simulation with ParFlow-CLM
 
 This notebook walks through an example of subsetting a HUC8 from the CONUS1 domain. This example will subset everything needed to do a transient run with ParFlow-CLM. 
