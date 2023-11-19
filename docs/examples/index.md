@@ -1,6 +1,9 @@
 # How To
 
-```{nbgallery}
+This section contains a set of example workflows that utilize different capabilities of `subsettools`.
+
+```{toctree}
+:maxdepth: 1
 definte_subset.ipynb
 subset_static_inputs.ipynb
 subset_forcing_data.ipynb

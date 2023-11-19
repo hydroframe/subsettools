@@ -40,7 +40,7 @@ Interested in contributing? Check out the contributing guidelines. Please note t
 :hidden:
 
 getting_started.md
-examples/gallery.md
+examples/index.md
 example_notebooks/example_notebooks.md
 API_Reference.rst
 changelog.md
