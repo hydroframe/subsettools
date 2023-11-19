@@ -43,8 +43,8 @@ vclass         2                                     Vegetation Classification S
 !
 ! CLM Files (Read into 1D drv_module variables):
 !
-vegtf           drv_vegm.dat                         Vegetation Tile Specification File
-vegpf           drv_vegp.dat                         Vegetation Type Parameter
+vegtf          drv_vegm.dat                          Vegetation Tile Specification File
+vegpf          drv_vegp.dat                          Vegetation Type Parameter
 metf1d         narr_1hr.dat                          Meterologic input file- valdai 3 hr
 outf1d         clm_out.txt                           CLM output file
 poutf1d        clm_para_out.dat                      CLM 1D Parameter Output File
@@ -52,24 +52,24 @@ rstf           clm.rst.                              CLM active restart file
 !
 !!! LDAS Run Timing Parameters (Read into 1D drv_module variables):
 !
-startcode       2                                    1=restart file, 2=defined
+startcode      2                                     1=restart file, 2=defined
 sss            00                                    Starting Second
 smn            00                                    Starting Minute
-shr            00                                    Starting Hour
-sda            01                                    Starting Day
+shr            0                                     Starting Hour
+sda            1                                     Starting Day
 smo            10                                    Starting Month
 syr            2005                                  Starting Year
 !
 ess            00                                    Ending Second
 emn            00                                    Ending Minute
 ehr            23                                    Ending Hour
-eda            03                                    Ending Day
+eda            2                                     Ending Day
 emo            10                                    Ending Month
 eyr            2005                                  Ending Year
 !
 ! IC Source: (1) restart file, (2) drv_clmin.dat (this file)
 !
-clm_ic          2                                    1=restart file, 2=defined
+clm_ic         2                                     1=restart file, 2=defined
 !               CLM Initial Condition Source
 !
 ! CLM initial conditions (1-D : used in drv_clmini.f90_
