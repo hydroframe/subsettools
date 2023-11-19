@@ -153,6 +153,7 @@ def create_mask_solid(huc_list, grid, write_dir):
 
     Raises:  
         FileNotFoundError: If write_dir is not a valid directory.  
+        ValueError: If the area defined by the provided HUCs is not part of the given grid.
     """
     _validate_huc_list(huc_list)
     _validate_grid(grid)
@@ -256,7 +257,7 @@ def subset_static(
         file paths where the subset data were written.
         
     Raises:
-        AssertionError: If write_dir is not a valid directory.
+        FileNotFoundError: If write_dir is not a valid directory.
     """
     _validate_grid_bounds(ij_bounds)
     if not isinstance(dataset, str):
@@ -298,7 +299,7 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
         used by later functions (e.g. edit_runscript_for_subset)
 
     Raises:
-        AssertionError: If write_dir is not a valid directory.
+        FileNotFoundError: If write_dir is not a valid directory.
     """
     _validate_grid_bounds(ij_bounds)
     if not isinstance(dataset, str):
@@ -350,13 +351,27 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
         file paths where the CLM files were written.
 
     Raises:
-        AssertionError: If write_dir is not a valid directory.        
+        FileNotFoundError: If write_dir is not a valid directory.
     """
-    assert os.path.isdir(write_dir), "write_dir must be a directory"
+    _validate_grid_bounds(ij_bounds)
+    _validate_date(start)
+    _validate_date(end)
+    if not isinstance(dataset, str):
+        raise TypeError("dataset name must be a string.")
+    _validate_dir(write_dir)
+    if not isinstance(time_zone, str):
+        raise TypeError("time_zone must be a string.")
 
     file_type_list = ["vegp", "vegm", "drv_clm"]
     file_paths = {}
     for file_type in file_type_list:
+        entry = hf_hydrodata.gridded.get_catalog_entry(dataset=dataset,
+                                                       file_type=file_type,
+                                                       variable="clm_run",
+                                                       period="static"
+        )
+        if entry is None:
+            raise ValueError("No {file_type} entry matches your request.")
         print(f"processing {file_type}")
         if file_type == "vegp":
             file_path = os.path.join(write_dir, "drv_vegp.dat")
@@ -370,12 +385,6 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
             file_paths[file_type] = file_path
             print("copied vegp")
         elif file_type == "vegm":
-            entry = hf_hydrodata.gridded.get_catalog_entries(
-                dataset=dataset,
-                file_type=file_type,
-                variable="clm_run",
-                period="static"
-            )[0]
             subset_data = hf_hydrodata.gridded.get_ndarray(entry, grid_bounds=ij_bounds)
             land_cover_data = _reshape_ndarray_to_vegm_format(subset_data)
             file_path = write_land_cover(land_cover_data, write_dir)
@@ -450,7 +459,7 @@ def subset_forcing(
         end (str): end date (exlusive), in the form 'yyyy-mm-dd'
         dataset (str): forcing dataset name from the HydroData catalog e.g. "NLDAS2". 
         write_dir (str): directory where the subset file will be written
-        timezone (str): timezone information for start and end dates. Data will be subset starting at midnight in the specified timezone.
+        time_zone (str): timezone information for start and end dates. Data will be subset starting at midnight in the specified timezone.
         forcing_vars (Tuple[str]): tuple of forcing variables to subset. By default all 8 variables needed to run ParFlow-CLM will be subset. 
 
     Returns:
@@ -458,7 +467,7 @@ def subset_forcing(
         file paths where the subset data were written.
 
     Raises:
-        AssertionError: If write_dir is not a valid directory.
+        FileNotFoundError: If write_dir is not a valid directory.
 
     Examples:
         >>> subset_forcing(ij_bounds=(1225, 1738, 1347, 1811), 
@@ -469,8 +478,17 @@ def subset_forcing(
                            write_dir="/path/to/your/chosen/directory",
             )
     """
-    assert os.path.isdir(write_dir), "write_dir must be a directory"
-
+    _validate_grid_bounds(ij_bounds)
+    _validate_grid(grid)
+    _validate_date(start)
+    _validate_date(end)
+    if not isinstance(dataset, str):
+        raise TypeError("dataset name must be a string.")
+    _validate_dir(write_dir)
+    if not isinstance(time_zone, str):
+        raise TypeError("time_zone must be a string.")
+    if not all(isinstance(var, str) for var in forcing_vars):
+        raise TypeError("All variable names should be strings.")    
     outputs = {}
     start_date = get_UTC_time(start, time_zone)
     end_date = get_UTC_time(end, time_zone)
