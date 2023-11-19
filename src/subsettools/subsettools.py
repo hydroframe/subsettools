@@ -13,11 +13,16 @@ import re
 from parflow import Run
 from parflow.tools.io import read_pfb, write_pfb
 from .subset_utils import (
-    get_conus_hucs_indices,
-    indices_to_ij,
     write_land_cover,
     edit_drvclmin,
     get_UTC_time,
+)
+from ._error_checking import (
+    _validate_huc_list,
+    _validate_grid,
+    _validate_dir,
+    _validate_grid_bounds,
+    _validate_date,
 )
 
 
@@ -38,7 +43,7 @@ def huc_to_ij(huc_list, grid):
         in the conus grid of the area defined by the huc IDs in huc_list.
 
     Raises:
-        AssertionError: If all HUC IDs are not the same length.
+        ValueError: If all HUC IDs are not the same length.
         ValueError: If the area defined by the provided HUCs is not part of the given grid.
 
     Example:
@@ -47,14 +52,59 @@ def huc_to_ij(huc_list, grid):
 
         grid_bounds = huc_to_ij(huc_list=["14080201", "14080202", "14080203"], grid="conus1")
     """
-    huc_len = len(huc_list[0])
-    assert all(
-        [len(huc) == huc_len for huc in huc_list]
-    ), "All huc IDs should have the same length!"
-    conus_hucs, _, indices_j, indices_i = get_conus_hucs_indices(huc_list, grid)
+    _validate_huc_list(huc_list)
+    _validate_grid(grid)
+    conus_hucs, _, indices_j, indices_i = _get_conus_hucs_indices(huc_list, grid.lower())
     if indices_i.size == 0 or indices_j.size == 0:
         raise ValueError(f"The area defined by the provided HUCs is not part of the {grid} grid.")  
-    return indices_to_ij(conus_hucs, indices_j, indices_i)
+    return _indices_to_ij(conus_hucs, indices_j, indices_i)
+
+
+def _get_conus_hucs_indices(huc_list, grid):
+    """Get the huc datafile as an ndarray and three mask arrays representing the selected hucs.
+    
+    Args:
+        huc_list (List[str]): a list of huc IDs 
+        grid (str): "conus1" or "conus2"                                                                                                
+
+    Returns:   
+        A tuple (conus_hucs, sel_hucs, indices_j, indices_i) where                                               
+        conus_hucs is an ndarray of the huc datafile, sel_hucs is
+        a mask array for the selected hucs, and indices_i and
+        indices_j mask arrays in the j and i directions.
+    """
+    huc_len = len(huc_list[0])
+    huc_list = [int(huc) for huc in huc_list]
+    entry = hf_hydrodata.gridded.get_catalog_entry(
+        dataset="huc_mapping", grid=grid, file_type="tiff"
+    )
+    if entry is None:
+        raise ValueError(f"There is no HUC mapping entry for grid {grid}.")
+    conus_hucs = hf_hydrodata.gridded.get_ndarray(entry, level=str(huc_len))
+    sel_hucs = np.isin(conus_hucs, huc_list).squeeze()
+    indices_j, indices_i = np.where(sel_hucs > 0)
+    return conus_hucs, sel_hucs, indices_j, indices_i
+
+
+def _indices_to_ij(conus_hucs, indices_j, indices_i):
+    """Get the conus ij-bounds for the conus_hucs boundary defined by indices_j and indices_i.                                                  
+
+    Args:                                                                                                                           
+        conus_hucs (numpy.ndarray): conus huc data                                                                                             
+        indices_j (numpy.ndarray): mask in the j direction for selected hucs                                                                    
+        indices_i (numpy.ndarray): mask in the i direction for selected hucs                                                                   
+ 
+    Returns:                                                                                                         
+        A tuple of the form (imin, jmin, imax, jmax) representing the bounds                                                                    
+        in conus_hucs defined by the two mask arrays indices_j and indices_i.                                                                   
+    """
+    imin = np.min(indices_i)
+    imax = np.max(indices_i) + 1  # right bound inclusive                                                                                       
+    arr_jmin = np.min(indices_j)
+    arr_jmax = np.max(indices_j) + 1  # right bound inclusive                                                                                   
+    jmin = conus_hucs.shape[0] - arr_jmax
+    jmax = conus_hucs.shape[0] - arr_jmin
+    return (int(imin), int(jmin), int(imax), int(jmax))
 
 
 def latlon_to_ij(latlon_bounds, grid):
@@ -78,10 +128,17 @@ def latlon_to_ij(latlon_bounds, grid):
 
         grid_bounds = latlon_to_ij(latlon_bounds=[[37.91, -91.43], [37.34, -90.63]], grid="conus2")
     """
+    _validate_grid(grid)    
+    if not isinstance(latlon_bounds, list):
+        raise TypeError("latlon_bounds must be a list")
+    if len(latlon_bounds) != 2:
+        raise ValueError("latlon_bounds must contain exactly two lat-lon points: [[lat1, lon1], [lat2, lon2]]")
+    for point in latlon_bounds:
+        if not (isinstance(point, list) and
+                len(point) == 2 and
+                all(isinstance(value, (int, float)) for value in point)):
+            raise ValueError("latlon_bounds must contain exactly two lat-lon points: [[lat1, lon1], [lat2, lon2]]")
     grid = grid.lower()
-    assert grid in ["conus1", "conus2"], "invalid grid name"
-    assert len(latlon_bounds) == 2, "please provide 2 latlon points"
-    assert len(latlon_bounds[0]) == 2 and len(latlon_bounds[1]) == 2, "invalid latlon point"
     point0 = hf_hydrodata.grid.to_ij(grid, latlon_bounds[0][0], latlon_bounds[0][1])
     point1 = hf_hydrodata.grid.to_ij(grid, latlon_bounds[1][0], latlon_bounds[1][1])
     imin, imax = [
@@ -92,7 +149,6 @@ def latlon_to_ij(latlon_bounds, grid):
         min(point0[1], point1[1]),
         max(point0[1], point1[1]),
     ]
-
     return (imin, jmin, imax, jmax)
 
 
@@ -108,7 +164,8 @@ def create_mask_solid(huc_list, grid, write_dir):
         A dictionary of paths with keys ("mask", "mask_vtk", "solid") and values filepaths to the created files.
 
     Raises:  
-        AssertionError: If write_dir is not a valid directory.  
+        FileNotFoundError: If write_dir is not a valid directory.  
+        ValueError: If the area defined by the provided HUCs is not part of the given grid.
 
     Example:
 
@@ -120,18 +177,22 @@ def create_mask_solid(huc_list, grid, write_dir):
             write_dir="/path/to/your/chosen/directory"
         )
     """
-    assert os.path.isdir(write_dir), "write_dir must be a directory"
-
-    conus_hucs, sel_hucs, indices_j, indices_i = get_conus_hucs_indices(huc_list, grid)
+    _validate_huc_list(huc_list)
+    _validate_grid(grid)
+    _validate_dir(write_dir)
+    grid = grid.lower()
+    conus_hucs, sel_hucs, indices_j, indices_i = _get_conus_hucs_indices(huc_list, grid)
+    if indices_i.size == 0 or indices_j.size == 0:
+        raise ValueError(f"The area defined by the provided HUCs is not part of the {grid} grid.")      
     arr_jmin = np.min(indices_j)
     arr_jmax = np.max(indices_j) + 1  # right bound inclusive
-    ij_bounds = indices_to_ij(conus_hucs, indices_j, indices_i)
+    ij_bounds = _indices_to_ij(conus_hucs, indices_j, indices_i)
 
     nj = ij_bounds[3] - ij_bounds[1]
     ni = ij_bounds[2] - ij_bounds[0]
 
     # checks conus1 / 2 grid and assigns appripriate dz and z_total for making the mask and solid file
-    if grid.lower() == "conus1":
+    if grid  == "conus1":
         print("grid is conus1")
         layz = 100
         z_total = str(500)
@@ -155,27 +216,41 @@ def create_mask_solid(huc_list, grid, write_dir):
     print("Wrote mask.pfb")
     mask_vtk_path = os.path.join(write_dir, "mask_vtk.vtk")
     solid_file_path = os.path.join(write_dir, "solidfile.pfsol")
-    
-    subprocess.run(
-        [
-            os.path.join(os.environ["PARFLOW_DIR"], "bin", "pfmask-to-pfsol"),
-            "--mask",
-            mask_file_path,
-            "--pfsol",
-            solid_file_path,
-            "--vtk",
-            mask_vtk_path,
-            "--z-bottom",
-            "0.0",
-            "--z-top",
-            z_total,
-        ],
-        check=True,
-    )
+
+    try:
+        parflow_dir = os.environ["PARFLOW_DIR"]
+    except KeyError:
+        raise KeyError('The environment variable PARFLOW_DIR has not been defined. Please make sure you have ParFlow installed ' \
+                       'and os.environ["PARFLOW_DIR"] points to that installation.')
+    file_path = os.path.join(parflow_dir, "bin", "pfmask-to-pfsol")
+    if not os.path.exists(file_path):
+        raise FileNotFoundError('pfmask-to-pfsol file not found. Please make sure you have ParFlow installed ' \
+                       'and os.environ["PARFLOW_DIR"] points to that installation.')
+    try:
+        subprocess.run(
+            [
+                file_path,
+                "--mask",
+                mask_file_path,
+                "--pfsol",
+                solid_file_path,
+                "--vtk",
+                mask_vtk_path,
+                "--z-bottom",
+                "0.0",
+                "--z-top",
+                z_total,
+            ],
+            check=True,
+            capture_output=True,
+        )
+    except subprocess.CalledProcessError as e:
+        raise subprocess.CalledProcessError("pfmask-to-pfsol error:", e.stderr)
 
     print(f"Wrote solidfile.pfsol and mask_vtk.vtk with total z of {z_total} meters")
     file_paths = {"mask": mask_file_path, "mask_vtk": mask_vtk_path, "solid": solid_file_path}
     return file_paths 
+
 
 def subset_static(
     ij_bounds,
@@ -204,7 +279,7 @@ def subset_static(
         file paths where the subset data were written.
         
     Raises:
-        AssertionError: If write_dir is not a valid directory.
+        FileNotFoundError: If write_dir is not a valid directory.
 
     Example:
 
@@ -217,7 +292,12 @@ def subset_static(
             var_list=("slope_x", "slope_y")
         )
     """
-    assert os.path.isdir(write_dir), "write_dir must be a directory"
+    _validate_grid_bounds(ij_bounds)
+    if not isinstance(dataset, str):
+        raise TypeError("dataset name must be a string.")
+    _validate_dir(write_dir)
+    if not all(isinstance(var, str) for var in var_list):
+        raise TypeError("All variable names should be strings.")
     file_paths = {}
     for var in var_list:
         entry = hf_hydrodata.gridded.get_catalog_entry(
@@ -252,7 +332,7 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
         used by later functions (e.g. edit_runscript_for_subset)
 
     Raises:
-        AssertionError: If write_dir is not a valid directory.
+        FileNotFoundError: If write_dir is not a valid directory.
 
     Example:
 
@@ -266,12 +346,17 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
             time_zone="EST"
         )
     """
-    assert os.path.isdir(write_dir), "write_dir must be a directory"
-
+    _validate_grid_bounds(ij_bounds)
+    if not isinstance(dataset, str):
+        raise TypeError("dataset name must be a string.")
+    _validate_date(date)
+    _validate_dir(write_dir)
+    if not isinstance(time_zone, str):
+        raise TypeError("time_zone must be a string.")
+    
     entry = hf_hydrodata.gridded.get_catalog_entry(
         dataset=dataset, file_type="pfb", variable="pressure_head", period="hourly"
     )
-    
     if entry is None:
         print(f"No pressure file found for in dataset {dataset}")
         return None
@@ -311,7 +396,7 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
         file paths where the CLM files were written.
 
     Raises:
-        AssertionError: If write_dir is not a valid directory.        
+        FileNotFoundError: If write_dir is not a valid directory.     
 
     Example:
 
@@ -325,11 +410,25 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
             write_dir="/path/to/your/chosen/directory"
         )
     """
-    assert os.path.isdir(write_dir), "write_dir must be a directory"
+    _validate_grid_bounds(ij_bounds)
+    _validate_date(start)
+    _validate_date(end)
+    if not isinstance(dataset, str):
+        raise TypeError("dataset name must be a string.")
+    _validate_dir(write_dir)
+    if not isinstance(time_zone, str):
+        raise TypeError("time_zone must be a string.")
 
     file_type_list = ["vegp", "vegm", "drv_clm"]
     file_paths = {}
     for file_type in file_type_list:
+        entry = hf_hydrodata.gridded.get_catalog_entry(dataset=dataset,
+                                                       file_type=file_type,
+                                                       variable="clm_run",
+                                                       period="static"
+        )
+        if entry is None:
+            raise ValueError("No {file_type} entry matches your request.")
         print(f"processing {file_type}")
         if file_type == "vegp":
             file_path = os.path.join(write_dir, "drv_vegp.dat")
@@ -343,12 +442,6 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
             file_paths[file_type] = file_path
             print("copied vegp")
         elif file_type == "vegm":
-            entry = hf_hydrodata.gridded.get_catalog_entries(
-                dataset=dataset,
-                file_type=file_type,
-                variable="clm_run",
-                period="static"
-            )[0]
             subset_data = hf_hydrodata.gridded.get_ndarray(entry, grid_bounds=ij_bounds)
             land_cover_data = _reshape_ndarray_to_vegm_format(subset_data)
             file_path = write_land_cover(land_cover_data, write_dir)
@@ -423,7 +516,7 @@ def subset_forcing(
         end (str): end date (exlusive), in the form 'yyyy-mm-dd'
         dataset (str): forcing dataset name from the HydroData catalog e.g. "NLDAS2". 
         write_dir (str): directory where the subset file will be written
-        timezone (str): timezone information for start and end dates. Data will be subset starting at midnight in the specified timezone.
+        time_zone (str): timezone information for start and end dates. Data will be subset starting at midnight in the specified timezone.
         forcing_vars (Tuple[str]): tuple of forcing variables to subset. By default all 8 variables needed to run ParFlow-CLM will be subset. 
 
     Returns:
@@ -431,7 +524,7 @@ def subset_forcing(
         file paths where the subset data were written.
 
     Raises:
-        AssertionError: If write_dir is not a valid directory.
+        FileNotFoundError: If write_dir is not a valid directory.
 
     Example:
 
@@ -447,8 +540,17 @@ def subset_forcing(
             forcing_vars=("precipitation", "air_temp")
         )
     """
-    assert os.path.isdir(write_dir), "write_dir must be a directory"
-
+    _validate_grid_bounds(ij_bounds)
+    _validate_grid(grid)
+    _validate_date(start)
+    _validate_date(end)
+    if not isinstance(dataset, str):
+        raise TypeError("dataset name must be a string.")
+    _validate_dir(write_dir)
+    if not isinstance(time_zone, str):
+        raise TypeError("time_zone must be a string.")
+    if not all(isinstance(var, str) for var in forcing_vars):
+        raise TypeError("All variable names should be strings.")    
     outputs = {}
     start_date = get_UTC_time(start, time_zone)
     end_date = get_UTC_time(end, time_zone)
@@ -574,7 +676,7 @@ def edit_runscript_for_subset(
         Path to the new runscript file that will be created.
 
     Raises:
-       AssertionError: If runscript_path is not a valid file path or if forcing_dir is not a valid directory path.
+        FileNotFoundError: If runscript_path is not an existing file or write_dir is not a valid directory.
 
     Example:
 
@@ -587,12 +689,16 @@ def edit_runscript_for_subset(
             forcing_dir="/path/to/your/forcing/directory"
         )
     """
-    assert os.path.isfile(runscript_path), "runscript_path must be a valid file path"
-    if forcing_dir is not None:
-        assert os.path.isdir(forcing_dir), "forcing_dir must be a valid directory path"
-    
+    _validate_grid_bounds(ij_bounds)
+    if not os.path.isfile(runscript_path):
+        raise FileNotFoundError("runscript_path must be a valid file path")
     if write_dir is None:
         write_dir = os.path.dirname(runscript_path)
+    _validate_dir(write_dir)
+    if runname is not None and not isinstance(runname, str):
+        raise TypeError("runname must be a string.")
+    if forcing_dir is not None:
+        _validate_dir(forcing_dir)
     
     # load in the reference pfidb or yaml specified by the user
     run = Run.from_definition(runscript_path)
@@ -659,8 +765,8 @@ def copy_files(read_dir, write_dir):
             write_dir="/path/to/write-to/directory"
         )
     """
-    assert os.path.isdir(read_dir), "read_dir must be a directory"
-    assert os.path.isdir(write_dir), "write_dir must be a directory"
+    _validate_dir(read_dir)
+    _validate_dir(write_dir)
     for filename in os.listdir(read_dir):
         file_path = os.path.join(read_dir, filename)
         if os.path.isfile(file_path):
@@ -704,7 +810,7 @@ def change_filename_values(
         Path to the new runscript file that will be created.
 
     Raises:
-        AssertionError: If runscript_path is not a valid file path.
+        FileNotFoundError: If runscript_path is not a valid file path or write_dir is not a valid directory.
 
     Example:
 
@@ -716,12 +822,11 @@ def change_filename_values(
             init_press="/filename/of/initial/pressure/pfb/file"
         )
     """
-    assert os.path.isfile(
-        runscript_path
-    ), "runscript_path must be a valid path to an existing file"
-
+    if not os.path.isfile(runscript_path):
+        raise FileNotFoundError("runscript_path must be a valid file path")
     if write_dir is None:
         write_dir = os.path.dirname(runscript_path)
+    _validate_dir(write_dir)
 
     _, file_extension = os.path.splitext(runscript_path)
     run = Run.from_definition(runscript_path)
@@ -730,7 +835,6 @@ def change_filename_values(
         print(
             f"New runname: {runname} provided, a new {file_extension[1:]} file will be created"
         )
-
     # check which input files are not none, to update the key
     if slopex is not None:
         run.TopoSlopesX.FileName = slopex
@@ -785,7 +889,7 @@ def dist_run(P, Q, runscript_path, working_dir=None, dist_clim_forcing=True):
         Path to the edited runscript file that will be created.
 
     Raises:
-        AssertionError: If runscript_path is not a valid file path.
+        FileNotFoundError: If runscript_path is not a valid file path or write_dir is not a valid directory.
 
     Example:
 
@@ -798,23 +902,28 @@ def dist_run(P, Q, runscript_path, working_dir=None, dist_clim_forcing=True):
             dist_clim_forcing=False
         )
     """
-    assert os.path.isfile(runscript_path), "runscript_path must be a valid file path"
-
+    if not isinstance(P, int) or P <= 0:
+        raise TypeError("P must be a positive integer.")
+    if not isinstance(Q, int) or Q <= 0:
+        raise TypeError("Q must be a positive integer.")
+    if not os.path.isfile(runscript_path):
+        raise FileNotFoundError("runscript_path must be a valid file path")    
     if working_dir is None:
         working_dir = os.path.dirname(runscript_path)
+    _validate_dir(working_dir)
     
     run = Run.from_definition(runscript_path)
-
     run.Process.Topology.P = P
     run.Process.Topology.Q = Q
 
     if dist_clim_forcing:
         print("Distributing your climate forcing")
         forcing_dir = run.Solver.CLM.MetFilePath
+        _validate_dir(forcing_dir)
         for filename in pathlib.Path(forcing_dir).glob("*.pfb"):
             run.dist(filename)
     else:
-        print("no forcing dir provided, only distributing static inputs")
+        print("no forcing directory provided, only distributing static inputs")
 
     static_input_paths = pathlib.Path(working_dir).glob("*.pfb")
     max_nz = 0
