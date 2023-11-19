@@ -20,6 +20,17 @@ def get_template_runscript(grid, mode, input_file_type, write_dir):
 
     Returns:
         str: Path to the template runscript.
+
+    Example:
+
+    .. code-block:: python
+
+        runscript_path = get_template_runscript(
+            grid="conus1",
+            mode="spinup",
+            input_file_type="solid",
+            write_dir="/path/to/your/chosen/directory"
+        )
     """
     _validate_grid(grid)
     _validate_dir(write_dir)    

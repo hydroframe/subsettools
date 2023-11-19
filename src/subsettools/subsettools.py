@@ -45,6 +45,12 @@ def huc_to_ij(huc_list, grid):
     Raises:
         ValueError: If all HUC IDs are not the same length.
         ValueError: If the area defined by the provided HUCs is not part of the given grid.
+
+    Example:
+
+    .. code-block:: python
+
+        grid_bounds = huc_to_ij(huc_list=["14080201", "14080202", "14080203"], grid="conus1")
     """
     _validate_huc_list(huc_list)
     _validate_grid(grid)
@@ -115,6 +121,12 @@ def latlon_to_ij(latlon_bounds, grid):
     Returns:
         A tuple of the form (imin, jmin, imax, jmax) representing the bounds
         in the conus grid of the area defined by latlon_bounds.
+
+    Example:
+
+    .. code-block:: python
+
+        grid_bounds = latlon_to_ij(latlon_bounds=[[37.91, -91.43], [37.34, -90.63]], grid="conus2")
     """
     _validate_grid(grid)    
     if not isinstance(latlon_bounds, list):
@@ -154,6 +166,16 @@ def create_mask_solid(huc_list, grid, write_dir):
     Raises:  
         FileNotFoundError: If write_dir is not a valid directory.  
         ValueError: If the area defined by the provided HUCs is not part of the given grid.
+
+    Example:
+
+    .. code-block:: python
+
+        filepaths = create_mask_solid(
+            huc_list=["14080201", "14080202", "14080203"],
+            grid="conus2",
+            write_dir="/path/to/your/chosen/directory"
+        )
     """
     _validate_huc_list(huc_list)
     _validate_grid(grid)
@@ -250,7 +272,7 @@ def subset_static(
         ij_bounds (Tuple[int]): bounding box for subset
         dataset (str): dataset name e.g. "conus1_domain"
         write_dir (str): directory where the subset files will be written
-        var_list (List[str]): list of variables to subset from the dataset
+        var_list (Tuple[str]): tuple of variables to subset from the dataset
 
     Returns:
         A dictionary in which the keys are the static variable names and the values are
@@ -258,6 +280,17 @@ def subset_static(
         
     Raises:
         FileNotFoundError: If write_dir is not a valid directory.
+
+    Example:
+
+    .. code-block:: python
+
+        filepaths = subset_static(
+            ij_bounds=(375, 239, 487, 329),
+            dataset="conus1_domain", 
+            write_dir="/path/to/your/chosen/directory",
+            var_list=("slope_x", "slope_y")
+        )
     """
     _validate_grid_bounds(ij_bounds)
     if not isinstance(dataset, str):
@@ -300,6 +333,18 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
 
     Raises:
         FileNotFoundError: If write_dir is not a valid directory.
+
+    Example:
+
+    .. code-block:: python
+
+        filepath = subset_press_init(
+            ij_bounds=(375, 239, 487, 329),
+            dataset="conus1_baseline_mod",
+            date="2005-12-15", 
+            write_dir="/path/to/your/chosen/directory",
+            time_zone="EST"
+        )
     """
     _validate_grid_bounds(ij_bounds)
     if not isinstance(dataset, str):
@@ -351,7 +396,19 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
         file paths where the CLM files were written.
 
     Raises:
-        FileNotFoundError: If write_dir is not a valid directory.
+        FileNotFoundError: If write_dir is not a valid directory.     
+
+    Example:
+
+    .. code-block:: python
+
+        filepaths = config_clm(
+            ij_bounds=(375, 239, 487, 329),
+            start="2005-10-01",
+            end="2006-10-01",
+            dataset="conus1_baseline_mod",
+            write_dir="/path/to/your/chosen/directory"
+        )
     """
     _validate_grid_bounds(ij_bounds)
     _validate_date(start)
@@ -469,14 +526,19 @@ def subset_forcing(
     Raises:
         FileNotFoundError: If write_dir is not a valid directory.
 
-    Examples:
-        >>> subset_forcing(ij_bounds=(1225, 1738, 1347, 1811), 
-                           grid="conus2", 
-                           start="2005-11-01", 
-                           end="2005-12-01", 
-                           dataset="CW3E", 
-                           write_dir="/path/to/your/chosen/directory",
-            )
+    Example:
+
+    .. code-block:: python
+
+        filepaths = subset_forcing(
+            ij_bounds=(1225, 1738, 1347, 1811), 
+            grid="conus2", 
+            start="2005-11-01", 
+            end="2005-12-01", 
+            dataset="CW3E", 
+            write_dir="/path/to/your/chosen/directory",
+            forcing_vars=("precipitation", "air_temp")
+        )
     """
     _validate_grid_bounds(ij_bounds)
     _validate_grid(grid)
@@ -615,6 +677,17 @@ def edit_runscript_for_subset(
 
     Raises:
         FileNotFoundError: If runscript_path is not an existing file or write_dir is not a valid directory.
+
+    Example:
+
+    .. code-block:: python
+
+        runscript_path = edit_runscript_for_subset(
+            ij_bounds=(375, 239, 487, 329),
+            runscript_path="/path/to/your/original/runscript",
+            runname="my_conus1_run",
+            forcing_dir="/path/to/your/forcing/directory"
+        )
     """
     _validate_grid_bounds(ij_bounds)
     if not os.path.isfile(runscript_path):
@@ -682,6 +755,15 @@ def copy_files(read_dir, write_dir):
 
     Raises:
         AssertionError: If read_dir or write_dir is not a valid directory path.
+
+    Example:
+
+    .. code-block:: python
+
+        copy_files(
+            read_dir="/path/to/read-from/directory",
+            write_dir="/path/to/write-to/directory"
+        )
     """
     _validate_dir(read_dir)
     _validate_dir(write_dir)
@@ -729,6 +811,16 @@ def change_filename_values(
 
     Raises:
         FileNotFoundError: If runscript_path is not a valid file path or write_dir is not a valid directory.
+
+    Example:
+
+    .. code-block:: python
+
+        runscript_path = change_filename_values(
+            runscript_path="/path/to/your/original/runscript",
+            runname="my_conus1_run",
+            init_press="/filename/of/initial/pressure/pfb/file"
+        )
     """
     if not os.path.isfile(runscript_path):
         raise FileNotFoundError("runscript_path must be a valid file path")
@@ -798,6 +890,17 @@ def dist_run(P, Q, runscript_path, working_dir=None, dist_clim_forcing=True):
 
     Raises:
         FileNotFoundError: If runscript_path is not a valid file path or write_dir is not a valid directory.
+
+    Example:
+
+    .. code-block:: python
+
+        runscript_path = dist_run(
+            P=2,
+            Q=2,
+            runscript_path="/path/to/your/original/runscript",
+            dist_clim_forcing=False
+        )
     """
     if not isinstance(P, int) or P <= 0:
         raise TypeError("P must be a positive integer.")
