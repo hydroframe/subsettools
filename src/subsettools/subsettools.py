@@ -6,7 +6,7 @@ import shutil
 import pathlib
 import subprocess
 from datetime import datetime, timedelta
-from threading import Thread
+import threading 
 import numpy as np
 import hf_hydrodata
 import re
@@ -554,20 +554,30 @@ def subset_forcing(
     outputs = {}
     start_date = get_UTC_time(start, time_zone)
     end_date = get_UTC_time(end, time_zone)
-    
-    threads = [Thread(target=_subset_forcing_variable, args=(variable, ij_bounds, grid, start_date, end_date, dataset, write_dir, time_zone, outputs))
+    exit_event = threading.Event()    
+    threads = [threading.Thread(target=_subset_forcing_variable,
+                                args=(variable, ij_bounds, grid, start_date, end_date, dataset, write_dir, time_zone, outputs, exit_event))
         for variable in forcing_vars]
     
     for thread in threads:
         thread.start()
 
-    for thread in threads:
-        thread.join()
+    try:
+        for thread in threads:
+            thread.join()
+    except KeyboardInterrupt:
+        print("Interrupted. Stopping threads...")
+        exit_event.set()
+        
+        for thread in threads:
+            thread.join()
 
-    return outputs
+        print("All threads stopped.")
+    finally:
+        return outputs
 
 
-def _subset_forcing_variable(variable, ij_bounds, grid, start_date, end_date, dataset, write_dir, time_zone="UTC", outputs={}):
+def _subset_forcing_variable(variable, ij_bounds, grid, start_date, end_date, dataset, write_dir, time_zone, outputs, exit_event):
     """Helper function for subset_forcing that subsets data for one variable for the specified dates and dataset."""
     
     entry = hf_hydrodata.gridded.get_catalog_entry(
@@ -580,7 +590,7 @@ def _subset_forcing_variable(variable, ij_bounds, grid, start_date, end_date, da
     outputs[variable] = []
     print(f"Reading {variable} pfb sequence")
     
-    while date < end_date:
+    while date < end_date and not exit_event.is_set():
         start_time = date
         end_time = date + delta
         # we need to distinguish between UTC and non-UTC as the datacatalog returns the wrong answer
@@ -621,7 +631,8 @@ def _subset_forcing_variable(variable, ij_bounds, grid, start_date, end_date, da
         write_pfb(write_path, subset_data[:, :, :], dist=False)
         date = date + delta
         day = day + 1
-    print(f"Finished writing {variable} to folder")
+    if not exit_event.is_set():
+        print(f"Finished writing {variable} to folder")
     
 
 def _adjust_filename_hours(filename, day):
