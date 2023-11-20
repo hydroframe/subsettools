@@ -361,7 +361,7 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
         print(f"No pressure file found for in dataset {dataset}")
         return None
     
-    new_date = get_UTC_time(date, time_zone) - timedelta(hours=1)
+    new_date = get_UTC_time(date, time_zone)
     print(f"UTC Date: {new_date}")
         
     date_string = new_date.strftime("%Y.%m.%d:%H.%M.%S_UTC0")
