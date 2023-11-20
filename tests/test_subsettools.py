@@ -154,3 +154,21 @@ def test_change_filename_values_2(tmp_path):
     # check the edited fields of the new runscript:
     run = Run.from_definition(new_runscript)
     assert run.TopoSlopesX.FileName == str(test_file)
+
+
+def test_subset_press_init(tmp_path):
+    """Check that the call succeeds when it fetches data for the beginning of WY 2003.
+
+    subset_press_init was initially designed to fetch data one hour before midnight on
+    the date given. So in this case, it would look at 11pm on 2002-09-30, which does 
+    not exist.
+    """
+    test_dir = tmp_path / "test"
+    test_dir.mkdir()
+    filename = st.subset_press_init(
+        ij_bounds=(375, 239, 487, 329),
+        dataset="conus1_baseline_mod",
+        date="2002-10-01",
+        write_dir=test_dir,
+    )
+    assert filename == os.path.join(test_dir, "conus1_baseline_mod_2002.10.01:00.00.00_UTC0_press.pfb")
