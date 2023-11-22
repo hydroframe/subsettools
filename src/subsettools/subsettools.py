@@ -261,7 +261,7 @@ def subset_static(
         "slope_y",
         "pf_indicator",
         "mannings",
-        "depth_to_bedrock",
+        "pf_flowbarrier",
         "pme",
         "ss_pressure_head",
     ),
@@ -290,7 +290,7 @@ def subset_static(
         var_list (Tuple[str]): tuple of variables to subset from the dataset. By default all 7 variables above will be subset.
 
     Returns:
-        A dictionary in which the keys are the static variable names and the values are file paths where the subset data were written. 
+        Dict: A dictionary in which the keys are the static variable names and the values are file paths where the subset data were written. 
         
     Raises:
         FileNotFoundError: If write_dir is not a valid directory.
@@ -534,12 +534,12 @@ def subset_forcing(
         start (str): start date (inclusive), in the form 'yyyy-mm-dd'
         end (str): end date (exlusive), in the form 'yyyy-mm-dd'
         dataset (str): forcing dataset name from the HydroData catalog e.g. "NLDAS2". 
-        write_dir (str): directory where the subset file will be written
+        write_dir (str): directory where the subset files will be written
         time_zone (str): timezone information for start and end dates. Data will be subset starting at midnight in the specified timezone.
         forcing_vars (Tuple[str]): tuple of forcing variables to subset. By default all 8 variables needed to run ParFlow-CLM will be subset. 
 
     Returns:
-        A dictionary in which the keys are the forcing variable names and the values are lists of file paths where the subset data were written.
+        Dict: A dictionary in which the keys are the forcing variable names and the values are lists of file paths where the subset data were written.
 
     Raises:
         FileNotFoundError: If write_dir is not a valid directory.
@@ -601,6 +601,9 @@ def _subset_forcing_variable(variable, ij_bounds, grid, start_date, end_date, da
     entry = hf_hydrodata.gridded.get_catalog_entry(
         dataset=dataset, variable=variable, grid=grid, file_type="pfb", period="hourly"
     )
+
+    if entry is None:
+        raise ValueError(f"No {variable} entry matches your request.")
     
     day = 1
     date = start_date
