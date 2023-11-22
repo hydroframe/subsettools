@@ -266,17 +266,31 @@ def subset_static(
         "ss_pressure_head",
     ),
 ):
-    """Subset static inputs from dataset required to do a baseline run.
+    """Subset static input files from national datasets and write the subset values out as pfbs in a user specified directory.
+
+    By default the following variables will be subset:
+        - Slope in the east/west direction (slope_x)
+        - Slope in the north/south direction (slope_y)
+        - Subsurface units indicator file (pf_indicator)
+        - Mannings roughness coefficients (mannings)
+        - Depth to bedrock (pf_flowbarrier)
+        - Long term average preciptation minus evaporation (i.e. recharge) (pme)
+        - Steady state pressure head used to initialize transient simulations (ss_pressure_head)
+
+    Note that some datasets might not contain all 7 static input variables. In that case, the subset_static function is going to 
+    get and save the data for the variables supported by the dataset and print out a message for those that are not. You can check 
+    [here](https://hf-hydrodata.readthedocs.io/en/latest/available_data.html) which variables are contained in each dataset.
 
     Args:
-        ij_bounds (Tuple[int]): bounding box for subset
-        dataset (str): dataset name e.g. "conus1_domain"
+        ij_bounds (Tuple[int]): bounding box for subset. This should be given as i,j index values where 0,0 is the lower left hand 
+            corner of a domain. ij_bounds are given to whatever grid is being used for the subset. Use the latlon_to_ij function to 
+            determine ij indices from lat long values.  
+        dataset (str): static inputs dataset name from the HydroData catalog e.g. "conus1_domain"
         write_dir (str): directory where the subset files will be written
-        var_list (Tuple[str]): tuple of variables to subset from the dataset
+        var_list (Tuple[str]): tuple of variables to subset from the dataset. By default all 7 variables above will be subset.
 
     Returns:
-        A dictionary in which the keys are the static variable names and the values are
-        file paths where the subset data were written.
+        A dictionary in which the keys are the static variable names and the values are file paths where the subset data were written. 
         
     Raises:
         FileNotFoundError: If write_dir is not a valid directory.
@@ -321,8 +335,8 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
     date of the simulation.
 
     Args:
-        ij_bounds (Tuple[int]): bounding box for subset
-        dataset (str): dataset name e.g. "conus1_baseline_mod"
+        ij_bounds (Tuple[int]): bounding box for subset. This should be given as i,j index values where 0,0 is the lower left hand corner of a domain. ij_bounds are given to whatever grid is being used for the subset. Use the latlon_to_ij function to determine ij indices from lat long values.  
+        dataset (str): dataset name from the HydroData catalog e.g. "conus1_baseline_mod"
         date (str): simulation start date, in the form 'yyyy-mm-dd'
         write_dir (str): directory where the subset file will be written
         time_zone (str): time_zone to calculate initial pressure datetime. Defaults to "UTC".
@@ -505,13 +519,18 @@ def subset_forcing(
 ):
     """Subset forcing files for a given box or point of interest.
 
-    Subset forcing data will be written out as pfb files formatted for a ParFlow run with 24 hours per forcing file. Per ParFlow-CLM convention separate files will be written for each variable following the standard clm variable naming convention. 
+    Subset forcing data will be written out as pfb files formatted for a ParFlow run with 24 hours per forcing file. Per ParFlow-CLM 
+    convention separate files will be written for each variable following the standard clm variable naming convention. 
 
-    Forcing file outputs will be numbered starting with 0000 and data will start at midnight local time for the timezone that has been provided. If no timezone is provided it will default to midnight UTC.
+    Forcing file outputs will be numbered starting with 0000 and data will start at midnight local time for the timezone that has been 
+    provided. If no timezone is provided it will default to midnight UTC.
 
     Args:
-        ij_bounds (Tuple[int]): bounding box for subset. This should be given as i,j index values where 0,0 is the lower left hand corner of a domain. ij_bounds are given to whatever grid is being used for the subset. Use the latlon_to_ij function to determine ij indices from lat long values.  
-        grid (str): The spatial grid that the ij indices are calculated relative to and that the subset data will be returned on. Possible values: "conus1" or "conus2"
+        ij_bounds (Tuple[int]): bounding box for subset. This should be given as i,j index values where 0,0 is the lower left hand corner 
+            of a domain. ij_bounds are given to whatever grid is being used for the subset. Use the latlon_to_ij function to determine ij 
+            indices from lat long values.  
+        grid (str): The spatial grid that the ij indices are calculated relative to and that the subset data will be returned on. Possible 
+            values: "conus1" or "conus2"
         start (str): start date (inclusive), in the form 'yyyy-mm-dd'
         end (str): end date (exlusive), in the form 'yyyy-mm-dd'
         dataset (str): forcing dataset name from the HydroData catalog e.g. "NLDAS2". 
@@ -520,8 +539,7 @@ def subset_forcing(
         forcing_vars (Tuple[str]): tuple of forcing variables to subset. By default all 8 variables needed to run ParFlow-CLM will be subset. 
 
     Returns:
-        A dictionary in which the keys are the forcing variable names and the values are lists of
-        file paths where the subset data were written.
+        A dictionary in which the keys are the forcing variable names and the values are lists of file paths where the subset data were written.
 
     Raises:
         FileNotFoundError: If write_dir is not a valid directory.
@@ -765,7 +783,7 @@ def copy_files(read_dir, write_dir):
         write_dir (str): write-to directory path
 
     Raises:
-        AssertionError: If read_dir or write_dir is not a valid directory path.
+        FileNotFoundError: If read_dir or write_dir is not a valid directory path.
 
     Example:
 
