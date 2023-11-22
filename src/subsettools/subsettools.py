@@ -27,24 +27,24 @@ from ._error_checking import (
 
 
 def huc_to_ij(huc_list, grid):
-    """Get the grid ij-bounds of the area defined by the the HUC IDs in huc_list.
+    """Get the grid ij bounds of the area defined by the the HUC IDs in huc_list.
 
-       All HUC IDs in huc_list must be the same length (HUCs of the same
-       level). All HUCs should be adjacent. Supported grids are "conus1" 
-       and "conus2". If a HUC is only partially covered by the provided grid,
-       the grid bounds for the covered area will be returned.
+       All HUC IDs in huc_list must be the same length (HUCs of the same level). All HUCs 
+       should be adjacent. If a HUC is only partially covered by the provided grid, the grid 
+       bounds for the covered area will be returned.
 
     Args:
         huc_list (list[str]): a list of HUC IDs
-        grid (str): "conus1" or "conus2"
+        grid (str): The spatial grid that the ij indices are calculated relative to and that the subset 
+            data will be returned on. Possible values: “conus1” or “conus2”
 
     Returns:
-        A tuple of the form (imin, jmin, imax, jmax) representing the bounds
-        in the conus grid of the area defined by the huc IDs in huc_list.
+        tuple[int]: A tuple of the form (imin, jmin, imax, jmax) representing the bounds
+            in the conus grid of the area defined by the huc IDs in huc_list.
 
     Raises:
-        ValueError: If all HUC IDs are not the same length.
-        ValueError: If the area defined by the provided HUCs is not part of the given grid.
+        ValueError: If all HUC IDs are not the same length or if the area defined by the provided HUCs 
+            is not part of the given grid.
 
     Example:
 
@@ -64,8 +64,9 @@ def _get_conus_hucs_indices(huc_list, grid):
     """Get the huc datafile as an ndarray and three mask arrays representing the selected hucs.
     
     Args:
-        huc_list (List[str]): a list of huc IDs 
-        grid (str): "conus1" or "conus2"                                                                                                
+        huc_list (list[str]): a list of huc IDs 
+        grid (str): The spatial grid that the ij indices are calculated relative to and that the subset 
+            data will be returned on. Possible values: “conus1” or “conus2”
 
     Returns:   
         A tuple (conus_hucs, sel_hucs, indices_j, indices_i) where                                               
@@ -108,19 +109,17 @@ def _indices_to_ij(conus_hucs, indices_j, indices_i):
 
 
 def latlon_to_ij(latlon_bounds, grid):
-    """Get the conus ij-bounds of the area defined by the the latitute/longitude bounds (latlon_bounds) in the conus grid.
-
-       Supported grids are "conus1" and "conus2".
+    """Get the conus ij bounds of the area defined by the the latitute/longitude bounds (latlon_bounds) in the conus grid.
 
     Args:
         latlon_bounds (List[List[float]]): list of the form [[lat1, lon1], [lat2, lon2]].
-            [lat1, lon1] and [lat2, lon2] are the two points defining the conus
-            bounding box.
-        grid (str): "conus1" or "conus2"
+            [lat1, lon1] and [lat2, lon2] are the two points defining the conus bounding box.
+        grid (str):  The spatial grid that the ij indices are calculated relative to and that 
+            the subset data will be returned on. Possible values: “conus1” or “conus2”
 
     Returns:
-        A tuple of the form (imin, jmin, imax, jmax) representing the bounds
-        in the conus grid of the area defined by latlon_bounds.
+        tuple[int]: A tuple of the form (imin, jmin, imax, jmax) representing the bounds
+            in the conus grid of the area defined by latlon_bounds.
 
     Example:
 
@@ -153,15 +152,16 @@ def latlon_to_ij(latlon_bounds, grid):
 
 
 def create_mask_solid(huc_list, grid, write_dir):
-    """Create mask and solid input files for the ParFlow simulation.  
+    """Create mask and solid input files for the ParFlow simulation and write them in a user specified directory.  
 
     Args:  
         huc_list (list[str]): a list of HUC IDs  
-        grid (str): "conus1" or "conus2"  
+        grid (str): The spatial grid that the ij indices are calculated relative to and that 
+            the subset data will be returned on. Possible values: “conus1” or “conus2”
         write_dir (str): directory path where the mask and solid files will be written  
 
     Returns:
-        A dictionary of paths with keys ("mask", "mask_vtk", "solid") and values filepaths to the created files.
+        dict: A dictionary of paths with keys ("mask", "mask_vtk", "solid") and values filepaths to the created files.
 
     Raises:  
         FileNotFoundError: If write_dir is not a valid directory.  
@@ -282,15 +282,15 @@ def subset_static(
     [here](https://hf-hydrodata.readthedocs.io/en/latest/available_data.html) which variables are contained in each dataset.
 
     Args:
-        ij_bounds (Tuple[int]): bounding box for subset. This should be given as i,j index values where 0,0 is the lower left hand 
+        ij_bounds (tuple[int]): bounding box for subset. This should be given as i,j index values where 0,0 is the lower left hand 
             corner of a domain. ij_bounds are given to whatever grid is being used for the subset. Use the latlon_to_ij function to 
             determine ij indices from lat long values.  
         dataset (str): static inputs dataset name from the HydroData catalog e.g. "conus1_domain"
         write_dir (str): directory where the subset files will be written
-        var_list (Tuple[str]): tuple of variables to subset from the dataset. By default all 7 variables above will be subset.
+        var_list (tuple[str]): tuple of variables to subset from the dataset. By default all 7 variables above will be subset.
 
     Returns:
-        Dict: A dictionary in which the keys are the static variable names and the values are file paths where the subset data were written. 
+        dict: A dictionary in which the keys are the static variable names and the values are file paths where the subset data were written. 
         
     Raises:
         FileNotFoundError: If write_dir is not a valid directory.
@@ -329,21 +329,23 @@ def subset_static(
 
 
 def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
-    """Subset the initial pressure file.
+    """Subset the initial pressure file and write it as a pfb file to a user specified directory.
 
-    This represents the pressure one hour before midnight on the day before the start
-    date of the simulation.
+    This represents the pressure at midnight on the start date of the simulation.
 
     Args:
-        ij_bounds (Tuple[int]): bounding box for subset. This should be given as i,j index values where 0,0 is the lower left hand corner of a domain. ij_bounds are given to whatever grid is being used for the subset. Use the latlon_to_ij function to determine ij indices from lat long values.  
+        ij_bounds (tuple[int]): bounding box for subset. This should be given as i,j index values where 0,0 is 
+            the lower left hand corner of a domain. ij_bounds are given to whatever grid is being used for the 
+            subset. Use the latlon_to_ij function to determine ij indices from lat long values.  
         dataset (str): dataset name from the HydroData catalog e.g. "conus1_baseline_mod"
         date (str): simulation start date, in the form 'yyyy-mm-dd'
         write_dir (str): directory where the subset file will be written
-        time_zone (str): time_zone to calculate initial pressure datetime. Defaults to "UTC".
+        time_zone (str): timezone information for subset date. Data will be subset at midnight in the specified timezone.
+            Defaults to "UTC".
 
     Returns:
-        The filepath of the subset file, which includes datetime information, so that it can be
-        used by later functions (e.g. edit_runscript_for_subset)
+        str: The filepath of the subset file, which includes datetime information, so that it can be
+            used by later functions (e.g. edit_runscript_for_subset).
 
     Raises:
         FileNotFoundError: If write_dir is not a valid directory.
@@ -391,23 +393,24 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
 
 
 def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
-    """Get and subset the clm drivers associated with the run dataset.
+    """Get and subset the CLM drivers associated with the run dataset.
 
-    vegm, vep and drv_clmin files will be written in the specified static
-    input directory. For consistency, dataset must be the same dataset that
-    is passed to subset_press_init().
+    vegm, vep and drv_clmin files will be written in the specified directory. For consistency, dataset 
+    must be the same dataset that is passed to subset_press_init().
 
     Args:
-        ij_bounds (Tuple[int]): bounding box for subset
+        ij_bounds (tuple[int]): bounding box for subset. This should be given as i,j index values where 0,0 is 
+            the lower left hand corner of a domain. ij_bounds are given to whatever grid is being used for the 
+            subset. Use the latlon_to_ij function to determine ij indices from lat long values.  
         start (str): start date (inclusive), in the form 'yyyy-mm-dd'
         end (str): end date (exlusive), in the form 'yyyy-mm-dd'
         dataset (str): dataset name e.g. "conus1_baseline_mod"
         write_dir (str): directory where the subset files will be written
-        timezone (str): timezone information for start and end dates 
+        timezone (str): timezone information for start and end dates. Defaults to "UTC".
 
     Returns:
-        A dictionary in which the keys are ("vegp", "vegm", "drv_clm") and the values are
-        file paths where the CLM files were written.
+        dict: A dictionary in which the keys are ("vegp", "vegm", "drv_clm") and the values are
+            file paths where the CLM files were written.
 
     Raises:
         FileNotFoundError: If write_dir is not a valid directory.     
@@ -517,7 +520,7 @@ def subset_forcing(
             "north_windspeed",
         )
 ):
-    """Subset forcing files for a given box or point of interest.
+    """Subset forcing files for a given box or point of interest and write them as pfb files to a user specified directory.
 
     Subset forcing data will be written out as pfb files formatted for a ParFlow run with 24 hours per forcing file. Per ParFlow-CLM 
     convention separate files will be written for each variable following the standard clm variable naming convention. 
@@ -535,11 +538,12 @@ def subset_forcing(
         end (str): end date (exlusive), in the form 'yyyy-mm-dd'
         dataset (str): forcing dataset name from the HydroData catalog e.g. "NLDAS2". 
         write_dir (str): directory where the subset files will be written
-        time_zone (str): timezone information for start and end dates. Data will be subset starting at midnight in the specified timezone.
+        time_zone (str): timezone information for start and end dates. Data will be subset starting at midnight in the specified timezone. 
+            Defaults to "UTC".
         forcing_vars (Tuple[str]): tuple of forcing variables to subset. By default all 8 variables needed to run ParFlow-CLM will be subset. 
 
     Returns:
-        Dict: A dictionary in which the keys are the forcing variable names and the values are lists of file paths where the subset data were written.
+        dict: A dictionary in which the keys are the forcing variable names and the values are lists of file paths where the subset data were written.
 
     Raises:
         FileNotFoundError: If write_dir is not a valid directory.
@@ -695,7 +699,9 @@ def edit_runscript_for_subset(
     runscript file will be overwritten.
 
     Args:
-        ij_bounds (Tuple[int]): bounding box for subset
+        ij_bounds (tuple[int]): bounding box for subset. This should be given as i,j index values where 0,0 is 
+            the lower left hand corner of a domain. ij_bounds are given to whatever grid is being used for the 
+            subset. Use the latlon_to_ij function to determine ij indices from lat long values.
         runscript_path (str): absolute path to the parflow runscript file.
         write_dir (str): directory where the new template file will be written.
             If it is None, defaults to the directory containing the runscript.
@@ -705,7 +711,7 @@ def edit_runscript_for_subset(
             If it is None, defaults to the runscript's previous forcing directory path.
 
     Returns:
-        Path to the new runscript file that will be created.
+        str: Path to the new runscript file that will be created.
 
     Raises:
         FileNotFoundError: If runscript_path is not an existing file or write_dir is not a valid directory.
@@ -839,7 +845,7 @@ def change_filename_values(
         evap_trans (str): new evapotranspiration filename
 
     Returns:
-        Path to the new runscript file that will be created.
+        str: Path to the new runscript file that will be created.
 
     Raises:
         FileNotFoundError: If runscript_path is not a valid file path or write_dir is not a valid directory.
@@ -918,7 +924,7 @@ def dist_run(P, Q, runscript_path, working_dir=None, dist_clim_forcing=True):
         dist_clim_forcing (bool): if true, distribute forcing files
 
     Returns:
-        Path to the edited runscript file that will be created.
+        str: Path to the edited runscript file that will be created.
 
     Raises:
         FileNotFoundError: If runscript_path is not a valid file path or write_dir is not a valid directory.
