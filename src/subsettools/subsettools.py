@@ -39,8 +39,7 @@ def huc_to_ij(huc_list, grid):
             data will be returned on. Possible values: “conus1” or “conus2”
 
     Returns:
-        tuple[int]: A tuple of the form (imin, jmin, imax, jmax) representing the bounds
-            in the conus grid of the area defined by the huc IDs in huc_list.
+        tuple[int]: A tuple of the form (imin, jmin, imax, jmax) representing the bounds in the conus grid of the area defined by the huc IDs in huc_list.
 
     Raises:
         ValueError: If all HUC IDs are not the same length or if the area defined by the provided HUCs 
@@ -118,8 +117,7 @@ def latlon_to_ij(latlon_bounds, grid):
             the subset data will be returned on. Possible values: “conus1” or “conus2”
 
     Returns:
-        tuple[int]: A tuple of the form (imin, jmin, imax, jmax) representing the bounds
-            in the conus grid of the area defined by latlon_bounds.
+        tuple[int]: A tuple of the form (imin, jmin, imax, jmax) representing the bounds in the conus grid of the area defined by latlon_bounds.
 
     Example:
 
@@ -344,8 +342,7 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
             Defaults to "UTC".
 
     Returns:
-        str: The filepath of the subset file, which includes datetime information, so that it can be
-            used by later functions (e.g. edit_runscript_for_subset).
+        str: The filepath of the subset file, which includes datetime information, so that it can be used by later functions (e.g. edit_runscript_for_subset).
 
     Raises:
         FileNotFoundError: If write_dir is not a valid directory.
@@ -409,8 +406,7 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
         timezone (str): timezone information for start and end dates. Defaults to "UTC".
 
     Returns:
-        dict: A dictionary in which the keys are ("vegp", "vegm", "drv_clm") and the values are
-            file paths where the CLM files were written.
+        dict: A dictionary in which the keys are ("vegp", "vegm", "drv_clm") and the values are file paths where the CLM files were written.
 
     Raises:
         FileNotFoundError: If write_dir is not a valid directory.     
