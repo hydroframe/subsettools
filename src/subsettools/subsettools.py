@@ -276,10 +276,7 @@ def subset_static(
         - Steady state pressure head used to initialize transient simulations (ss_pressure_head)
 
     Note that some datasets might not contain all 7 static input variables. In that case, the subset_static function is going to 
-    get and save the data for the variables supported by the dataset and print out a message for those that are not. You can check 
-    `here <hydrodata-docs>` which variables are contained in each dataset.
-    
-    .. _hydrodata-docs: https://hf-hydrodata.readthedocs.io/en/latest/available_data.html
+    get and save the data for the variables supported by the dataset and print out a message for those that are not. 
 
     Args:
         ij_bounds (tuple[int]): bounding box for subset. This should be given as i,j index values where 0,0 is the lower left hand 
@@ -527,7 +524,7 @@ def subset_forcing(
     provided. If no timezone is provided it will default to midnight UTC.
 
     Args:
-        ij_bounds (Tuple[int]): bounding box for subset. This should be given as i,j index values where 0,0 is the lower left hand corner 
+        ij_bounds (tuple[int]): bounding box for subset. This should be given as i,j index values where 0,0 is the lower left hand corner 
             of a domain. ij_bounds are given to whatever grid is being used for the subset. Use the latlon_to_ij function to determine ij 
             indices from lat long values.  
         grid (str): The spatial grid that the ij indices are calculated relative to and that the subset data will be returned on. Possible 
@@ -538,7 +535,7 @@ def subset_forcing(
         write_dir (str): directory where the subset files will be written
         time_zone (str): timezone information for start and end dates. Data will be subset starting at midnight in the specified timezone. 
             Defaults to "UTC".
-        forcing_vars (Tuple[str]): tuple of forcing variables to subset. By default all 8 variables needed to run ParFlow-CLM will be subset. 
+        forcing_vars (tuple[str]): tuple of forcing variables to subset. By default all 8 variables needed to run ParFlow-CLM will be subset. 
 
     Returns:
         dict: A dictionary in which the keys are the forcing variable names and the values are lists of file paths where the subset data were written.
