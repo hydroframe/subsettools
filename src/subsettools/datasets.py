@@ -13,9 +13,11 @@ def get_template_runscript(grid, mode, input_file_type, write_dir):
     """Get a ParFlow template runscript based on grid, mode and input file type and write it to write_dir.
 
     Args:
-        grid (str): "conus1" or "conus2"
-        mode (str): "spinup" or "transient"
-        input_file_type (str): "box" or "solid"
+        grid (str): The spatial grid that the ij indices are calculated relative to and that the subset data 
+            will be returned on. Possible values: “conus1” or “conus2”
+        mode (str): The type of simulation you would like to do. Possible values: "spinup" (run ParFlow with a
+            constant recharge forcing at the upper boundary) and "transient" (coupled ParFlow-CLM run)
+        input_file_type (str): The type of domain you will run. Possible values: "box" or "solid"
         write_dir (str): directory where the template runscript file will be copied
 
     Returns:
