@@ -277,7 +277,9 @@ def subset_static(
 
     Note that some datasets might not contain all 7 static input variables. In that case, the subset_static function is going to 
     get and save the data for the variables supported by the dataset and print out a message for those that are not. You can check 
-    `here <https://hf-hydrodata.readthedocs.io/en/latest/available_data.html>` which variables are contained in each dataset.
+    `here <hydrodata-docs>` which variables are contained in each dataset.
+    
+    .. _hydrodata-docs: https://hf-hydrodata.readthedocs.io/en/latest/available_data.html
 
     Args:
         ij_bounds (tuple[int]): bounding box for subset. This should be given as i,j index values where 0,0 is the lower left hand 
