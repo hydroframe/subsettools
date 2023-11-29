@@ -1,7 +1,8 @@
 from parflow import Run
 from parflow.tools.settings import set_working_directory
-from subsettools.subsettools import *
-from subsettools.datasets import get_ref_yaml_path
+import subsettools as st
+import os
+import pathlib
 
 from testutils import pf_test_file
 
@@ -23,28 +24,28 @@ def test_conus1_upper_verde_spinup(setup_dir_structure, remove_output_files):
     var_ds = "conus1_domain"
     P = 1
     Q = 1
-    reference_run = get_ref_yaml_path(grid, "spinup", "solid", static_write_dir)
+    reference_run = st.get_template_runscript(grid, "spinup", "solid", static_write_dir)
 
-    ij_bounds = huc_to_ij(huc_list=huc_list, grid=grid)
-    create_mask_solid(huc_list=huc_list, grid=grid, write_dir=static_write_dir)
-    subset_static(ij_bounds, dataset=var_ds, write_dir=static_write_dir)
-    init_press_filename = subset_press_init(
+    ij_bounds = st.huc_to_ij(huc_list=huc_list, grid=grid)
+    st.create_mask_solid(huc_list=huc_list, grid=grid, write_dir=static_write_dir)
+    st.subset_static(ij_bounds, dataset=var_ds, write_dir=static_write_dir)
+    init_press_filepath = st.subset_press_init(
         ij_bounds,
         dataset=run_ds,
         date=start,
         write_dir=static_write_dir,
         time_zone="UTC",
     )
-    target_runscript = edit_runscript_for_subset(
+    target_runscript = st.edit_runscript_for_subset(
         ij_bounds, runscript_path=reference_run, write_dir=pf_out_dir, runname=run_name
     )
-    copy_files(read_dir=static_write_dir, write_dir=pf_out_dir)
-    target_runscript = change_filename_values(
+    st.copy_files(read_dir=static_write_dir, write_dir=pf_out_dir)
+    target_runscript = st.change_filename_values(
         runscript_path=target_runscript,
         write_dir=pf_out_dir,
-        init_press=init_press_filename,
+        init_press=os.path.basename(init_press_filepath),
     )
-    dist_run(
+    st.dist_run(
         P=P,
         Q=Q,
         runscript_path=target_runscript,

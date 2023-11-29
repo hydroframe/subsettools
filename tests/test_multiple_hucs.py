@@ -1,7 +1,8 @@
 from parflow import Run
 from parflow.tools.settings import set_working_directory
-from subsettools.subsettools import *
-from subsettools.datasets import get_ref_yaml_path
+import subsettools as st
+import pathlib
+import os
 
 from testutils import pf_test_file
 
@@ -32,22 +33,22 @@ def test_multiple_hucs(setup_dir_structure, remove_output_files):
     forcing_ds = "NLDAS2"
     P = 1
     Q = 1
-    reference_run = get_ref_yaml_path(grid, "transient", "solid", static_write_dir)
+    reference_run = st.get_template_runscript(grid, "transient", "solid", static_write_dir)
 
-    ij_bounds = huc_to_ij(huc_list=huc_list, grid=grid)
-    create_mask_solid(huc_list=huc_list, grid=grid, write_dir=static_write_dir)
-    subset_static(ij_bounds, dataset=var_ds, write_dir=static_write_dir)
-    init_press_filename = subset_press_init(
+    ij_bounds = st.huc_to_ij(huc_list=huc_list, grid=grid)
+    st.create_mask_solid(huc_list=huc_list, grid=grid, write_dir=static_write_dir)
+    st.subset_static(ij_bounds, dataset=var_ds, write_dir=static_write_dir)
+    init_press_filepath = st.subset_press_init(
         ij_bounds,
         dataset=run_ds,
         date=start,
         write_dir=static_write_dir,
         time_zone="UTC",
     )
-    config_clm(
+    st.config_clm(
         ij_bounds, start=start, end=end, dataset=run_ds, write_dir=static_write_dir
     )
-    subset_forcing(
+    st.subset_forcing(
         ij_bounds,
         grid=grid,
         start=start,
@@ -55,20 +56,20 @@ def test_multiple_hucs(setup_dir_structure, remove_output_files):
         dataset=forcing_ds,
         write_dir=forcing_dir,
     )
-    target_runscript = edit_runscript_for_subset(
+    target_runscript = st.edit_runscript_for_subset(
         ij_bounds,
         runscript_path=reference_run,
         write_dir=pf_out_dir,
         runname=run_name,
         forcing_dir=forcing_dir,
     )
-    copy_files(read_dir=static_write_dir, write_dir=pf_out_dir)
-    target_runscript = change_filename_values(
+    st.copy_files(read_dir=static_write_dir, write_dir=pf_out_dir)
+    target_runscript = st.change_filename_values(
         runscript_path=target_runscript,
         write_dir=pf_out_dir,
-        init_press=init_press_filename,
+        init_press=os.path.basename(init_press_filepath),
     )
-    dist_run(
+    st.dist_run(
         P=P,
         Q=Q,
         runscript_path=target_runscript,

@@ -1,8 +1,9 @@
 import pytest
 from parflow import Run
 from parflow.tools.settings import set_working_directory
-from subsettools.subsettools import *
-from subsettools.datasets import get_ref_yaml_path
+import subsettools as st
+import os
+import pathlib
 
 # remove this for newer parflow versions
 from testutils import pf_test_file
@@ -26,16 +27,16 @@ def setup_run(setup_dir_structure):
     run_ds = "conus1_baseline_mod"
     var_ds = "conus1_domain"
     forcing_ds = "NLDAS2"
-    reference_run = get_ref_yaml_path(grid, "transient", "solid", static_write_dir)
+    reference_run = st.get_template_runscript(grid, "transient", "solid", static_write_dir)
 
-    ij_bounds = huc_to_ij(huc_list=huc_list, grid=grid)
+    ij_bounds = st.huc_to_ij(huc_list=huc_list, grid=grid)
     assert ij_bounds == (375, 239, 487, 329)
     
-    create_mask_solid(huc_list=huc_list, grid=grid, write_dir=static_write_dir)
+    st.create_mask_solid(huc_list=huc_list, grid=grid, write_dir=static_write_dir)
     
-    subset_static(ij_bounds, dataset=var_ds, write_dir=static_write_dir)
+    st.subset_static(ij_bounds, dataset=var_ds, write_dir=static_write_dir)
     
-    init_press_filename = subset_press_init(
+    init_press_filepath = st.subset_press_init(
         ij_bounds,
         dataset=run_ds,
         date=start,
@@ -51,11 +52,11 @@ def setup_run(setup_dir_structure):
             "Max difference in " + filename,
         )
 
-    config_clm(
+    st.config_clm(
         ij_bounds, start=start, end=end, dataset=run_ds, write_dir=static_write_dir
     )
     
-    subset_forcing(
+    st.subset_forcing(
         ij_bounds,
         grid=grid,
         start=start,
@@ -71,18 +72,18 @@ def setup_run(setup_dir_structure):
             "Max difference in " + filename,
         )
 
-    target_runscript = edit_runscript_for_subset(
+    target_runscript = st.edit_runscript_for_subset(
         ij_bounds,
         runscript_path=reference_run,
         runname=run_name,
         forcing_dir=forcing_dir,
     )
 
-    copy_files(read_dir=static_write_dir, write_dir=pf_out_dir)
+    st.copy_files(read_dir=static_write_dir, write_dir=pf_out_dir)
 
-    target_runscript = change_filename_values(
+    target_runscript = st.change_filename_values(
         runscript_path=target_runscript,
-        init_press=init_press_filename,
+        init_press=os.path.basename(init_press_filepath),
     )
 
     return run_name, target_runscript, pf_out_dir, correct_output_dir
@@ -94,11 +95,11 @@ def test_conus1_upper_verde(setup_run, remove_output_files, P, Q):
 
     # overwrite run_name
     run_name = run_name + f"_{P}_{Q}"
-    target_runscript = change_filename_values(
+    target_runscript = st.change_filename_values(
         runscript_path=target_runscript, write_dir=pf_out_dir, runname=run_name
     )
 
-    dist_run(
+    st.dist_run(
         P,
         Q,
         runscript_path=target_runscript,
