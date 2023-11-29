@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## 0.4.0 (29/11/2023)
+- All functions that write files now return a dictionary where the keys are variable names and the values are paths to the files written.
+- subset_press_init gets data at midnight on the date specified (before it was getting data an hour before midnight on the date specified)
+- Short tutorials were added and documentation reorganized
+- Improved error messages and argument-checking code was added
+
 ## 0.3.0 (31/10/2023)
 
 - Created multi-threaded version of subset_forcing to optimize performance.
