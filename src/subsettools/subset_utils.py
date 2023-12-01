@@ -13,9 +13,13 @@ from parflow.tools.io import read_clm
 def subset_vegm(path, ij_bounds):
     """Read in vegm file and subset it according to ij_bounds.
 
+    Subset a national vegm file to a smaller domain based on ij_bounds that are provided relative to the grid that the national file is on. 
+
     Args:
         path (str): path to read vegm file
-        ij_bounds (Tuple[int]): bounding box for subset
+        ij_bounds (Tuple[int]): bounding box for subset. This should be given as i,j index values where 0,0 is the lower left hand 
+            corner of a domain. ij_bounds are given relative to whatever grid is being used for the subset. Use the latlon_to_ij function to 
+            determine ij indices from lat long values. 
 
     Returns:
         ndarray:
@@ -40,6 +44,8 @@ def subset_vegm(path, ij_bounds):
 
 def write_land_cover(land_cover_data, write_dir):
     """Write the land cover ndarray in vegm format.
+
+    Read in a gridded landcover dataset and write it out as a vegm file which is correctly formatted for CLM. 
 
     Args:
         land_cover_data (ndarray): formatted vegm data (2d array)
@@ -102,7 +108,9 @@ def edit_drvclmin(
     vegp_name="drv_vegp.dat",
     vegm_name="drv_vegm.dat",
 ):
-    """Edit the CLM driver file for the parflow simulation.
+    """Edit a template CLM driver for a new simulation. 
+
+    Update the start and end dates, timezone, restart type and vegm and vegp input file names for a new simulation. 
 
     Args:
         file_path (str): clm driver file path
