@@ -2,7 +2,7 @@
 
 ## Installation
 
-The best way to install `subsettools` is using pip. This installs our latest stable release with fully-supported features.
+`subsettools` can be installed using pip. This installs our latest stable release with fully-supported features. `subsettools` currently supports Python versions 3.9, 3.10 and 3.11.
 
 ```bash
 $ pip install subsettools
@@ -14,9 +14,11 @@ You can also install the latest development version by cloning the GitHub reposi
 $ pip install git+https://github.com/hydroframe/subsettools.git
 ```
 
-In addition, we provide a reproducible computational environment using [MyBinder](https://mybinder.org/v2/gh/hydroframe/subsettools-binder/HEAD), where you can execute the example notebooks without the need to install the subsettools package or ParFlow. Please note that the MyBinder project has limited resources, so this is not an appropriate place to run large simulations - but it's a great environment to get started with the subsettools API.
+In order to use a small subset of the `subsettools` functions, you also need to have ParFlow installed. Please refer to the [HydroFrame](https://hydroframe.parflow.org/) for help getting started with ParFlow.
 
-If you prefer using Docker, you can get an image with JupyterLab, subsettools and ParFlow installed from DockerHub with:
+In addition, we provide a reproducible computational environment using [Binder](https://mybinder.org/v2/gh/hydroframe/subsettools-binder/HEAD), where you can execute the example notebooks without the need to install the subsettools package or ParFlow. Please note that the Binder project has limited resources, so this is not an appropriate place to run large simulations - but it's a great environment to get started with the subsettools API. Note that Binder may take several minutes to launch.
+
+Finally, if you prefer using Docker, you can get an image with JupyterLab, subsettools and ParFlow installed from DockerHub. Make sure you have an up-to-date version of Docker.
 
 ```bash
 $ docker pull george135/parflow:latest
