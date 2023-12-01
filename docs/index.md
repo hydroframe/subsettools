@@ -2,29 +2,19 @@
 
 ## Introduction
 
-The subsettools package provides functions that simplify the process of setting up a modeling domain in the contiguous United States (CONUS) and running the hydrologic model ParFlow. The package allows the user to subset all required hydrogeologic and climate forcing datasets from the database Hydrodata. It also contains various functions to edit and run your subset model. These capabilities allow for more rapid and replicable application of ParFlow for hydrologic simulations.
+The subsettools package is developed and maintained by the [HydroFrame](https://hydroframe.org) project. It is designed to subset model inputs and outputs from the national ParFlow modeling framework. We provide tools to subset all required hydrogeologic and climate forcing datasets for a ParFlow simulation as well as obtaining pre-configured run scripts for your desired domain based on the most common use cases.  
+
+Example workflows are provided for working with both the first and ([PFCONUS1](https://hydroframe.org/parflow_conus1.0)) and second ([PFCONUS2](https://hydroframe.org/parflow_conus1.0)) generation of the national model. Refer to the HydroFrame website for more information on these domains. 
+
+Subset tools has been configured to work with the [HydroData](https://hydroframe.org/hydrodata) data catalog which houses national ParFlow inputs and simulation results as well as a broad array of other hydrologic variables.  Refer to the [HydroData documentation](https://hf-hydrodata.readthedocs.io/en/latest/index.html) for information on how to access additional datasets. 
+
+Subset tools will provide you with ParFlow scripts that can run locally, but it should be noted that depending on the size of your domain you may want to deploy your runs on HPC resources. ParFlow is designed to run efficiently in parallel and all simulations can easily be distributed across multiple processors.   
 
 Checkout our Getting Started guide for installation instructions, information on creating a Hydrogen account, setting up a ParFlow run from templates and more! The Tutorials section contains short examples, while the Example notebooks sections contains longer workflows that setup a ParFlow run at the end. The API reference contains the full list of available functions.
 
-## Hydrodata overview
+## Citation
+If you use our tools please cite this package in your work. In addition please make sure to cite all of the datasets that you subset. Examples for obtaining the DOIs for any dataset you use are provided in the examples. 
 
->>> TODO: put information on Hydrodata and link to the docs: [Hydrodata documentation](https://maurice.princeton.edu/hydroframe/docs/index.html#). 
-
-## CONUS1 domain overview
-
-CONUS1 is a box domain over the contiguous United States. It does not cover areas near the coasts. This model has 4 soil layers (top 2 meters) and 1 geologic layer that is 100 m thick. The cell size is 1 kilometer. 
-
-Please refer to our [grid documentation](https://maurice.princeton.edu/hydroframe/docs/gridded_data.html#dataset-type-parameters) for more details about the CONUS datasets contained on Hydrodata.
-
-Please refer to and cite the following DOIs if you want more details or to release work with the datasets used in the example notebooks:
-1. [10.5194/gmd-14-7223-2021](https://gmd.copernicus.org/articles/14/7223/2021/)
-2. [10.1016/j.advwatres.2015.04.008](https://www.sciencedirect.com/science/article/pii/S0309170815000822)
-3. [10.1002/2014WR016774](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2014WR016774)
-4. [10.1002/2015GL066916](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2015GL066916)
-
-## CONUS2 domain overview
-
->>> TODO: put information on CONUS2 with references
 
 ## Contributing
 
