@@ -10,3 +10,10 @@ subset_forcing_data.ipynb
 configure_clm_from_template.ipynb
 build_run_from_template.ipynb
 ```
+
+You can get the tutorials by cloning the subsettools repo and navigating to the "examples" folder:
+
+```bash
+git clone https://github.com/hydroframe/subsettools.git
+cd subsettools/docs/examples
+```

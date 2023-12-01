@@ -20,3 +20,10 @@ This notebook will subset a HUC8 from the CONUS1 domain as in the above example.
 :maxdepth: 1
 conus1_subsetting_spinup.ipynb
 ```
+
+You can get the tutorials by cloning the subsettools repo and navigating to the "example_notebooks" folder:
+
+```bash
+git clone https://github.com/hydroframe/subsettools.git
+cd subsettools/docs/example_notebooks
+```
