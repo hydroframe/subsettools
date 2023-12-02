@@ -703,7 +703,7 @@ def edit_runscript_for_subset(
         ij_bounds (tuple[int]): bounding box for subset. This should be given as i,j index values where 0,0 is 
             the lower left hand corner of a domain. ij_bounds are given relative to whatever grid is being used for the 
             subset. Use the latlon_to_ij function to determine ij indices from lat long values.
-        runscript_path (str): absolute path to the parflow runscript file.
+        runscript_path (str): absolute path to the template parflow runscript file
         write_dir (str): directory where the new template file will be written.
             If it is None, defaults to the directory containing the runscript.
         runname (str): name for the new parflow run. If it is None, defaults to 
@@ -827,15 +827,14 @@ def change_filename_values(
 ):
     """Change the filenames of input files.
 
-    This function will update the paths to input files in a ParFlow run script.  The provided arguments will reset the corresponding parflow keys to match the user specified paths to input files.  File names can be specified with our without relative or absolute file paths. If not path is provided ParFlow will expect the input files to be present in the run director at the time of simulation. 
+    This function will update the paths to input files in a ParFlow run script.  The provided arguments will reset the corresponding parflow keys to match the user specified paths to input files.  File names can be specified with or without relative or absolute file paths. If no path is provided ParFlow will expect the input files to be present in the run directory at the time of simulation. 
 
     Note that this will only change paths for keys that already exist in the template ParFlow run script you are starting from and will not reconfigure a run to use new keys (for example if you are not starting from a run script that uses a solid file, adding a new solid file path will not configure the run to use a solid file).  
 
     Refer to the ParFlow manual for additional information on any of the keys listed above. 
 
     
-    If the runname is None and write_dir is the directory containing
-    the runscript file, the runscript file will be overwritten.
+    If the runname is None and write_dir is the directory containing the runscript file, the runscript file will be overwritten.
 
     Args:
         runscript_path (str): path to the runscript file (yaml or pfidb)
