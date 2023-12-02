@@ -8,17 +8,18 @@ Example workflows are provided for working with both the first and ([PFCONUS1](h
 
 Subset tools has been configured to work with the [HydroData](https://hydroframe.org/hydrodata) data catalog which houses national ParFlow inputs and simulation results as well as a broad array of other hydrologic variables.  Refer to the [HydroData documentation](https://hf-hydrodata.readthedocs.io/en/latest/index.html) for information on how to access additional datasets. 
 
-Subset tools will provide you with ParFlow scripts that can run locally, but it should be noted that depending on the size of your domain you may want to deploy your runs on HPC resources. ParFlow is designed to run efficiently in parallel and all simulations can easily be distributed across multiple processors.   
+Subset tools will provide you with ParFlow scripts that can run locally, but it should be noted that depending on the size of your domain you may want to deploy your runs on HPC resources. ParFlow is designed to run efficiently in parallel and all simulations can easily be distributed across multiple processors.
 
 Checkout our Getting Started guide for installation instructions, information on creating a Hydrogen account, setting up a ParFlow run from templates and more! The Tutorials section contains short examples, while the Example notebooks sections contains longer workflows that setup a ParFlow run at the end. The API reference contains the full list of available functions.
 
-## Citation
+## Citing SubsetTools
+
 If you use our tools please cite this package in your work. In addition please make sure to cite all of the datasets that you subset. Examples for obtaining the DOIs for any dataset you use are provided in the examples. 
 
 
 ## Contributing
 
-Interested in contributing? Check out the contributing guidelines. Please note that this project is released with a Code of Conduct. By contributing to this project, you agree to abide by its terms.
+Interested in contributing? Check out the contributing guidelines on the [SubsetTools GitHub repo](https://github.com/hydroframe/subsettools). Please note that this project is released with a Code of Conduct. By contributing to this project, you agree to abide by its terms.
 
 ## License
 
