@@ -1,10 +1,10 @@
-# subsettools
+# SubsetTools
 
 ## Introduction
 
-The subsettools package is developed and maintained by the [HydroFrame](https://hydroframe.org) project. It is designed to subset model inputs and outputs from the national ParFlow modeling framework. We provide tools to subset all required hydrogeologic and climate forcing datasets for a ParFlow simulation as well as obtaining pre-configured run scripts for your desired domain based on the most common use cases.  
+The [SubsetTools](https://hydroframe.org/subsettools) package is developed and maintained by the [HydroFrame](https://hydroframe.org) project. It is designed to subset model inputs and outputs from the national ParFlow modeling framework. We provide tools to subset all required hydrogeologic and climate forcing datasets for a ParFlow simulation as well as obtaining pre-configured run scripts for your desired domain based on the most common use cases.  
 
-Example workflows are provided for working with both the first and ([PFCONUS1](https://hydroframe.org/parflow_conus1.0)) and second ([PFCONUS2](https://hydroframe.org/parflow_conus1.0)) generation of the national model. Refer to the HydroFrame website for more information on these domains. 
+Example workflows are provided for working with both the first and ([PFCONUS1](https://hydroframe.org/parflow-conus1)) and second ([PFCONUS2](https://hydroframe.org/parflow-conus2)) generation of the national model. Refer to the HydroFrame website for more information on these domains. 
 
 Subset tools has been configured to work with the [HydroData](https://hydroframe.org/hydrodata) data catalog which houses national ParFlow inputs and simulation results as well as a broad array of other hydrologic variables.  Refer to the [HydroData documentation](https://hf-hydrodata.readthedocs.io/en/latest/index.html) for information on how to access additional datasets. 
 
