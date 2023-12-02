@@ -352,7 +352,7 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
     Example:
 
     .. code-block:: python
-
+    
         filepath = subset_press_init(
             ij_bounds=(375, 239, 487, 329),
             dataset="conus1_baseline_mod",

@@ -18,3 +18,9 @@ conus1_subsetting_spinup.ipynb
 conus1_subsetting_transient.ipynb
 ```
 
+You can get the tutorials by cloning the subsettools repo and navigating to the "example_notebooks" folder:
+
+```bash
+git clone https://github.com/hydroframe/subsettools.git
+cd subsettools/docs/example_notebooks
+```

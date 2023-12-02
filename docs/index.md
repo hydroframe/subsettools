@@ -16,13 +16,11 @@ Checkout our Getting Started guide for installation instructions, information on
 
 If you use our tools please cite this package in your work. In addition please make sure to cite all of the datasets that you subset. Examples for obtaining the DOIs for any dataset you use are provided in the examples. 
 
-
 ## Contributing
 
 Interested in contributing? Check out the contributing guidelines on the [SubsetTools GitHub repo](https://github.com/hydroframe/subsettools). Please note that this project is released with a Code of Conduct. By contributing to this project, you agree to abide by its terms.
 
 ## License
-
 `subsettools` is part of the [HydroFrame project](https://hydroframe.org/). It is licensed under the terms of the MIT license.
 
 
