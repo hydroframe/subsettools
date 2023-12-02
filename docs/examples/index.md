@@ -1,6 +1,6 @@
 # How To
 
-This section contains a set of example workflows that utilize different capabilities of `subsettools`.
+This section contains a set of example workflows that demonstrate different capabilities of `subsettools`.
 
 ```{toctree}
 :maxdepth: 1

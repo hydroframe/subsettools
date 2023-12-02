@@ -26,16 +26,16 @@ $ docker run -dp 8888:8888 --platform=linux/amd64 george135/parflow:latest
 ```
 You should now be able use the container if you open a browser at http://localhost:8888/lab.
 
-## Creating a HydroGEN API Account
+## Creating a HydroGEN, HydroFrame, HydroData account and registering a PIN
 
-Users must create a HydroGEN API account and register their PIN before using the 
-``subsettools`` package.
+Users must create a [HydroGEN](https://hydro-generation.org) or [HydroFrame](https://hydroframe.org) account and register their PIN before using the ``subsettools`` package.
 
-First, please visit our [HydroGEN PIN Page](https://hydrogen.princeton.edu/pin) to 
-sign up for an account and create a 4-digit PIN.
+First, please visit our [Signup page](https://hydrogen.princeton.edu/signup) to sign up for a HydroGEN/HydroFrame/HydroData account.  This single sign up process is free and allows for user tracking and security.
+
+Second, please visit the [HydroGEN PIN Page](https://hydrogen.princeton.edu/pin) to log in and create a 4-digit PIN.
 
 After creating your PIN, you must register that PIN on the machine that you intend
-to use. You can run the following code one time to register your PIN.::  
+to use to access our platforms and APIs. You can run the following code one time to register your PIN.::  
 
 ```python
 from hf_hydrodata.gridded import register_api_pin
@@ -48,11 +48,15 @@ You only need to re-register this PIN with the `register_api_pin` method if the
 new 4-digit PIN is different from your previous 4-digit PIN (the PIN is allowed
 to stay the same).
 
-## Building a ParFlow run from a Template Runscript
+## Things you can do with SubsetTools
 
-In order to run ParFlow, you must have a model object in the form of a .pfidb or .yaml file. 
-These files can be generated initially from a python script using pftools keys.
-The template runscripts provided with the subsettools package are all in .yaml format and provide examples of common use configurations for ParFlow. You may use these as a template for a ParFlow run that most closely meets the specifications of the model 
+SubsetTools is a package that leverages the [HydroData](https://www.hydroframe.org/hydrodata) platform and API to automate a number of data tasks.  These currently include subsetting (clipping) large data products in space or in time.  For example, static products like a Digital Elevation Model (DEM) or time-varying products like meterological forcing data such as precipitation or temperature can be clipped and formatted using the example workflows.  SubsetTools also rapidly accelerates model development and can clip and formulate all the inputs to run a hydrologic model, for example over a HUC in the US for water year.
+
+## Building a ParFlow run from a template runscript
+
+One of the primary workflows for SubsetTools is to automate build an integrated hydrologic simulation over the Continental US (CONUS).  In addition to static model inputs, the HydroData platform also has four-decades of hourly forcing at 1km resolution.  Currently, we support the integrated hydrology model [ParFlow](https://www.parflow.org) coupled to CLM, [PFCLM](https://www.hydroframe.org/parflow-resources). 
+
+Using SubsetTools you can automatically generate ParFlow inputs (e.g. a `.pfidb` or `.yaml` file) from a python script using pftools keys.  The template runscripts provided with the subsettools package are all in .yaml format and provide examples of common use configurations for ParFlow. You may use these as a template for a ParFlow run that most closely meets the specifications of the model 
 you are trying to build. 
 
 We recommend a user select a template runscript corresponding to following three guidelines:
