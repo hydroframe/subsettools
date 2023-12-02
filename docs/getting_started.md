@@ -48,9 +48,9 @@ to stay the same).
 
 ## Building a ParFlow run from a template runscript
 
-In order to run ParFlow, you must have a model object in the form of a .pfidb or .yaml file. 
-These files can be generated initially from a python script using pftools keys.
-The template runscripts provided with the subsettools package are all in .yaml format and provide examples of common use configurations for ParFlow. You may use these as a template for a ParFlow run that most closely meets the specifications of the model 
+One of the primary workflows for SubsetTools is to automate build an integrated hydrologic simulation over the Continental US (CONUS).  In addition to static model inputs, the HydroData platform also has four-decades of hourly forcing at 1km resolution.  Currently, we support the integrated hydrology model [ParFlow](https://www.parflow.org) coupled to CLM, [PFCLM](https:www.hydroframe.org/parflow-resources). 
+
+Using SubsetTools you can automatically generate ParFlow inputs (e.g. a `.pfidb` or `.yaml` file) from a python script using pftools keys.  The template runscripts provided with the subsettools package are all in .yaml format and provide examples of common use configurations for ParFlow. You may use these as a template for a ParFlow run that most closely meets the specifications of the model 
 you are trying to build. 
 
 We recommend a user select a template runscript corresponding to following three guidelines:
