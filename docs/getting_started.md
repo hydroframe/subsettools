@@ -48,11 +48,11 @@ to stay the same).
 
 ## Things you can do with SubsetTools
 
-SubsetTools is a package that leverages the [HydroData](https:www.hydroframe.org/hydrodata) platform and API to automate a number of data tasks.  These currently include subsetting (clipping) large data products in space or in time.  For example, static products like a Digital Elevation Model (DEM) or time-varying products like meterological forcing data such as precipitation or temperature can be clipped and formatted using the example workflows.  SubsetTools also rapidly accelerates model development and can clip and formulate all the inputs to run a hydrologic model, for example over a HUC in the US for water year.
+SubsetTools is a package that leverages the [HydroData](https://www.hydroframe.org/hydrodata) platform and API to automate a number of data tasks.  These currently include subsetting (clipping) large data products in space or in time.  For example, static products like a Digital Elevation Model (DEM) or time-varying products like meterological forcing data such as precipitation or temperature can be clipped and formatted using the example workflows.  SubsetTools also rapidly accelerates model development and can clip and formulate all the inputs to run a hydrologic model, for example over a HUC in the US for water year.
 
 ## Building a ParFlow run from a template runscript
 
-One of the primary workflows for SubsetTools is to automate build an integrated hydrologic simulation over the Continental US (CONUS).  In addition to static model inputs, the HydroData platform also has four-decades of hourly forcing at 1km resolution.  Currently, we support the integrated hydrology model [ParFlow](https://www.parflow.org) coupled to CLM, [PFCLM](https:www.hydroframe.org/parflow-resources). 
+One of the primary workflows for SubsetTools is to automate build an integrated hydrologic simulation over the Continental US (CONUS).  In addition to static model inputs, the HydroData platform also has four-decades of hourly forcing at 1km resolution.  Currently, we support the integrated hydrology model [ParFlow](https://www.parflow.org) coupled to CLM, [PFCLM](https://www.hydroframe.org/parflow-resources). 
 
 Using SubsetTools you can automatically generate ParFlow inputs (e.g. a `.pfidb` or `.yaml` file) from a python script using pftools keys.  The template runscripts provided with the subsettools package are all in .yaml format and provide examples of common use configurations for ParFlow. You may use these as a template for a ParFlow run that most closely meets the specifications of the model 
 you are trying to build. 
