@@ -598,11 +598,10 @@ def subset_forcing(
 
 def _subset_forcing_variable(variable, ij_bounds, grid, start_date, end_date, dataset, write_dir, time_zone, outputs, exit_event):
     """Helper function for subset_forcing that subsets data for one variable for the specified dates and dataset."""
-    
+
     entry = hf_hydrodata.get_catalog_entry(
         dataset=dataset, variable=variable, grid=grid, file_type="pfb", period="hourly"
     )
-
     if entry is None:
         raise ValueError(f"No {variable} entry matches your request.")
     
@@ -617,6 +616,7 @@ def _subset_forcing_variable(variable, ij_bounds, grid, start_date, end_date, da
         end_time = date + delta
         # we need to distinguish between UTC and non-UTC as the datacatalog returns the wrong answer
         # for requests that start reading from the middle of a file and span multiple files
+
         if time_zone == "UTC":
             subset_data = hf_hydrodata.gridded.get_ndarray(
                 entry,
@@ -641,11 +641,11 @@ def _subset_forcing_variable(variable, ij_bounds, grid, start_date, end_date, da
             subset_data = np.concatenate((data1, data2), axis=0)
             
         assert subset_data.shape[0] == 24, "attempted to write more than 24 hours of data to a pfb file"
-                
-        paths = hf_hydrodata.get_paths(
+
+        paths = hf_hydrodata.gridded.get_file_paths(
             entry, start_time=start_time, end_time=end_time
         )
-
+        
         write_path = os.path.join(write_dir,
                                   _adjust_filename_hours(os.path.basename(paths[0]),day)
         )
