@@ -6,7 +6,6 @@ import shutil
 from datetime import datetime, timedelta
 import pytz
 import numpy as np
-from hf_hydrodata import gridded
 from parflow.tools.io import read_clm
 
 

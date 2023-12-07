@@ -74,7 +74,7 @@ def _get_conus_hucs_indices(huc_list, grid):
     """
     huc_len = len(huc_list[0])
     huc_list = [int(huc) for huc in huc_list]
-    entry = hf_hydrodata.gridded.get_catalog_entry(
+    entry = hf_hydrodata.get_catalog_entry(
         dataset="huc_mapping", grid=grid, file_type="tiff"
     )
     if entry is None:
@@ -135,8 +135,8 @@ def latlon_to_ij(latlon_bounds, grid):
                 all(isinstance(value, (int, float)) for value in point)):
             raise ValueError("latlon_bounds must contain exactly two lat-lon points: [[lat1, lon1], [lat2, lon2]]")
     grid = grid.lower()
-    point0 = hf_hydrodata.grid.to_ij(grid, latlon_bounds[0][0], latlon_bounds[0][1])
-    point1 = hf_hydrodata.grid.to_ij(grid, latlon_bounds[1][0], latlon_bounds[1][1])
+    point0 = hf_hydrodata.to_ij(grid, latlon_bounds[0][0], latlon_bounds[0][1])
+    point1 = hf_hydrodata.to_ij(grid, latlon_bounds[1][0], latlon_bounds[1][1])
     imin, imax = [
         min(point0[0], point1[0]),
         max(point0[0], point1[0]),
@@ -314,7 +314,7 @@ def subset_static(
         raise TypeError("All variable names should be strings.")
     file_paths = {}
     for var in var_list:
-        entry = hf_hydrodata.gridded.get_catalog_entry(
+        entry = hf_hydrodata.get_catalog_entry(
             dataset=dataset, file_type="pfb", period="static", variable=var
         )
         if entry is not None:
@@ -369,7 +369,7 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
     if not isinstance(time_zone, str):
         raise TypeError("time_zone must be a string.")
     
-    entry = hf_hydrodata.gridded.get_catalog_entry(
+    entry = hf_hydrodata.get_catalog_entry(
         dataset=dataset, file_type="pfb", variable="pressure_head", period="hourly"
     )
     if entry is None:
@@ -436,7 +436,7 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
     file_type_list = ["vegp", "vegm", "drv_clm"]
     file_paths = {}
     for file_type in file_type_list:
-        entry = hf_hydrodata.gridded.get_catalog_entry(dataset=dataset,
+        entry = hf_hydrodata.get_catalog_entry(dataset=dataset,
                                                        file_type=file_type,
                                                        variable="clm_run",
                                                        period="static"
@@ -446,7 +446,7 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
         print(f"processing {file_type}")
         if file_type == "vegp":
             file_path = os.path.join(write_dir, "drv_vegp.dat")
-            hf_hydrodata.gridded.get_raw_file(
+            hf_hydrodata.get_raw_file(
                 file_path,
                 dataset=dataset,
                 file_type=file_type,
@@ -463,11 +463,11 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
             print("subset vegm")
         elif file_type == "drv_clm":
             file_path = os.path.join(write_dir, "drv_clmin.dat")
-            hf_hydrodata.gridded.get_raw_file(file_path,
-                                     dataset=dataset,
-                                     file_type=file_type,
-                                     variable="clm_run",
-                                     period="static"
+            hf_hydrodata.get_raw_file(file_path,
+                            dataset=dataset,
+                            file_type=file_type,
+                            variable="clm_run",
+                            period="static"
             )
             print("copied drv_clmin")
             edit_drvclmin(
@@ -598,11 +598,10 @@ def subset_forcing(
 
 def _subset_forcing_variable(variable, ij_bounds, grid, start_date, end_date, dataset, write_dir, time_zone, outputs, exit_event):
     """Helper function for subset_forcing that subsets data for one variable for the specified dates and dataset."""
-    
-    entry = hf_hydrodata.gridded.get_catalog_entry(
+
+    entry = hf_hydrodata.get_catalog_entry(
         dataset=dataset, variable=variable, grid=grid, file_type="pfb", period="hourly"
     )
-
     if entry is None:
         raise ValueError(f"No {variable} entry matches your request.")
     
@@ -617,6 +616,7 @@ def _subset_forcing_variable(variable, ij_bounds, grid, start_date, end_date, da
         end_time = date + delta
         # we need to distinguish between UTC and non-UTC as the datacatalog returns the wrong answer
         # for requests that start reading from the middle of a file and span multiple files
+
         if time_zone == "UTC":
             subset_data = hf_hydrodata.gridded.get_ndarray(
                 entry,
@@ -641,11 +641,11 @@ def _subset_forcing_variable(variable, ij_bounds, grid, start_date, end_date, da
             subset_data = np.concatenate((data1, data2), axis=0)
             
         assert subset_data.shape[0] == 24, "attempted to write more than 24 hours of data to a pfb file"
-                
+
         paths = hf_hydrodata.gridded.get_file_paths(
             entry, start_time=start_time, end_time=end_time
         )
-
+        
         write_path = os.path.join(write_dir,
                                   _adjust_filename_hours(os.path.basename(paths[0]),day)
         )
