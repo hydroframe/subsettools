@@ -35,4 +35,5 @@ API_Reference.rst
 changelog.md
 contributing.md
 conduct.md
+data_use_policy.md
 ```

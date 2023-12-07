@@ -7,7 +7,7 @@
 # -- Project information -----------------------------------------------------
 
 project = "subsettools"
-copyright = "2023, The Hydroframe Project"
+copyright = "2023, The Trustees of Princeton University, The Arizona Board of Regents on behalf of the University of Arizona"
 author = "George Artavanis, Amanda Triplett"
 
 # -- General configuration ---------------------------------------------------
