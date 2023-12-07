@@ -18,12 +18,20 @@ In order to use a small subset of the `subsettools` functions, you also need to 
 
 In addition, we provide a reproducible computational environment using [Binder](https://mybinder.org/v2/gh/hydroframe/subsettools-binder/HEAD), where you can execute the example notebooks without the need to install the subsettools package or ParFlow. Please note that the Binder project has limited resources, so this is not an appropriate place to run large simulations - but it's a great environment to get started with the subsettools API. Note that Binder may take several minutes to launch.
 
-Finally, if you prefer using Docker, you can get an image with JupyterLab, subsettools and ParFlow installed from DockerHub. Make sure you have an up-to-date version of Docker.
+Finally, if you prefer using Docker, you can get an image with JupyterLab, subsettools and ParFlow installed from DockerHub. Make sure you have an up-to-date version of Docker. Choose the correct version based on your computer’s architecture:
 
+For x86_64 (Intel chip on Mac):
 ```bash
-$ docker pull george135/parflow:latest
-$ docker run -dp 8888:8888 --platform=linux/amd64 george135/parflow:latest
+$ docker pull george135/subsettools_amd64:latest
+$ docker run -dp 8888:8888 george135/subsettools_amd64:latest start-notebook.sh --NotebookApp.token=''
 ```
+
+For arm64 (M1 or M2 chip on Mac):
+```bash
+$ docker pull george135/subsettools_arm64:latest
+$ docker run -dp 8888:8888 george135/subsettools_arm64:latest start-notebook.sh --NotebookApp.token=''
+```
+
 You should now be able use the container if you open a browser at http://localhost:8888/lab?.
 
 ## Creating a HydroGEN, HydroFrame, HydroData account and registering a PIN
