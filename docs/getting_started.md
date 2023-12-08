@@ -14,7 +14,7 @@ You can also install the latest development version by cloning the GitHub reposi
 $ pip install git+https://github.com/hydroframe/subsettools.git
 ```
 
-In order to use a small subset of the `subsettools` functions, you also need to have ParFlow installed. Please refer to the [HydroFrame](https://hydroframe.parflow.org/) for help getting started with ParFlow.
+In order to use a small subset of the `subsettools` functions, you also need to have ParFlow installed. Please refer to the [HydroFrame](https://hydroframe.org/) for help getting started with ParFlow.
 
 In addition, we provide a reproducible computational environment using [Binder](https://mybinder.org/v2/gh/hydroframe/subsettools-binder/HEAD), where you can execute the example notebooks without the need to install the subsettools package or ParFlow. Please note that the Binder project has limited resources, so this is not an appropriate place to run large simulations - but it's a great environment to get started with the subsettools API. Note that Binder may take several minutes to launch.
 
@@ -58,13 +58,13 @@ to stay the same).
 
 ## Things you can do with SubsetTools
 
-SubsetTools is a package that leverages the [HydroData](https://www.hydroframe.org/hydrodata) platform and API to automate a number of data tasks.  These currently include subsetting (clipping) large data products in space or in time.  For example, static products like a Digital Elevation Model (DEM) or time-varying products like meterological forcing data such as precipitation or temperature can be clipped and formatted using the example workflows.  SubsetTools also rapidly accelerates model development and can clip and formulate all the inputs to run a hydrologic model, for example over a HUC in the US for water year.
+SubsetTools is a package that leverages the [HydroData](https://www.hydroframe.org/hydrodata) platform and API to automate a number of data tasks.  These currently include subsetting (clipping) large data products in space or in time.  For example, static products like a Digital Elevation Model (DEM) or time-varying products like meterological forcing data such as precipitation or temperature can be clipped and formatted using the example workflows.  SubsetTools also rapidly accelerates model development and can clip and formulate all the inputs to run a hydrologic model, for example over a HUC in the US for a water year.
 
 ## Building a ParFlow run from a template runscript
 
-One of the primary workflows for SubsetTools is to automate build an integrated hydrologic simulation over the Continental US (CONUS).  In addition to static model inputs, the HydroData platform also has four-decades of hourly forcing at 1km resolution.  Currently, we support the integrated hydrology model [ParFlow](https://www.parflow.org) coupled to CLM, [PFCLM](https://www.hydroframe.org/parflow-resources). 
+One of the primary workflows for SubsetTools is to automate building an integrated hydrologic simulation over the Continental US (CONUS).  In addition to static model inputs, the HydroData platform also has four decades of hourly forcing at 1km resolution.  Currently, we support the integrated hydrology model [ParFlow](https://www.parflow.org) coupled to CLM, [PFCLM](https://www.hydroframe.org/parflow-resources). 
 
-Using SubsetTools you can automatically generate ParFlow inputs (e.g. a `.pfidb` or `.yaml` file) from a python script using pftools keys.  The template runscripts provided with the subsettools package are all in .yaml format and provide examples of common use configurations for ParFlow. You may use these as a template for a ParFlow run that most closely meets the specifications of the model 
+Using SubsetTools you can automatically generate ParFlow inputs (e.g. a `.pfidb` or `.yaml` file) from a Python script using pftools keys.  The template runscripts provided with the SubsetTools package are all in .yaml format and provide examples of common use configurations for ParFlow. You may use these as a template for a ParFlow run that most closely meets the specifications of the model 
 you are trying to build. 
 
 We recommend a user select a template runscript corresponding to following three guidelines:
@@ -95,6 +95,6 @@ reference_run = get_template_runscript(grid="conus1", mode="transient", input_fi
 
 *If you want to use your own runscript:*
 
-You can provide your own .pfidb or .yaml file to subsettools and are not required to use these templates to use the subsettools functions. 
+You can provide your own .pfidb or .yaml file to SubsetTools and are not required to use these templates to use the subsettools functions. 
 However, we encourage starting from one of these templates before making other changes to your model unless you are an experienced ParFlow user as it is possible the settings in your runscript will be incompatible with running data from the CONUS1 and 2 domains. 
 
