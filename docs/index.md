@@ -4,13 +4,13 @@
 
 The [SubsetTools](https://hydroframe.org/subsettools) package is developed and maintained by the [HydroFrame](https://hydroframe.org) project. It is designed to subset model inputs and outputs from the national ParFlow modeling framework. We provide tools to subset all required hydrogeologic and climate forcing datasets for a ParFlow simulation as well as obtaining pre-configured run scripts for your desired domain based on the most common use cases.  
 
-Example workflows are provided for working with both the first and ([PFCONUS1](https://hydroframe.org/parflow-conus1)) and second ([PFCONUS2](https://hydroframe.org/parflow-conus2)) generation of the national model. Refer to the HydroFrame website for more information on these domains. 
+Example workflows are provided for working with both the first ([PFCONUS1](https://hydroframe.org/parflow-conus1)) and second ([PFCONUS2](https://hydroframe.org/parflow-conus2)) generation of the national model. Refer to the HydroFrame website for more information on these domains. 
 
 Subset tools has been configured to work with the [HydroData](https://hydroframe.org/hydrodata) data catalog which houses national ParFlow inputs and simulation results as well as a broad array of other hydrologic variables.  Refer to the [HydroData documentation](https://hf-hydrodata.readthedocs.io/en/latest/index.html) for information on how to access additional datasets. 
 
-Subset tools will provide you with ParFlow scripts that can run locally, but it should be noted that depending on the size of your domain you may want to deploy your runs on HPC resources. ParFlow is designed to run efficiently in parallel and all simulations can easily be distributed across multiple processors.
+SubsetTools will provide you with ParFlow scripts that can run locally, but it should be noted that depending on the size of your domain you may want to deploy your runs on HPC resources. ParFlow is designed to run efficiently in parallel and all simulations can easily be distributed across multiple processors.
 
-Checkout our Getting Started guide for installation instructions, information on creating a Hydrogen account, setting up a ParFlow run from templates and more! The Tutorials section contains short examples, while the Example notebooks sections contains longer workflows that setup a ParFlow run at the end. The API reference contains the full list of available functions.
+Checkout our Getting Started guide for installation instructions, information on creating a Hydrogen account, setting up a ParFlow run from templates and more! The HowTo section contains short examples, while the Example notebooks sections contains longer workflows that setup a ParFlow run at the end. The API reference contains the full list of available functions.
 
 ## Citing SubsetTools
 
