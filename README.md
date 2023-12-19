@@ -1,41 +1,24 @@
-# subsettools
+# SubsetTools
 
-## Overview
+## Introduction
 
-The subsettools package provides functions that simplify the process of setting up a modeling domain in the contiguous United States (CONUS) and running the hydrologic model ParFlow. The package allows the user to subset all required hydrogeologic and climate forcing datasets from the database Hydrodata. It also contains various functions to edit and run your subset model. These capabilities allow for more rapid and replicable application of ParFlow for hydrologic simulations. 
+The [SubsetTools](https://hydroframe.org/subsettools) package is developed and maintained by the [HydroFrame](https://hydroframe.org) project. It is designed to subset model inputs and outputs from the national ParFlow modeling framework. We provide tools to subset all required hydrogeologic and climate forcing datasets for a ParFlow simulation as well as obtaining pre-configured run scripts for your desired domain based on the most common use cases.  
 
-Detailed documentation can be found at [Read the Docs](https://hydroframesubsettools.readthedocs.io/en/latest/).
+Example workflows are provided for working with both the first ([PFCONUS1](https://hydroframe.org/parflow-conus1)) and second ([PFCONUS2](https://hydroframe.org/parflow-conus2)) generation of the national model. Refer to the HydroFrame website for more information on these domains. 
 
-## Installation
+Subset tools has been configured to work with the [HydroData](https://hydroframe.org/hydrodata) data catalog which houses national ParFlow inputs and simulation results as well as a broad array of other hydrologic variables.  Refer to the [HydroData documentation](https://hf-hydrodata.readthedocs.io/en/latest/index.html) for information on how to access additional datasets. 
 
-Subsettools can be installed in a python virtual environment with pip. You can get the latest stable release from PyPI with:
+SubsetTools will provide you with ParFlow scripts that can run locally, but it should be noted that depending on the size of your domain you may want to deploy your runs on HPC resources. ParFlow is designed to run efficiently in parallel and all simulations can easily be distributed across multiple processors.
 
-```bash
-$ pip install subsettools
-```
+Checkout our Getting Started guide for installation instructions, information on creating a Hydrogen account, setting up a ParFlow run from templates and more! The HowTo section contains short examples, while the Example notebooks sections contains longer workflows that setup a ParFlow run at the end. The API reference contains the full list of available functions.
 
-Or you can get the latest development version directly from GitHub with:
+## Citing SubsetTools
 
-```bash
-$ pip install git+https://github.com/hydroframe/subsettools.git
-```
-
-In addition, we provide a reproducible computational environment using [MyBinder](https://mybinder.org/v2/gh/hydroframe/subsettools-binder/HEAD), where you can execute the example notebooks without the need to install the subsettools package or ParFlow. Please note that the MyBinder project has limited resources, so this is not an appropriate place to run large simulations - but it's a great environment to get started with the subsettools API.
-
-If you prefer using Docker, you can get an image with JupyterLab, subsettools and ParFlow installed from DockerHub with:
-
-```bash
-$ docker pull george135/parflow:latest
-```
+If you use our tools please cite this package in your work. In addition please make sure to cite all of the datasets that you subset. Examples for obtaining the DOIs for any dataset you use are provided in the examples. 
 
 ## Contributing
 
-Interested in contributing? Check out the contributing guidelines. Please note that this project is released with a Code of Conduct. By contributing to this project, you agree to abide by its terms.
+Interested in contributing? Check out the contributing guidelines on the [SubsetTools GitHub repo](https://github.com/hydroframe/subsettools). Please note that this project is released with a Code of Conduct. By contributing to this project, you agree to abide by its terms.
 
 ## License
-
-`subsettools` was created by George Artavanis, Amanda Triplett. It is licensed under the terms of the MIT license.
-
-## Credits
-
-`subsettools` was created with [`cookiecutter`](https://cookiecutter.readthedocs.io/en/latest/) and the `py-pkgs-cookiecutter` [template](https://github.com/py-pkgs/py-pkgs-cookiecutter).
+`subsettools` is part of the [HydroFrame project](https://hydroframe.org/). It is licensed under the terms of the MIT license.
