@@ -2,6 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## 1.0.0 (07/12/2023)
+- Update versions for pftools, numpy, etc
+- Rename variables to keep consinsent with changes in the datacatalog
+-  Add CONUS2 examples in the documentation
+
 ## 0.4.0 (29/11/2023)
 - All functions that write files now return a dictionary where the keys are variable names and the values are paths to the files written.
 - subset_press_init gets data at midnight on the date specified (before it was getting data an hour before midnight on the date specified)
