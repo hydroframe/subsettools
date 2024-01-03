@@ -20,21 +20,12 @@ In addition, we provide a reproducible computational environment using [Binder](
 
 ### Using Docker
 
-Finally, if you prefer using Docker, you can get an image with JupyterLab, subsettools and ParFlow installed from DockerHub. Make sure you have an up-to-date version of Docker. Choose the correct version based on your computer’s architecture:
+If you prefer using Docker, you can get an image with JupyterLab, subsettools and ParFlow installed from DockerHub. Make sure you have an up-to-date version of Docker. Follow the instructions to set up your ParFlow Docker environment:
 
-For x86_64 (Intel chip on Mac):
-```bash
-$ docker pull george135/subsettools_amd64:latest
-$ docker run -dp 8888:8888 george135/subsettools_amd64:latest start-notebook.sh --NotebookApp.token=''
-```
-
-For arm64 (M1 or M2 chip on Mac):
-```bash
-$ docker pull george135/subsettools_arm64:latest
-$ docker run -dp 8888:8888 george135/subsettools_arm64:latest start-notebook.sh --NotebookApp.token=''
-```
-
-You should now be able use the container if you open a browser at http://localhost:8888/lab?.
+1. Go to [Docker](https://www.docker.com/products/docker-desktop/) and download Docker Desktop. Make sure you download the correct version based on your computer’s operating system and architecture. Follow the instructions to install Docker Desktop. ![alt text](https://github.com/gartavanis/IDEAS-watersheds/blob/main/Docker.png)
+2. Launch Docker Desktop. The application should be running while you do the next steps. (You might need to create a Docker account and sign in if you don’t already have one.)
+3. Start a new terminal session (outside Docker) to type the commands in the next two steps:
+4. 
 
 ## Creating a HydroGEN, HydroFrame, HydroData account and registering a PIN
 
