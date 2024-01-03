@@ -26,8 +26,7 @@ If you prefer using Docker, you can get an image with JupyterLab, subsettools an
 2. Launch Docker Desktop. The application should be running while you do the next steps. (You might need to create a Docker account and sign in if you don’t already have one.)
 3. Start a new terminal session (outside Docker) to type the commands in the next two steps:
 4. Pull the parflow/subsettools image from DockerHub. Choose the correct version based on your computer’s architecture.
-**NOTE:** *The Docker image might take a while to download.*
-**NOTE:** *If your Docker is running out of space, you might need to use [docker system prune](https://docs.docker.com/engine/reference/commandline/system_prune/) with the appropriate options to clear out old containers and make space for the new one.*
+**NOTE:** *The Docker image might take a while to download. Also, if your Docker is running out of space, you might need to use [docker system prune](https://docs.docker.com/engine/reference/commandline/system_prune/) with the appropriate options to clear out old containers and make space for the new one.*
 
 - For the x86_64/amd64 (Intel Chip for Mac or Windows) architecture:
 ```bash
