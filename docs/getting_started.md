@@ -18,6 +18,8 @@ In order to use a small subset of the `subsettools` functions, you also need to 
 
 In addition, we provide a reproducible computational environment using [Binder](https://mybinder.org/v2/gh/hydroframe/subsettools-binder/HEAD), where you can execute the example notebooks without the need to install the subsettools package or ParFlow. Please note that the Binder project has limited resources, so this is not an appropriate place to run large simulations - but it's a great environment to get started with the subsettools API. Note that Binder may take several minutes to launch.
 
+### Using Docker
+
 Finally, if you prefer using Docker, you can get an image with JupyterLab, subsettools and ParFlow installed from DockerHub. Make sure you have an up-to-date version of Docker. Choose the correct version based on your computer’s architecture:
 
 For x86_64 (Intel chip on Mac):
