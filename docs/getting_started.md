@@ -22,10 +22,40 @@ In addition, we provide a reproducible computational environment using [Binder](
 
 If you prefer using Docker, you can get an image with JupyterLab, subsettools and ParFlow installed from DockerHub. Make sure you have an up-to-date version of Docker. Follow the instructions to set up your ParFlow Docker environment:
 
-1. Go to [Docker](https://www.docker.com/products/docker-desktop/) and download Docker Desktop. Make sure you download the correct version based on your computer’s operating system and architecture. Follow the instructions to install Docker Desktop. ![alt text](https://github.com/gartavanis/IDEAS-watersheds/blob/main/Docker.png)
+1. Go to [Docker](https://www.docker.com/products/docker-desktop/) and download Docker Desktop. Make sure that you download the correct version based on your computer’s operating system and architecture. Follow the instructions to install Docker Desktop. ![alt text](https://github.com/hydroframe/subsettools/blob/update-docs/docs/Docker1.png)
 2. Launch Docker Desktop. The application should be running while you do the next steps. (You might need to create a Docker account and sign in if you don’t already have one.)
 3. Start a new terminal session (outside Docker) to type the commands in the next two steps:
-4. 
+4. Pull the parflow/subsettools image from DockerHub. Choose the correct version based on your computer’s architecture.
+**NOTE:** *The Docker image might take a while to download.*
+**NOTE:** *If your Docker is running out of space, you might need to use [docker system prune](https://docs.docker.com/engine/reference/commandline/system_prune/) with the appropriate options to clear out old containers and make space for the new one.*
+
+- For the x86_64/amd64 (Intel Chip for Mac or Windows) architecture:
+```bash
+docker pull george135/subsettools_amd64
+```
+- For the arm64 (M1/M2 chip for Mac) architecture:
+```bash
+docker pull george135/subsettools_arm64
+```
+5. Once the image has finished downloading, you can run the container with:
+- For the x86_64/amd64 architecture:
+```bash
+docker run -dp 8888:8888 george135/subsettools_amd64:latest start-notebook.sh --NotebookApp.token=''
+```
+- For the arm64 architecture:
+```bash
+docker run -dp 8888:8888 george135/subsettools_arm64:latest start-notebook.sh --NotebookApp.token=''
+```
+6. Use a browser to navigate to your [JupyterLab container](http://localhost:8888/lab?) or use the link that will appear next to your container on the Docker Desktop application: ![alt text](https://github.com/hydroframe/subsettools/blob/update-docs/docs/Docker2.png)
+7. You should see a JupyterLab environment like this: ![alt text](https://github.com/hydroframe/subsettools/blob/update-docs/docs/Docker3.png)
+8. Click on the Terminal application to start a terminal session *inside* the container.
+9. Clone the GitHub repository that contains the example workflows for `subsettools` and `hf_hydrodata`:
+```bash
+git clone https://github.com/hydroframe/subsettools-binder.git
+```
+10. Navigate to `subsettools-binder` -> `subsettools` folder and click on the `definte_subset.ipynb` notebook. ![alt text](https://github.com/hydroframe/subsettools/blob/update-docs/docs/Docker4.png)
+11. Make sure the notebook runs successfully without errors. **You will need to provide your Hydrogen email and pin in the first code cell of the notebook.**
+12. Congratulations, your ParFlow Docker environment is ready to use!
 
 ## Creating a HydroGEN, HydroFrame, HydroData account and registering a PIN
 
