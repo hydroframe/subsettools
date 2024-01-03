@@ -45,14 +45,14 @@ docker run -dp 8888:8888 george135/subsettools_amd64:latest start-notebook.sh --
 ```bash
 docker run -dp 8888:8888 george135/subsettools_arm64:latest start-notebook.sh --NotebookApp.token=''
 ```
-6. Use a browser to navigate to your [JupyterLab container](http://localhost:8888/lab?) or use the link that will appear next to your container on the Docker Desktop application: ![alt text](https://github.com/hydroframe/subsettools/blob/main/docs/Docker2.png)
-7. You should see a JupyterLab environment like this: ![alt text](https://github.com/hydroframe/subsettools/blob/main/docs/Docker3.png)
+6. Use a browser to navigate to your [JupyterLab container](http://localhost:8888/lab?) or use the link that will appear next to your container on the Docker Desktop application: ![alt text](Docker2.png)
+7. You should see a JupyterLab environment like this: ![alt text](Docker3.png)
 8. Click on the Terminal application to start a terminal session *inside* the container.
 9. Clone the GitHub repository that contains the example workflows for `subsettools` and `hf_hydrodata`:
 ```bash
 git clone https://github.com/hydroframe/subsettools-binder.git
 ```
-10. Navigate to `subsettools-binder` -> `subsettools` folder and click on the `definte_subset.ipynb` notebook. ![alt text](https://github.com/hydroframe/subsettools/blob/main/docs/Docker4.png)
+10. Navigate to `subsettools-binder` -> `subsettools` folder and click on the `definte_subset.ipynb` notebook. ![alt text](Docker4.png)
 11. Make sure the notebook runs successfully without errors. **You will need to provide your Hydrogen email and pin in the first code cell of the notebook.**
 12. Congratulations, your ParFlow Docker environment is ready to use!
 
