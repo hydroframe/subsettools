@@ -22,7 +22,7 @@ In addition, we provide a reproducible computational environment using [Binder](
 
 If you prefer using Docker, you can get an image with JupyterLab, subsettools and ParFlow installed from DockerHub. Make sure you have an up-to-date version of Docker. Follow the instructions to set up your ParFlow Docker environment:
 
-1. Go to [Docker](https://www.docker.com/products/docker-desktop/) and download Docker Desktop. Make sure that you download the correct version based on your computer’s operating system and architecture. Follow the instructions to install Docker Desktop. ![alt text](https://github.com/hydroframe/subsettools/blob/main/docs/Docker1.png)
+1. Go to [Docker](https://www.docker.com/products/docker-desktop/) and download Docker Desktop. Make sure that you download the correct version based on your computer’s operating system and architecture. Follow the instructions to install Docker Desktop. ![alt text](Docker1.png)
 2. Launch Docker Desktop. The application should be running while you do the next steps. (You might need to create a Docker account and sign in if you don’t already have one.)
 3. Start a new terminal session (outside Docker) to type the commands in the next two steps:
 4. Pull the parflow/subsettools image from DockerHub. Choose the correct version based on your computer’s architecture.
