@@ -1,5 +1,5 @@
 ---
-title: SubsetTools: A Python package to subset data to build and run ParFlow hydrologic models'
+title: 'SubsetTools: A Python package to subset data to build and run ParFlow hydrologic models'
 tags:
   - Python
   - hydrology
