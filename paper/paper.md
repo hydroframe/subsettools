@@ -42,9 +42,13 @@ Hydrologic models are an integral part of understanding and managing water suppl
 
 # Statement of need
 Assuring that model inputs have the correct format, units, spatial resolution, and orientation is a time consuming process. The majority of inputs to the ParFlow model are in formats that are not commonly used such as a ParFlow Binary or .pfb. This may cause difficulties in learning to manipulate the files. Further, the inputs needed vary depending on what configuration you want to run the model in. For instance, running base ParFlow or ParFlow linked to the climate model CLM. 
+
 The ParFlow runscript must also be customized to accept these modified files and the specified model configuration. This is done with a model runscript which is defined by hundreds of keys or parameters. For a beginner or even experienced user, changing a key can introduce significant errors which can be difficult to trace. 
+
 The `SubsetTools` package provides functions that simplify the process of setting up and running a ParFlow model in CONUS. It allows the user to subset all required hydrogeologic and climate forcing datasets from the `HydroData` database (reference or link for hydrodata?). It also provides template model runscripts which are designed to link seamlessly with functions that edit the model keys corresponding to the domain and model configuration specified by the user. These features enable a more rapid and replicable application of ParFlow for hydrologic simulations.
+
 `SubsetTools` is designed to be used by both hydrology students and researchers. For students, the functions and examples provided in the package can be run with little programming or hydrologic knowledge to start teaching concepts. However, the functions have been thoughtfully designed to be flexible and transparent so that more advanced users can develop customized models that meet their needs. `SubsetTools` has already been used in a graduate hydrology course at Princeton, as well as at a DOE IDEAS-watersheds workshop at Stanford. 
+
 The source code for `SubsetTools` is available on [GitHub](https://github.com/hydroframe/subsettools). The documentation for the package is hosted on [ReadTheDocs](https://hydroframesubsettools.readthedocs.io/en/latest/) and includes installation instructions, short tutorials, example notebooks, a complete API reference as well as contributing guidelines.
 
 # Citations
