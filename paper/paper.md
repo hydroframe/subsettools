@@ -26,7 +26,7 @@ authors:
   - name: Andrew Bennett
     affiliation: 2
   - name: Laura E. Condon
-    affiliation: "2, 3"
+    affiliation: 2
   - name: Reed M. Maxwell
     corresponding: true 
     affiliation: 1
