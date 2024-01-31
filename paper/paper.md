@@ -7,7 +7,7 @@ tags:
   - simulation
 authors:
   - name: Amanda K. Triplett
-    orcid: 0000-0000-0000-0000
+    orcid: 0009-0009-8085-3938
     equal-contrib: true
     affiliation: 2
   - name: Georgios Artavanis
