@@ -431,7 +431,7 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
     if not isinstance(time_zone, str):
         raise TypeError("time_zone must be a string.")
 
-    file_type_list = ["vegp", "vegm", "drv_clm"]
+    file_type_list = ["vegp", "pfb", "drv_clm"] # get the pfb version of the vegm file
     file_paths = {}
     for file_type in file_type_list:
         entry = hf_hydrodata.get_catalog_entry(dataset=dataset,
@@ -453,7 +453,7 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
             )
             file_paths[file_type] = file_path
             print("copied vegp")
-        elif file_type == "vegm":
+        elif file_type == "pfb":
             subset_data = hf_hydrodata.gridded.get_ndarray(entry, grid_bounds=ij_bounds)
             land_cover_data = _reshape_ndarray_to_vegm_format(subset_data)
             file_path = write_land_cover(land_cover_data, write_dir)
