@@ -98,11 +98,9 @@ def _indices_to_ij(conus_hucs, indices_j, indices_i):
         in conus_hucs defined by the two mask arrays indices_j and indices_i.                                                                   
     """
     imin = np.min(indices_i)
-    imax = np.max(indices_i) + 1  # right bound inclusive                                                                                       
-    arr_jmin = np.min(indices_j)
-    arr_jmax = np.max(indices_j) + 1  # right bound inclusive                                                                                   
-    jmin = conus_hucs.shape[0] - arr_jmax
-    jmax = conus_hucs.shape[0] - arr_jmin
+    imax = np.max(indices_i) + 1  # right bound inclusive
+    jmin = np.min(indices_j)
+    jmax = np.max(indices_j) + 1  # right bound inclusive                                                                                   
     return (int(imin), int(jmin), int(imax), int(jmax))
 
 
@@ -208,9 +206,9 @@ def create_mask_solid(huc_list, grid, write_dir):
     mask_clip[0, :, :] = sel_hucs[
         arr_jmin:arr_jmax, ij_bounds[0] : ij_bounds[2]
     ]  # we need to use numpy iymin / iymax because we are subsetting the tif file
-    mask_clip = np.flip(
-        mask_clip, 1
-    )  # This flip tooks the section we just subset and puts it in the appropriate parflow orientation
+#    mask_clip = np.flip(
+#        mask_clip, 1
+#    )  # This flip tooks the section we just subset and puts it in the appropriate parflow orientation
     mask_clip = mask_clip.astype(float)
     mask_file_path = os.path.join(write_dir, "mask.pfb")
     write_pfb(mask_file_path, mask_clip, dx=1000, dy=1000, dz=layz, dist=False)
