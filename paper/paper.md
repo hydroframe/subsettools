@@ -22,13 +22,13 @@ authors:
   - name: Will E. Lytle
         affiliation: 2
   - name: Elena Leonarduzzi
-	affiliation: 1
+        affiliation: 1
   - name: Andrew Bennett
-	affiliation: 2
+        affiliation: 2
   - name: Laura E. Condon
-	affiliation: 2
+        affiliation: 2
   - name: Reed M. Maxwell
-	affiliation: 1
+        affiliation: 1
 affiliations:
  - name: Princeton University, USA
    index: 1
