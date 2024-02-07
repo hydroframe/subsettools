@@ -76,6 +76,8 @@ For a quick reference, the following citation commands can be used:
 - `[@author:2001]` -> "(Author et al., 2001)"
 - `[@author1:2001; @author2:2001]` -> "(Author1 et al., 2001; Author2 et al., 2002)"
 
+<img width="743" alt="Screenshot 2024-02-07 at 12 46 14 PM" src="https://github.com/hydroframe/subsettools/assets/32808713/f614827d-5d24-4198-a32c-d7bff55c71fb">
+
 # Acknowledgements
 
 This research has been supported by the U.S. Department of Energy Office of Science (DE-AC02-05CH11231) and the US National Science Foundation Office of Advanced Cyberinfrastructure (OAC- 2054506 and OAC-1835855).
