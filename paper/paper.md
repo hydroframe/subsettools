@@ -93,7 +93,7 @@ Figure 1: (a) shows output of the Mannings variable for the target domain as a r
 
 An appropriate run script must also be selected based on the kind of ParFlow simulation to be performed.. The `SubsetTools` package provides eight different templates, which can be used as a starting point for building a ParFlow model. The example function call shown below specifies a transient run using ParFlow-CLM over a solid file domain (the Upper Verde region) on the CONUS1 grid. 
 
-	import subsettools as st
+	``import subsettools as st``
 	
 	reference_run = st.get_template_runscript(
 	    grid=”conus2”,
@@ -107,6 +107,7 @@ An appropriate run script must also be selected based on the kind of ParFlow sim
 	    runname=”your_runname”,
 	    forcing_dir=”/path/to/your/forcing/directory”,
 	)
+ 
 
 The `SubsetTools` package also provides functions to customize a template runscript, for example by specifying the desired subset domain to match the subset inputs, modify the file paths of the model input files, and change the processor topology for the `ParFlow` run. Once the customized Parflow runscript is ready, the user can launch a `ParFlow` simulation using the [`pftools`] (https://pypi.org/project/pftools/) package utilities. 
 
