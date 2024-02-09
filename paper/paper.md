@@ -70,47 +70,47 @@ First, the user should consider what domain they want to use for source data, CO
 
 With the information provided above, users can subset all required model input files. An example is shown below for subsetting static and climate forcing data on the CONUS2 grid for the Upper Verde region. However, `SubsetTools` also covers static hydrogeologic inputs, text files to run the climate model CLM as well as special timezone handling for initial pressure files. 
 
-	```python
-	import subsettools as st
-	
-	static_paths = st.subset_static(
-		ij_bounds=[815, 1200, 924, 1290], # grid bounds for the Upper Verde
-		dataset=”conus2_domain”,
-		write_dir=”/path/to/your/output/directory”,
-	)
-	
-	forcing_paths = st.subset_forcing(
-	ij_bounds=[815, 1200, 924, 1290],
-	grid=”conus2”,
-	start=”2012-10-01”,
-	end=”2013-10–01”,
-	dataset=”CW3E”,
+```python
+import subsettools as st
+
+static_paths = st.subset_static(
+	ij_bounds=[815, 1200, 924, 1290], # grid bounds for the Upper Verde
+	dataset=”conus2_domain”,
 	write_dir=”/path/to/your/output/directory”,
-	forcing_vars=(‘precipitation’, ‘air_temp’,),
-	)
-	```
+)
+
+forcing_paths = st.subset_forcing(
+ij_bounds=[815, 1200, 924, 1290],
+grid=”conus2”,
+start=”2012-10-01”,
+end=”2013-10–01”,
+dataset=”CW3E”,
+write_dir=”/path/to/your/output/directory”,
+forcing_vars=(‘precipitation’, ‘air_temp’,),
+)
+```
 
 
 Figure 1: (a) shows output of the Mannings variable for the target domain as a result of st.subset_static(). (b) shows output of the air temperature forcing as a result of st.subset_forcing(). 
 
 An appropriate run script must also be selected based on the kind of ParFlow simulation to be performed.. The `SubsetTools` package provides eight different templates, which can be used as a starting point for building a ParFlow model. The example function call shown below specifies a transient run using ParFlow-CLM over a solid file domain (the Upper Verde region) on the CONUS1 grid. 
 
-	```python
-	import subsettools as st
-	
-	reference_run = st.get_template_runscript(
-	    grid=”conus2”,
-	    mode=”transient”,
-	    input_file_type=”solid”,
-	    write_dir=”/path/to/your/output/directory”
-	)
-	runscript_path = st.edit_runscript_for_subset(
-	    ij_bounds=[815, 1200, 924, 1290], # grid bounds for the Upper Verde example
-	    runscript_path=reference_run,
-	    runname=”your_runname”,
-	    forcing_dir=”/path/to/your/forcing/directory”,
-	)
- 	```
+```python
+import subsettools as st
+
+reference_run = st.get_template_runscript(
+    grid=”conus2”,
+    mode=”transient”,
+    input_file_type=”solid”,
+    write_dir=”/path/to/your/output/directory”
+)
+runscript_path = st.edit_runscript_for_subset(
+    ij_bounds=[815, 1200, 924, 1290], # grid bounds for the Upper Verde example
+    runscript_path=reference_run,
+    runname=”your_runname”,
+    forcing_dir=”/path/to/your/forcing/directory”,
+)
+```
  
 
 The `SubsetTools` package also provides functions to customize a template runscript, for example by specifying the desired subset domain to match the subset inputs, modify the file paths of the model input files, and change the processor topology for the `ParFlow` run. Once the customized Parflow runscript is ready, the user can launch a `ParFlow` simulation using the [`pftools`] (https://pypi.org/project/pftools/) package utilities. 
