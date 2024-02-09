@@ -7,28 +7,28 @@ tags:
   - simulation
 authors:
   - name: Amanda K. Triplett
-	orcid: 0009-0009-8085-3938
-	equal-contrib: true
-	affiliation: 2
+    orcid: 0009-0009-8085-3938
+    equal-contrib: true
+    affiliation: 2
   - name: Georgios Artavanis
-	equal-contrib: true
-	affiliation: 1
+    equal-contrib: true
+    affiliation: 1
   - name: William M. Hasling
-	affiliation: 1
+    affiliation: 1
   - name: Amy C. Defnet
-	affiliation: 1
+    affiliation: 1
   - name: Amy Johnson
-	affiliation: "2, 3"
+    affiliation: "2, 3"
   - name: Will E. Lytle
-	affiliation: 2
+    affiliation: 2
   - name: Andrew Bennett
-	affiliation: 2
+    affiliation: 2
   - name: Reed M. Maxwell
-	affiliation: 1
+    affiliation: 1
   - name: Elena Leonarduzzi
-	affiliation: 1
+    affiliation: 1
   - name: Laura E. Condon
-	affiliation: 2
+    affiliation: 2
 
 affiliations:
  - name: Princeton University, USA
