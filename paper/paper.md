@@ -1,42 +1,51 @@
 ---
 title: 'SubsetTools: A Python package to subset data to build and run ParFlow hydrologic models'
+
 tags:
   - Python
   - hydrology
   - modeling
   - simulation
+
 authors:
   - name: Amanda K. Triplett
     orcid: 0009-0009-8085-3938
     equal-contrib: true
-    affiliation: 2
+    affiliation: 3
   - name: Georgios Artavanis
     equal-contrib: true
-    affiliation: 1
+    affiliation: "1, 2"
   - name: William M. Hasling
-    affiliation: 1
-  - name: Amy C. Defnet
-    affiliation: 1
-  - name: Amy Johnson
-    affiliation: "2, 3"
-  - name: Will E. Lytle
-    affiliation: 2
+    affiliation: "1, 2"
   - name: Reed M. Maxwell
-    affiliation: 1
+    affiliation: "2, 5, 6"
+  - name: Amy C. Defnet
+    affiliation: "1, 2"
+  - name: Amy Johnson
+    affiliation: "3, 4"
+  - name: Will E. Lytle
+    affiliation: 3
   - name: Andrew Bennett
-    affiliation: 2
+    affiliation: 3
   - name: Elena Leonarduzzi
-    affiliation: 1
-  - name: Laura E. Condon
     affiliation: 2
+  - name: Laura E. Condon
+    affiliation: 3
 
 affiliations:
- - name: Princeton University, USA
+ - name: Research Software Engineering, Princeton University, USA
    index: 1
- - name: Department of Hydrology and Atmospheric Sciences, University of Arizona, USA
+ - name: Integrated GroundWater Modeling Center, Princeton University, USA
    index: 2
- - name: CyVerse, USA
+ - name: Department of Hydrology and Atmospheric Sciences, University of Arizona, USA
    index: 3
+ - name: CyVerse, USA
+   index: 4
+ - name: Department of Civil and Environmental Engineering, Princeton University, USA
+   index: 5
+ - name: High Meadows Environmental Institute, Princeton University, USA
+   index: 6
+
 
 date: 31 January 2024
 bibliography: paper.bib
