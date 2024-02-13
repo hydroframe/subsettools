@@ -11,9 +11,11 @@ authors:
   - name: Amanda K. Triplett
     orcid: 0009-0009-8085-3938
     equal-contrib: true
+    corresponding: true
     affiliation: 3
   - name: Georgios Artavanis
     equal-contrib: true
+    corresponding: true
     affiliation: "1, 2"
   - name: William M. Hasling
     affiliation: "1, 2"
@@ -63,7 +65,7 @@ ParFlow is a scientifically rigorous hydrologic model, however its application b
 # Statement of need
 There are several big barriers to building a hydrologic model from scratch. `SubsetTools` helps to resolve the issues caused by three primary ones:  
 
-Finding quality data and then fitting it to the model. It requires significant time and expertise to assemble and process all of the input datasets that the model will require. It has taken years of development to build a national geofabric for the ParFlow CONUS simulations [@RN257; @RN352]. Our team also conducted large data assembly and analysis projects to develop hydrologically consistent topographic datasets [@RN354] and spatially consistent and continuous hydrostratigraphy [@RN352]. Rather than repeating this effort, `SubsetTools` users can start from all of the input datasets that have already been developed and tested for hydrologic consistency. This assures that model inputs have the correct format, units, spatial resolution, and orientation to run a new subset model.
+Finding quality data and then fitting it to the model. It requires significant time and expertise to assemble and process all of the input datasets that the model will require. It has taken years of development to build a national geofabric for the ParFlow CONUS simulations [@RN257; @RN352]. Our team also conducted large data assembly and analysis projects to develop hydrologically consistent topographic datasets [@RN354] and spatially consistent and continuous hydrostratigraphy [@RN355]. Rather than repeating this effort, `SubsetTools` users can start from all of the input datasets that have already been developed and tested for hydrologic consistency. This assures that model inputs have the correct format, units, spatial resolution, and orientation to run a new subset model.
 It requires modeling expertise to set up a ParFlow run script. A run script often includes more than a hundred input keys and parameters that need to be set and tuned for the simulation to run smoothly.  We have multiple working model configurations already developed for our national platform and can easily adapt these scripts for watershed simulation. 
 Groundwater models require a very long initialization known as ‘spinup’ to develop a steady state groundwater configuration. This has to be completed before any transient simulations are run. Because we have already developed steady state conditions at the national level, users of `SubsetTools` can skip this step and go straight to running their model. 
 
