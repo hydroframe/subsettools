@@ -112,7 +112,7 @@ runscript_path = st.edit_runscript_for_subset(
 )
 ```
 
-The `SubsetTools` package also provides functions to customize a template runscript, for example by specifying the desired subset domain to match the subset inputs, modifying the file paths of the model input files, and changing the processor topology for the ParFlow run. Once the customized Parflow runscript is ready, the user can launch a ParFlow simulation using the [`pftools`] (https://pypi.org/project/pftools/) package utilities. 
+The `SubsetTools` package also provides functions to customize a template runscript, for example by specifying the desired subset domain to match the subset inputs, modifying the file paths of the model input files, and changing the processor topology for the ParFlow run. Once the customized Parflow runscript is ready, the user can launch a ParFlow simulation using the [pftools](https://pypi.org/project/pftools/) package utilities. 
 
 # Acknowledgements
 
