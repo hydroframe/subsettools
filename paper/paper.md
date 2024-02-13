@@ -44,17 +44,17 @@ bibliography: paper.bib
 ---
 
 # Summary
-Hydrologic models are an integral part of understanding and managing water supply. There are countless hydrologic models available that differ in their complexity, scale and focus on different parts of the hydrologic cycle. ParFlow is a fully integrated, physics-based model that simulates surface and subsurface flow simultaneously [@RN351](Ashby and Falgout, 1996; Jones and Woodward, 2001; Kollet and Maxwell, 2006; Maxwell, 2013).  ParFlow is also coupled with a land surface model which allows it to simulate the full terrestrial hydrologic cycle from the bedrock to the top of the treetops (Kollet and Maxwell, 2008; Maxwell and Miller, 2005). ParFlow has been applied to a myriad of watersheds across the US and around the world to answer questions of water supply and groundwater–surface water interactions. 
+Hydrologic models are an integral part of understanding and managing water supply. There are countless hydrologic models available that differ in their complexity, scale and focus on different parts of the hydrologic cycle. ParFlow is a fully integrated, physics-based model that simulates surface and subsurface flow simultaneously [@RN351; @RN316; @RN255; @RN320]. ParFlow is also coupled with a land surface model which allows it to simulate the full terrestrial hydrologic cycle from the bedrock to the top of the treetops [@RN322; @RN321]. ParFlow has been applied to a myriad of watersheds across the US and around the world to answer questions of water supply and groundwater–surface water interactions.
 
 ParFlow is a scientifically rigorous hydrologic model, however its application by the broader community has been limited to a degree by its technical complexity which creates a high barrier to entry for new users. Intensive training and hydrologic expertise is required to appropriately build a ParFlow model from scratch.
 
-`SubsetTools` is a Python package that seeks to lower the barrier to entry by allowing a user to subset published and verified ParFlow inputs and model configurations to build their own watershed models. These tools allow a user to set up and run a model in a matter of minutes, rather than weeks or months. `SubsetTools` is designed to interface with the [first](https://hydroframe.org/parflow-conus1) (Maxwell et al., 2015; Maxwell and Condon, 2016; O’Neill et al., 2021) and [second](https://hydroframe.org/parflow-conus2) (Yang et al., 2023) generation ParFlow configurations which provide model inputs for the contiguous United States (CONUS). 
+`SubsetTools` is a Python package that seeks to lower the barrier to entry by allowing a user to subset published and verified ParFlow inputs and model configurations to build their own watershed models. These tools allow a user to set up and run a model in a matter of minutes, rather than weeks or months. `SubsetTools` is designed to interface with the [first](https://hydroframe.org/parflow-conus1) [@RN257; @RN257; @RN353]and [second](https://hydroframe.org/parflow-conus2) [@RN352] generation ParFlow configurations which provide model inputs for the contiguous United States (CONUS). 
 
 
 # Statement of need
 There are several big barriers to building a hydrologic model from scratch. `SubsetTools` helps to resolve the issues caused by three primary ones:  
 
-Finding quality data and then fitting it to the model. It requires significant time and expertise to assemble and process all of the input datasets that the model will require. It has taken years of development to build a national geofabric for the ParFlow CONUS simulations (Maxwell et al., 2015; Yang et al., 2023). Our team also conducted large data assembly and analysis projects to develop hydrologically consistent topographic datasets (Zhang et al., 2021) and spatially consistent and continuous hydrostratigraphy (Tijerina-Kreuzer et al., 2024). Rather than repeating this effort, `SubsetTools` users can start from all of the input datasets that have already been developed and tested for hydrologic consistency. This assures that model inputs have the correct format, units, spatial resolution, and orientation to run a new subset model.
+Finding quality data and then fitting it to the model. It requires significant time and expertise to assemble and process all of the input datasets that the model will require. It has taken years of development to build a national geofabric for the ParFlow CONUS simulations [@RN257; @RN352]. Our team also conducted large data assembly and analysis projects to develop hydrologically consistent topographic datasets [@RN354] and spatially consistent and continuous hydrostratigraphy [@RN352]. Rather than repeating this effort, `SubsetTools` users can start from all of the input datasets that have already been developed and tested for hydrologic consistency. This assures that model inputs have the correct format, units, spatial resolution, and orientation to run a new subset model.
 It requires modeling expertise to set up a ParFlow run script. A run script often includes more than a hundred input keys and parameters that need to be set and tuned for the simulation to run smoothly.  We have multiple working model configurations already developed for our national platform and can easily adapt these scripts for watershed simulation. 
 Groundwater models require a very long initialization known as ‘spinup’ to develop a steady state groundwater configuration. This has to be completed before any transient simulations are run. Because we have already developed steady state conditions at the national level, users of `SubsetTools` can skip this step and go straight to running their model. 
 
@@ -113,20 +113,6 @@ runscript_path = st.edit_runscript_for_subset(
 ```
 
 The `SubsetTools` package also provides functions to customize a template runscript, for example by specifying the desired subset domain to match the subset inputs, modifying the file paths of the model input files, and changing the processor topology for the ParFlow run. Once the customized Parflow runscript is ready, the user can launch a ParFlow simulation using the [`pftools`] (https://pypi.org/project/pftools/) package utilities. 
-
-# Citations
-
-Citations to entries in paper.bib should be in
-[rMarkdown](http://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html)
-format.
-
-If you want to cite a software repository URL (e.g. something on GitHub without a preferred
-citation) then you can do it with the example BibTeX entry below for @fidgit.
-
-For a quick reference, the following citation commands can be used:
-- `@author:2001`  ->  "Author et al. (2001)"
-- `[@author:2001]` -> "(Author et al., 2001)"
-- `[@author1:2001; @author2:2001]` -> "(Author1 et al., 2001; Author2 et al., 2002)"
 
 # Acknowledgements
 
