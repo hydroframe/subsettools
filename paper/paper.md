@@ -15,7 +15,6 @@ authors:
     affiliation: 3
   - name: Georgios Artavanis
     equal-contrib: true
-    corresponding: true
     affiliation: "1, 2"
   - name: William M. Hasling
     affiliation: "1, 2"
@@ -33,6 +32,7 @@ authors:
     affiliation: 2
   - name: Laura E. Condon
     affiliation: 3
+    corresponding: true
 
 affiliations:
  - name: Research Software Engineering, Princeton University, USA
