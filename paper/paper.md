@@ -11,7 +11,6 @@ authors:
   - name: Amanda K. Triplett
     orcid: 0009-0009-8085-3938
     equal-contrib: true
-    corresponding: true
     affiliation: 3
   - name: Georgios Artavanis
     equal-contrib: true
@@ -32,7 +31,6 @@ authors:
     affiliation: 2
   - name: Laura E. Condon
     affiliation: 3
-    corresponding: true
 
 affiliations:
  - name: Research Software Engineering, Princeton University, USA
