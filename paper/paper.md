@@ -19,6 +19,7 @@ authors:
     affiliation: "1, 2"
   - name: Reed M. Maxwell
     affiliation: "2, 5, 6"
+    orcid: 0000-0002-1364-4441
   - name: Amy C. Defnet
     affiliation: "1, 2"
   - name: Amy Johnson
@@ -31,6 +32,7 @@ authors:
     affiliation: 2
   - name: Laura E. Condon
     affiliation: 3
+    orcid: 0000-0003-3639-8076
 
 affiliations:
  - name: Research Software Engineering, Princeton University, USA
@@ -53,9 +55,9 @@ bibliography: paper.bib
 ---
 
 # Summary
-Hydrologic models are an integral part of understanding and managing water supply. There are countless hydrologic models available that differ in their complexity, scale and focus on different parts of the hydrologic cycle. ParFlow is a fully integrated, physics-based model that simulates surface and subsurface flow simultaneously [@RN351; @RN316; @RN255; @RN320]. ParFlow is also coupled with a land surface model which allows it to simulate the full terrestrial hydrologic cycle from bedrock to treetops [@RN322; @RN321]. ParFlow has been applied to a myriad of watersheds across the US and around the world to answer questions of water supply and groundwater–surface water interactions.
+Hydrologic models are an integral part of understanding and managing water supply. There are countless hydrologic models available that differ in their complexity, scale and focus on different parts of the hydrologic cycle. ParFlow is a fully integrated, physics-based model that simulates surface and subsurface flow simultaneously [@RN351; @RN316; @RN255; @RN320]. ParFlow is also coupled with a land surface model which allows it to simulate the full terrestrial hydrologic cycle from bedrock to treetops [@RN322; @RN321]. It has been applied to a myriad of watersheds across the US and around the world to answer questions of water supply and groundwater–surface water interactions.
 
-ParFlow is a scientifically rigorous hydrologic model, however its application by the broader community has been limited to a degree by its technical complexity which creates a high barrier to entry for new users. Intensive training and hydrologic expertise is required to appropriately build a ParFlow model from scratch.
+ParFlow is a scientifically rigorous hydrologic model; however, its application by the broader community has been limited to a degree by its technical complexity which creates a high barrier to entry for new users. Intensive training and hydrologic expertise is required to appropriately build a ParFlow model from scratch.
 
 `SubsetTools` is a Python package that seeks to lower the barrier to entry by allowing a user to subset published and verified ParFlow inputs and model configurations to build their own watershed models. These tools allow a user to set up and run a model in a matter of minutes, rather than weeks or months. `SubsetTools` is designed to interface with the [first](https://hydroframe.org/parflow-conus1) [@RN257; @RN257; @RN353]and [second](https://hydroframe.org/parflow-conus2) [@RN352] generation ParFlow configurations which provide model inputs for the contiguous United States (CONUS). 
 
