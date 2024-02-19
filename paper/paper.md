@@ -111,7 +111,7 @@ forcing_paths = st.subset_forcing(
 )
 ```
 
-![Two example subset outputs for HUC 15060202, the Upper Verde Watershed in Arizona. (a) shows the subset Gauckler-Manning coefficient n for this domain as a result of the function st.subset_static(). (b) shows atmospheric pressure, one of the forcing variables output by the function st.subset_forcing().](fig1.png)
+![Two example subset outputs for HUC 15060202, the Upper Verde Watershed in Arizona. (a) shows the subset Gauckler-Manning friction coefficient, *n*, for this domain as a result of the function st.subset_static(). (b) shows atmospheric pressure, one of the forcing variables output by the function st.subset_forcing().](fig1.png)
 
 
 An appropriate run script must also be selected based on the kind of ParFlow simulation the user wants to perform. The `SubsetTools` package provides eight different templates, which can be used as a starting point for building a ParFlow model. The example function call shown below specifies a transient run using ParFlow-CLM over a solid file domain on the CONUS2 grid. 
@@ -137,7 +137,7 @@ The `SubsetTools` package also provides functions to customize the template runs
 
 # Acknowledgements
 
-This research has been supported by the U.S. Department of Energy Office of Science (DE-AC02-05CH11231) and the US National Science Foundation Office of Advanced Cyberinfrastructure (OAC- 2054506 and OAC-1835855).
+This research has been supported by the U.S. Department of Energy Office of Science IDEAS-Watersheds (DE-AC02-05CH11231) and the US National Science Foundation Office of Advanced Cyberinfrastructure HydroFrame projects (OAC- 2054506 and OAC-1835855).
 
 # References
 
