@@ -68,8 +68,14 @@ There are three primary barriers to building a hydrologic model from scratch. `S
 **Barrier one**: Finding quality data and then using it within a model framework is challenging. It requires significant time and expertise to assemble and process all of the input datasets that a model requires. 
 
 **Solution**: Our team has spent years  a national geofabric for the ParFlow CONUS simulations [@RN257; @RN352]. We conducted large data assembly and analysis projects to develop hydrologically consistent topographic datasets [@RN354] and spatially consistent and continuous hydrostratigraphy [@RN355]. Rather than repeating this effort, `SubsetTools` users can start from all of the input datasets that have already been developed and tested for hydrologic consistency. This assures that model inputs have the correct format, units, spatial resolution, and orientation to run a new subset model.
-    
-2. It requires modeling expertise to set up a ParFlow run script. A run script often includes more than a hundred input keys and parameters that need to be set and tuned for a simulation to run smoothly.  We have multiple working model configurations already developed for our national platform and can easily adapt these scripts for watershed simulation.
+
+**Barrier two**: It requires modeling expertise to set up a ParFlow run script. A run script often includes more than a hundred input keys and parameters that need to be configured for a simulation to run smoothly.  
+
+**Solution**: We have multiple working model configurations already developed for our national platform and can easily adapt these scripts for watershed simulation. Subset tools users are handed a working script and several tutorials on how to modify this script for a range of modeling scenarios. 
+
+**Barrier 3**: Groundwater models require a very long initialization known as ‘spinup’ to develop a steady state groundwater configuration. This has to be completed before any transient simulations are run and can require significant computational resources. 
+**Solution**: Because we have already developed steady state conditions at the national level for CONUS1 and CONUS2 (Maxwell et al., 2015; Yang et al., 2023), users of `SubsetTools` can start from a pre-initialized groundwater configuration. Thus they can skip the spin up step and directly run their model.  
+
 3. Groundwater models require a very long initialization known as ‘spinup’ to develop a steady state groundwater configuration. This has to be completed before any transient simulations are run. Because we have already developed steady state conditions at the national level, users of `SubsetTools` can skip this step and go straight to running their model. 
 
 In summary, the `SubsetTools` package provides functions that simplify the process of setting up and running a ParFlow model in CONUS. It allows the user to subset all required hydrogeologic and climate forcing datasets from [`HydroData`](https://hf-hydrodata.readthedocs.io/en/latest/). It also provides template model runscripts which are designed to link seamlessly with functions that edit the model keys corresponding to the domain and model configuration specified by the user. These features enable a more rapid and replicable application of ParFlow for hydrologic simulations.
