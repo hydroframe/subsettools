@@ -12,14 +12,17 @@ authors:
     orcid: 0009-0009-8085-3938
     equal-contrib: true
     affiliation: 3
+    corresponding: true
   - name: Georgios Artavanis
     equal-contrib: true
     affiliation: "1, 2"
+    corresponding: true
   - name: William M. Hasling
     affiliation: "1, 2"
   - name: Reed M. Maxwell
     affiliation: "2, 5, 6"
     orcid: 0000-0002-1364-4441
+    corresponding: true
   - name: Amy C. Defnet
     affiliation: "1, 2"
   - name: Amy Johnson
@@ -33,6 +36,7 @@ authors:
   - name: Laura E. Condon
     affiliation: 3
     orcid: 0000-0003-3639-8076
+    corresponding: true
 
 affiliations:
  - name: Research Software Engineering, Princeton University, USA
