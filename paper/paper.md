@@ -67,7 +67,7 @@ There are three primary barriers to building a hydrologic model from scratch. `S
 
 **Barrier one**: Finding quality data and then using it within a model framework is challenging. It requires significant time and expertise to assemble and process all of the input datasets that a model requires. 
 
-**Solution**: Our team has spent years  a national geofabric for the ParFlow CONUS simulations [@RN257; @RN352]. We conducted large data assembly and analysis projects to develop hydrologically consistent topographic datasets [@RN354] and spatially consistent and continuous hydrostratigraphy [@RN355]. Rather than repeating this effort, `SubsetTools` users can start from all of the input datasets that have already been developed and tested for hydrologic consistency. This assures that model inputs have the correct format, units, spatial resolution, and orientation to run a new subset model.
+**Solution**: Our team has spent years developing a national geofabric for the ParFlow CONUS simulations [@RN257; @RN352]. We conducted large data assembly and analysis projects to develop hydrologically consistent topographic datasets [@RN354] and spatially consistent and continuous hydrostratigraphy [@RN355]. Rather than repeating this effort, `SubsetTools` users can start from all of the input datasets that have already been developed and tested for hydrologic consistency. This assures that model inputs have the correct format, units, spatial resolution, and orientation to run a new subset model.
 
 **Barrier two**: It requires modeling expertise to set up a ParFlow run script. A run script often includes more than a hundred input keys and parameters that need to be configured for a simulation to run smoothly.  
 
