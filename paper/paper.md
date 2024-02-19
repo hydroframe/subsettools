@@ -74,6 +74,7 @@ There are three primary barriers to building a hydrologic model from scratch. `S
 **Solution**: We have multiple working model configurations already developed for our national platform and can easily adapt these scripts for watershed simulation. Subset tools users are handed a working script and several tutorials on how to modify this script for a range of modeling scenarios. 
 
 **Barrier 3**: Groundwater models require a very long initialization known as ‘spinup’ to develop a steady state groundwater configuration. This has to be completed before any transient simulations are run and can require significant computational resources. 
+
 **Solution**: Because we have already developed steady state conditions at the national level for CONUS1 and CONUS2 (Maxwell et al., 2015; Yang et al., 2023), users of `SubsetTools` can start from a pre-initialized groundwater configuration. Thus they can skip the spin up step and directly run their model.  
 
 3. Groundwater models require a very long initialization known as ‘spinup’ to develop a steady state groundwater configuration. This has to be completed before any transient simulations are run. Because we have already developed steady state conditions at the national level, users of `SubsetTools` can skip this step and go straight to running their model. 
