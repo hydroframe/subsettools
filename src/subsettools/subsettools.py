@@ -962,20 +962,23 @@ def dist_run(P, Q, runscript_path, working_dir=None, dist_clim_forcing=True):
         print("Distributing your climate forcing")
         forcing_dir = run.Solver.CLM.MetFilePath
         _validate_dir(forcing_dir)
-        for filename in pathlib.Path(forcing_dir).glob("*.pfb"):
-            run.dist(filename)
+        for file_name in os.listdir(forcing_dir):
+            if file_name.endswith(".pfb") and ".out." not in file_name:
+                file_path = os.path.join(forcing_dir, file_name)
+                run.dist(file_path)
     else:
-        print("no forcing directory provided, only distributing static inputs")
+        print("No forcing directory provided, only distributing static inputs")
 
-    static_input_paths = pathlib.Path(working_dir).glob("*.pfb")
     max_nz = 0
-    for path in static_input_paths:
-        input_array = read_pfb(path)
-        nz = input_array.shape[0]
-        if nz > max_nz:
-            max_nz = nz
-        run.dist(path)
-        print(f"Distributed {os.path.basename(path)} with NZ {nz}")
+    for file_name in os.listdir(working_dir):
+        if file_name.endswith(".pfb") and ".out." not in file_name:
+            file_path = os.path.join(working_dir, file_name)
+            input_array = read_pfb(file_path)
+            nz = input_array.shape[0]
+            if nz > max_nz:
+                max_nz = nz
+            run.dist(file_path)
+            print(f"Distributed {os.path.basename(file_path)} with NZ {nz}")
     run.ComputationalGrid.NZ = max_nz
 
     _, file_extension = os.path.splitext(runscript_path)
