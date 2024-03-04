@@ -139,7 +139,7 @@ The `SubsetTools` package also provides functions to customize the template runs
 
 # Acknowledgements
 
-This research has been supported by the U.S. Department of Energy Office of Science IDEAS-Watersheds (DE-AC02-05CH11231) and the US National Science Foundation Office of Advanced Cyberinfrastructure HydroFrame projects (OAC- 2054506 and OAC-1835855).
+This research has been supported by the U.S. Department of Energy Office of Science IDEAS-Watersheds (DE-AC02-05CH11231), the US National Science Foundation Office of Advanced Cyberinfrastructure HydroFrame projects (OAC- 2054506 and OAC-1835855) and the US National Science Foundation HydroGEN project (NSF C-A-2134892).
 
 # References
 
