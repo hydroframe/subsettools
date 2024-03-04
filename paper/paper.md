@@ -28,7 +28,7 @@ authors:
     orcid: 0000-0003-2261-708X
   - name: Amy M. Johnson
     affiliation: 4
-  - name: Will E. Lytle
+  - name: William Lytle
     affiliation: 3
   - name: Andrew Bennett
     affiliation: 3
