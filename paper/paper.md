@@ -23,10 +23,10 @@ authors:
     affiliation: "2, 5, 6"
     orcid: 0000-0002-1364-4441
     corresponding: true
-  - name: Amy C. Defnet
+  - name: Amy Defnet
     affiliation: "1, 2"
-  - name: Amy Johnson
-    affiliation: "3, 4"
+  - name: Amy M. Johnson
+    affiliation: 4
   - name: Will E. Lytle
     affiliation: 3
   - name: Andrew Bennett
