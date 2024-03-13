@@ -14,6 +14,7 @@ authors:
     affiliation: 3
     corresponding: true
   - name: Georgios Artavanis
+    orcid: 0009-0007-6015-7746
     equal-contrib: true
     affiliation: "1, 2"
     corresponding: true
