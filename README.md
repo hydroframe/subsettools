@@ -22,3 +22,5 @@ Interested in contributing? Check out the contributing guidelines on the [Subset
 
 ## License
 `subsettools` is part of the [HydroFrame project](https://hydroframe.org/). It is licensed under the terms of the MIT license.
+
+Copyright ©2023 The Trustees of Princeton University and The Arizona Board of Regents on behalf of The University of Arizona.
