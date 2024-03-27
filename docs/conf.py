@@ -7,7 +7,7 @@
 # -- Project information -----------------------------------------------------
 
 project = "subsettools"
-copyright = "2023, The Trustees of Princeton University and The Arizona Board of Regents on behalf of the University of Arizona"
+copyright = "2024 The Trustees of Princeton University and The Arizona Board of Regents on behalf of the University of Arizona, College of Science Hydrology & Atmospheric Sciences"
 author = "George Artavanis, Amanda Triplett"
 
 # -- General configuration ---------------------------------------------------
