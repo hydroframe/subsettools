@@ -183,12 +183,9 @@ def create_mask_solid(huc_list, grid, write_dir):
     conus_hucs, sel_hucs, indices_j, indices_i = _get_conus_hucs_indices(huc_list, grid)
     if indices_i.size == 0 or indices_j.size == 0:
         raise ValueError(f"The area defined by the provided HUCs is not part of the {grid} grid.")      
-    arr_jmin = np.min(indices_j)
-    arr_jmax = np.max(indices_j) + 1  # right bound inclusive
-    ij_bounds = _indices_to_ij(conus_hucs, indices_j, indices_i)
-
-    nj = ij_bounds[3] - ij_bounds[1]
-    ni = ij_bounds[2] - ij_bounds[0]
+    imin, jmin, imax, jmax = _indices_to_ij(conus_hucs, indices_j, indices_i)
+    nj = jmax - jmin
+    ni = imax - imin
 
     # checks conus1 / 2 grid and assigns appripriate dz and z_total for making the mask and solid file
     if grid  == "conus1":
@@ -199,16 +196,10 @@ def create_mask_solid(huc_list, grid, write_dir):
         print("grid is conus2")
         layz = 200
         z_total = str(2000)
-    # could look this up in dC and get the information
 
     # create and write the pfb mask
     mask_clip = np.zeros((1, nj, ni))
-    mask_clip[0, :, :] = sel_hucs[
-        arr_jmin:arr_jmax, ij_bounds[0] : ij_bounds[2]
-    ]  # we need to use numpy iymin / iymax because we are subsetting the tif file
-#    mask_clip = np.flip(
-#        mask_clip, 1
-#    )  # This flip tooks the section we just subset and puts it in the appropriate parflow orientation
+    mask_clip[0, :, :] = sel_hucs[jmin:jmax, imin:imax]
     mask_clip = mask_clip.astype(float)
     mask_file_path = os.path.join(write_dir, "mask.pfb")
     write_pfb(mask_file_path, mask_clip, dx=1000, dy=1000, dz=layz, dist=False)
