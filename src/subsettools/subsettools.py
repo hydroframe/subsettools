@@ -20,6 +20,7 @@ from .subset_utils import (
 from ._error_checking import (
     _validate_huc_list,
     _validate_grid,
+    _validate_latlon_list,
     _validate_dir,
     _validate_grid_bounds,
     _validate_date,
@@ -123,15 +124,10 @@ def latlon_to_ij(latlon_bounds, grid):
         grid_bounds = latlon_to_ij(latlon_bounds=[[37.91, -91.43], [37.34, -90.63]], grid="conus2")
     """
     _validate_grid(grid)    
-    if not isinstance(latlon_bounds, list):
-        raise TypeError("latlon_bounds must be a list")
+    _validate_latlon_list(latlon_bounds)
     if len(latlon_bounds) != 2:
         raise ValueError("latlon_bounds must contain exactly two lat-lon points: [[lat1, lon1], [lat2, lon2]]")
-    for point in latlon_bounds:
-        if not (isinstance(point, list) and
-                len(point) == 2 and
-                all(isinstance(value, (int, float)) for value in point)):
-            raise ValueError("latlon_bounds must contain exactly two lat-lon points: [[lat1, lon1], [lat2, lon2]]")
+
     grid = grid.lower()
     point0 = hf_hydrodata.to_ij(grid, latlon_bounds[0][0], latlon_bounds[0][1])
     point1 = hf_hydrodata.to_ij(grid, latlon_bounds[1][0], latlon_bounds[1][1])
