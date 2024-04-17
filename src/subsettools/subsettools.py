@@ -53,10 +53,10 @@ def huc_to_ij(huc_list, grid):
     """
     _validate_huc_list(huc_list)
     _validate_grid(grid)
-    conus_hucs, _, indices_j, indices_i = _get_conus_hucs_indices(huc_list, grid.lower())
+    _, _, indices_j, indices_i = _get_conus_hucs_indices(huc_list, grid.lower())
     if indices_i.size == 0 or indices_j.size == 0:
         raise ValueError(f"The area defined by the provided HUCs is not part of the {grid} grid.")  
-    return _indices_to_ij(conus_hucs, indices_j, indices_i)
+    return _indices_to_ij(indices_j, indices_i)
 
 
 def _get_conus_hucs_indices(huc_list, grid):
@@ -86,11 +86,10 @@ def _get_conus_hucs_indices(huc_list, grid):
     return conus_hucs, sel_hucs, indices_j, indices_i
 
 
-def _indices_to_ij(conus_hucs, indices_j, indices_i):
-    """Get the conus ij-bounds for the conus_hucs boundary defined by indices_j and indices_i.                                                  
+def _indices_to_ij(indices_j, indices_i):
+    """Get the conus ij-bounds for the boundary defined by indices_j and indices_i.                                                  
 
     Args:                                                                                                                           
-        conus_hucs (numpy.ndarray): conus huc data                                                                                             
         indices_j (numpy.ndarray): mask in the j direction for selected hucs                                                                    
         indices_i (numpy.ndarray): mask in the i direction for selected hucs                                                                   
  
@@ -176,10 +175,10 @@ def create_mask_solid(huc_list, grid, write_dir):
     _validate_grid(grid)
     _validate_dir(write_dir)
     grid = grid.lower()
-    conus_hucs, sel_hucs, indices_j, indices_i = _get_conus_hucs_indices(huc_list, grid)
+    _, sel_hucs, indices_j, indices_i = _get_conus_hucs_indices(huc_list, grid)
     if indices_i.size == 0 or indices_j.size == 0:
         raise ValueError(f"The area defined by the provided HUCs is not part of the {grid} grid.")      
-    imin, jmin, imax, jmax = _indices_to_ij(conus_hucs, indices_j, indices_i)
+    imin, jmin, imax, jmax = _indices_to_ij(indices_j, indices_i)
     nj = jmax - jmin
     ni = imax - imin
 
