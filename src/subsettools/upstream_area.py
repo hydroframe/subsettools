@@ -75,5 +75,4 @@ def delin_watershed(outlets, grid):
     masklist = np.argwhere(marked == 1)
     jrange = (masklist[:, 0].min(), masklist[:, 0].max())
     irange = (masklist[:, 1].min(), masklist[:, 1].max())
-
-    return  {'watershed': marked, 'irange': irange, 'jrange': jrange}
+    return (irange[0], jrange[0], irange[1] + 1, jrange[1] + 1), marked
