@@ -1,8 +1,9 @@
 import pytest
 import numpy as np
+import os
 from subsettools.upstream_area import delin_watershed
 
-# unit test, multiple points, point outside grid, big area test, conus1 tests
+# unit tests, multiple points, point outside grid, big area test, conus1 tests
 
 @pytest.mark.parametrize(
     "outlets, grid, points, bounds", [([[39.8344, -74.3853]],
@@ -23,6 +24,10 @@ from subsettools.upstream_area import delin_watershed
                                                  [1916, 4056],
                                                  [1916, 4057]]),
                                        (4054, 1914, 4058, 1917)),
+                                      ([[39.8195, -75.3820]],
+                                       "conus2",
+                                       np.load(os.path.abspath("tests/correct_output/upstream_mask_lower_delaware.npy")),
+                                       (3874, 1883, 4054, 2180)),
     ]
 )
 def test_delin_watershed(outlets, grid, points, bounds):
@@ -31,3 +36,10 @@ def test_delin_watershed(outlets, grid, points, bounds):
     assert ij_bounds == bounds
 
 
+@pytest.mark.parametrize(
+    "outlets, grid", [([[57.44, -107.33]], "conus2"),
+    ]
+)
+def test_delin_watershed_errors(outlets, grid):
+    with pytest.raises(ValueError) as e:
+        delin_watershed(outlets, grid)
