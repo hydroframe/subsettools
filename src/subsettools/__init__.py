@@ -19,3 +19,6 @@ from subsettools.subsettools import (
 from subsettools.datasets import (
     get_template_runscript,
 )
+from subsettools.upstream_area import (
+    upstream_area_to_ij,
+)
