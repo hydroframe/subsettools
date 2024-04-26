@@ -17,7 +17,7 @@ def upstream_area_to_ij(outlets, grid):
         grid (str): The spatial grid that the upstream area will be returned on. Possible values: “conus1” or “conus2”
 
     Returns:
-        A tuple (bounds, mask):
+        A tuple (bounds, mask).
 
         Bounds is a tuple of the form (imin, jmin, imax, jmax) representing the bounds in the conus grid of the upstream area of the outlets.
         imin, jmin, imax, jmax are the west, south, east and north sides of the box respectively and all i,j indices are calculated
