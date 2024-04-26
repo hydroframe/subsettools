@@ -42,7 +42,7 @@ def upstream_area_to_ij(outlets, grid):
             variable="flow_direction", grid=grid, file_type="tiff"
         )
     except Exception as e:
-        raise ValueError(f"Failed to get flow direction data for the grid {grid}.")
+        raise ValueError(f"Failed to get flow direction data for the grid {grid}.") from e
     nj, ni = flow_direction.shape
 
     # Initialize a matrix to store the mask
