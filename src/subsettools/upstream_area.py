@@ -1,5 +1,6 @@
 import numpy as np
 import hf_hydrodata
+from .subsettools import _indices_to_ij
 from ._error_checking import (
     _validate_grid,
     _validate_latlon_list,
@@ -32,7 +33,7 @@ def delin_watershed(outlets, grid):
     try:
         flow_direction = hf_hydrodata.get_gridded_data(variable="flow_direction", grid=grid, file_type="tiff")
     except Exception as e:
-        raise ValueError(f"There is no flow direction entry for the grid {grid}.")
+        raise ValueError(f"Failed to get flow direction data for the grid {grid}.")
     print("flow_direction shape: ", flow_direction.shape)
     nj, ni = flow_direction.shape
     
@@ -52,9 +53,8 @@ def delin_watershed(outlets, grid):
     # Add the outlets to the mask
     for point in queue:
         i, j = point
-        print("point: ", point)
-        print("i: ", i, "j: ", j)
-        marked[j, i] = 1
+        if not np.isnan(flow_direction[j, i]):
+            marked[j, i] = 1
     
     while queue:
         next = []
@@ -73,6 +73,6 @@ def delin_watershed(outlets, grid):
         queue = next
 
     masklist = np.argwhere(marked == 1)
-    jrange = (masklist[:, 0].min(), masklist[:, 0].max())
-    irange = (masklist[:, 1].min(), masklist[:, 1].max())
-    return (irange[0], jrange[0], irange[1] + 1, jrange[1] + 1), marked
+    if masklist.size == 0:
+        raise ValueError("Empty upstream area.")
+    return _indices_to_ij(masklist[:, 0], masklist[:, 1]), marked

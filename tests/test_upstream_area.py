@@ -36,7 +36,8 @@ def test_delin_watershed(outlets, grid, points, bounds):
 
 
 @pytest.mark.parametrize(
-    "outlets, grid", [([[57.44, -107.33]], "conus2"),
+    "outlets, grid", [([[57.44, -107.33]], "conus2"),    # point outside the grid
+                      ([[22.36, -117.85]], "conus2"),    # point corresponds to [0, 0], where flow_direction is NaN
     ]
 )
 def test_delin_watershed_errors(outlets, grid):
