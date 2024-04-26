@@ -4,10 +4,11 @@ from .subsettools import _indices_to_ij
 from ._error_checking import (
     _validate_grid,
     _validate_latlon_list,
-    )
+)
 
-def delin_watershed(outlets, grid):
-    """Calculate the upstream area of a point or list of points in the grid.
+
+def upstream_area_to_ij(outlets, grid):
+    """Get the grid ij bounds of a bounding box that encompasses the upstream area of a list of outlets and a mask for that domain.
 
     The flow_direction files that are used to create the upstream area mask follow the convention: down: 1, left: 2, up: 3, right: 4.
 
@@ -16,37 +17,41 @@ def delin_watershed(outlets, grid):
         grid (str): The spatial grid that the upstream area will be returned on. Possible values: “conus1” or “conus2”
 
     Returns:
-        TODO
+        A tuple (bounds, mask):
+
+        Bounds is a tuple of the form (imin, jmin, imax, jmax) representing the bounds in the conus grid of the upstream area of the outlets.
+        imin, jmin, imax, jmax are the west, south, east and north sides of the box respectively and all i,j indices are calculated
+        relative to the lower southwest corner of the domain.
+
+        Mask is a 2D numpy.ndarray that indicates which cells inside the bounding box are part of the computed upstream area of the outlets.
 
     Raises:
-        TODO
+        ValueError: If the computed upstream area of the outlets is empty.
 
     Example:
 
     .. code-block:: python
 
-        TODO
+        bounds, mask = upstream_area_to_ij(outlets=[[44.1348, -95.5084], [44.1352, -95.4949]], grid="conus2")
     """
     _validate_latlon_list(outlets)
     _validate_grid(grid)
     grid = grid.lower()
     try:
-        flow_direction = hf_hydrodata.get_gridded_data(variable="flow_direction", grid=grid, file_type="tiff")
+        flow_direction = hf_hydrodata.get_gridded_data(
+            variable="flow_direction", grid=grid, file_type="tiff"
+        )
     except Exception as e:
         raise ValueError(f"Failed to get flow direction data for the grid {grid}.")
-    print("flow_direction shape: ", flow_direction.shape)
     nj, ni = flow_direction.shape
-    
+
     # Initialize a matrix to store the mask
     marked = np.zeros((nj, ni), dtype=int)
-    print("marked shape: ", marked.shape)
-    
+
     # D4 neighbors
     d4 = [1, 2, 3, 4]
-    kd = np.zeros((4, 2), dtype=int)
-    kd[:, 0] = [0, -1, 0, 1]
-    kd[:, 1] = [-1, 0, 1, 0]
-    
+    kd = np.array([[0, -1], [-1, 0], [0, 1], [1, 0]])
+
     # Initialized the queue with the outlet points in ij form
     queue = [hf_hydrodata.to_ij(grid, outlet[0], outlet[1]) for outlet in outlets]
 
@@ -55,7 +60,7 @@ def delin_watershed(outlets, grid):
         i, j = point
         if not np.isnan(flow_direction[j, i]):
             marked[j, i] = 1
-    
+
     while queue:
         next = []
         for point in queue:
@@ -64,12 +69,16 @@ def delin_watershed(outlets, grid):
             for d in range(4):
                 i_upstream = i - kd[d, 0]
                 j_upstream = j - kd[d, 1]
-                if (i_upstream > 0 and j_upstream > 0 and i_upstream < ni and j_upstream < nj
-                        and not np.isnan(flow_direction[j_upstream, i_upstream]) and marked[j_upstream, i_upstream] == 0):
-                    if flow_direction[j_upstream, i_upstream] == d4[d]:
-                        marked[j_upstream, i_upstream] = 1  # Add the upstream cell to the mask
-                        next.append([i_upstream, j_upstream])
-        print("next: ", next)
+                if (
+                    i_upstream > 0
+                    and j_upstream > 0
+                    and i_upstream < ni
+                    and j_upstream < nj
+                    and marked[j_upstream, i_upstream] == 0
+                    and flow_direction[j_upstream, i_upstream] == d4[d]
+                ):
+                    marked[j_upstream, i_upstream] = 1
+                    next.append([i_upstream, j_upstream])
         queue = next
 
     masklist = np.argwhere(marked == 1)

@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from subsettools.upstream_area import delin_watershed
+from subsettools.upstream_area import upstream_area_to_ij
 
 
 @pytest.mark.parametrize(
@@ -84,8 +84,8 @@ from subsettools.upstream_area import delin_watershed
         ),
     ],
 )
-def test_delin_watershed(outlets, grid, points, bounds):
-    ij_bounds, mask = delin_watershed(outlets, grid)
+def test_upstream_area_to_ij(outlets, grid, points, bounds):
+    ij_bounds, mask = upstream_area_to_ij(outlets, grid)
     assert np.array_equal(np.argwhere(mask == 1), points)
     assert ij_bounds == bounds
 
@@ -101,6 +101,6 @@ def test_delin_watershed(outlets, grid, points, bounds):
         ),
     ],
 )
-def test_delin_watershed_errors(outlets, grid):
+def test_upstream_area_to_ij_errors(outlets, grid):
     with pytest.raises(ValueError) as e:
-        delin_watershed(outlets, grid)
+        upstream_area_to_ij(outlets, grid)
