@@ -42,15 +42,17 @@ def upstream_area_to_ij(outlets, grid):
             variable="flow_direction", grid=grid, file_type="tiff"
         )
     except Exception as e:
-        raise ValueError(f"Failed to get flow direction data for the grid {grid}.") from e
+        raise ValueError(
+            f"Failed to get flow direction data for the grid {grid}."
+        ) from e
     nj, ni = flow_direction.shape
 
     # Initialize a matrix to store the mask
     marked = np.zeros((nj, ni), dtype=int)
 
     # D4 neighbors
-    d4 = [1, 2, 3, 4]
-    kd = np.array([[0, -1], [-1, 0], [0, 1], [1, 0]])
+    flow_values = [1, 2, 3, 4]
+    directions = np.array([[0, -1], [-1, 0], [0, 1], [1, 0]])
 
     # Initialized the queue with the outlet points in ij form
     queue = [hf_hydrodata.to_ij(grid, outlet[0], outlet[1]) for outlet in outlets]
@@ -66,16 +68,16 @@ def upstream_area_to_ij(outlets, grid):
         for point in queue:
             i, j = point
             # Look for cells that drain to this cell
-            for d in range(4):
-                i_upstream = i - kd[d, 0]
-                j_upstream = j - kd[d, 1]
+            for direction, flow_value in zip(directions, flow_values):
+                i_upstream = i - direction[0]
+                j_upstream = j - direction[1]
                 if (
                     i_upstream > 0
                     and j_upstream > 0
                     and i_upstream < ni
                     and j_upstream < nj
                     and marked[j_upstream, i_upstream] == 0
-                    and flow_direction[j_upstream, i_upstream] == d4[d]
+                    and flow_direction[j_upstream, i_upstream] == flow_value
                 ):
                     marked[j_upstream, i_upstream] = 1
                     next.append([i_upstream, j_upstream])
