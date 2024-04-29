@@ -6,7 +6,7 @@
 
 # -- Project information -----------------------------------------------------
 
-import datetime
+from datetime import datetime
 project = "subsettools"
 copyright = f"{datetime.now().year} The Trustees of Princeton University and The Arizona Board of Regents on behalf of the University of Arizona, College of Science Hydrology & Atmospheric Sciences"
 author = "George Artavanis, Amanda Triplett"
