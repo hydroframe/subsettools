@@ -28,6 +28,17 @@ def _validate_grid(grid):
         raise ValueError("Supported grids are 'conus1' and 'conus2'")
 
 
+def _validate_latlon_list(latlon_pts):
+    """Check errors for a user-provided list of latlon points."""
+    if not isinstance(latlon_pts, list):
+        raise TypeError("latlon argument must be a list of points")
+    for point in latlon_pts:
+        if not (isinstance(point, list) and
+                len(point) == 2 and
+                all(isinstance(value, (int, float)) for value in point)):
+            raise ValueError("Each element of the list must be a list of two floats of the form [lat, lon]")
+
+    
 def _validate_dir(dir_name):
     """Check that dir_name is a valid directory."""
     if not os.path.isdir(dir_name):

@@ -20,6 +20,7 @@ from .subset_utils import (
 from ._error_checking import (
     _validate_huc_list,
     _validate_grid,
+    _validate_latlon_list,
     _validate_dir,
     _validate_grid_bounds,
     _validate_date,
@@ -52,10 +53,10 @@ def huc_to_ij(huc_list, grid):
     """
     _validate_huc_list(huc_list)
     _validate_grid(grid)
-    conus_hucs, _, indices_j, indices_i = _get_conus_hucs_indices(huc_list, grid.lower())
+    _, _, indices_j, indices_i = _get_conus_hucs_indices(huc_list, grid.lower())
     if indices_i.size == 0 or indices_j.size == 0:
         raise ValueError(f"The area defined by the provided HUCs is not part of the {grid} grid.")  
-    return _indices_to_ij(conus_hucs, indices_j, indices_i)
+    return _indices_to_ij(indices_j, indices_i)
 
 
 def _get_conus_hucs_indices(huc_list, grid):
@@ -85,11 +86,10 @@ def _get_conus_hucs_indices(huc_list, grid):
     return conus_hucs, sel_hucs, indices_j, indices_i
 
 
-def _indices_to_ij(conus_hucs, indices_j, indices_i):
-    """Get the conus ij-bounds for the conus_hucs boundary defined by indices_j and indices_i.                                                  
+def _indices_to_ij(indices_j, indices_i):
+    """Get the conus ij-bounds for the boundary defined by indices_j and indices_i.                                                  
 
     Args:                                                                                                                           
-        conus_hucs (numpy.ndarray): conus huc data                                                                                             
         indices_j (numpy.ndarray): mask in the j direction for selected hucs                                                                    
         indices_i (numpy.ndarray): mask in the i direction for selected hucs                                                                   
  
@@ -123,15 +123,10 @@ def latlon_to_ij(latlon_bounds, grid):
         grid_bounds = latlon_to_ij(latlon_bounds=[[37.91, -91.43], [37.34, -90.63]], grid="conus2")
     """
     _validate_grid(grid)    
-    if not isinstance(latlon_bounds, list):
-        raise TypeError("latlon_bounds must be a list")
+    _validate_latlon_list(latlon_bounds)
     if len(latlon_bounds) != 2:
         raise ValueError("latlon_bounds must contain exactly two lat-lon points: [[lat1, lon1], [lat2, lon2]]")
-    for point in latlon_bounds:
-        if not (isinstance(point, list) and
-                len(point) == 2 and
-                all(isinstance(value, (int, float)) for value in point)):
-            raise ValueError("latlon_bounds must contain exactly two lat-lon points: [[lat1, lon1], [lat2, lon2]]")
+
     grid = grid.lower()
     point0 = hf_hydrodata.to_ij(grid, latlon_bounds[0][0], latlon_bounds[0][1])
     point1 = hf_hydrodata.to_ij(grid, latlon_bounds[1][0], latlon_bounds[1][1])
@@ -180,15 +175,12 @@ def create_mask_solid(huc_list, grid, write_dir):
     _validate_grid(grid)
     _validate_dir(write_dir)
     grid = grid.lower()
-    conus_hucs, sel_hucs, indices_j, indices_i = _get_conus_hucs_indices(huc_list, grid)
+    _, sel_hucs, indices_j, indices_i = _get_conus_hucs_indices(huc_list, grid)
     if indices_i.size == 0 or indices_j.size == 0:
         raise ValueError(f"The area defined by the provided HUCs is not part of the {grid} grid.")      
-    arr_jmin = np.min(indices_j)
-    arr_jmax = np.max(indices_j) + 1  # right bound inclusive
-    ij_bounds = _indices_to_ij(conus_hucs, indices_j, indices_i)
-
-    nj = ij_bounds[3] - ij_bounds[1]
-    ni = ij_bounds[2] - ij_bounds[0]
+    imin, jmin, imax, jmax = _indices_to_ij(indices_j, indices_i)
+    nj = jmax - jmin
+    ni = imax - imin
 
     # checks conus1 / 2 grid and assigns appripriate dz and z_total for making the mask and solid file
     if grid  == "conus1":
@@ -199,16 +191,10 @@ def create_mask_solid(huc_list, grid, write_dir):
         print("grid is conus2")
         layz = 200
         z_total = str(2000)
-    # could look this up in dC and get the information
 
     # create and write the pfb mask
     mask_clip = np.zeros((1, nj, ni))
-    mask_clip[0, :, :] = sel_hucs[
-        arr_jmin:arr_jmax, ij_bounds[0] : ij_bounds[2]
-    ]  # we need to use numpy iymin / iymax because we are subsetting the tif file
-#    mask_clip = np.flip(
-#        mask_clip, 1
-#    )  # This flip tooks the section we just subset and puts it in the appropriate parflow orientation
+    mask_clip[0, :, :] = sel_hucs[jmin:jmax, imin:imax]
     mask_clip = mask_clip.astype(float)
     mask_file_path = os.path.join(write_dir, "mask.pfb")
     write_pfb(mask_file_path, mask_clip, dx=1000, dy=1000, dz=layz, dist=False)
