@@ -28,7 +28,7 @@ from ._error_checking import (
 
 
 def huc_to_ij(huc_list, grid):
-    """Get the grid ij bounds of a bounding box that encompasses HUC IDs provided in huc_list.
+    """Get the grid ij bounds of a bounding box that encompasses the HUC IDs provided in huc_list and a mask for that domain.
 
        All HUC IDs in huc_list must be the same length (HUCs of the same level). All HUCs 
        should be adjacent. If a HUC is only partially covered by the provided grid, the grid 
@@ -39,7 +39,11 @@ def huc_to_ij(huc_list, grid):
         grid (str): The spatial grid that the ij indices are calculated relative to and that the subset data will be returned on. Possible values: “conus1” or “conus2”
 
     Returns:
-        tuple[int]: A tuple of the form (imin, jmin, imax, jmax) representing the bounds in the conus grid of the area defined by the huc IDs in huc_list. imin, jmin, imax, jmax are the west, south, east and north sides of the box respectively and all i,j indices are calculated relative to the lower southwest corner of the domain.
+        A tuple (bounds, mask).
+        
+        Bounds is a tuple of the form (imin, jmin, imax, jmax) representing the bounds in the conus grid of the area defined by the huc IDs in huc_list. imin, jmin, imax, jmax are the west, south, east and north sides of the box respectively and all i,j indices are calculated relative to the lower southwest corner of the domain.
+
+        Mask is a 2D numpy.ndarray that indicates which cells inside the bounding box are part of the selected HUC(s).
 
     Raises:
         ValueError: If all HUC IDs are not the same length or if the area defined by the provided HUCs 
@@ -49,14 +53,28 @@ def huc_to_ij(huc_list, grid):
 
     .. code-block:: python
 
-        grid_bounds = huc_to_ij(huc_list=["14080201", "14080202", "14080203"], grid="conus1")
+        grid_bounds, mask = huc_to_ij(huc_list=["14080201", "14080202", "14080203"], grid="conus1")
     """
     _validate_huc_list(huc_list)
     _validate_grid(grid)
-    _, _, indices_j, indices_i = _get_conus_hucs_indices(huc_list, grid.lower())
+
+    huc_len = len(huc_list[0])
+    huc_list = [int(huc) for huc in huc_list]
+    entry = hf_hydrodata.get_catalog_entry(
+        dataset="huc_mapping", grid=grid, file_type="tiff"
+    )
+    if entry is None:
+        raise ValueError(f"There is no HUC mapping entry for grid {grid}.")
+    conus_hucs = hf_hydrodata.gridded.get_ndarray(entry, level=str(huc_len))
+
+    huc_mask = np.isin(conus_hucs, huc_list).squeeze()
+    indices_j, indices_i = np.where(huc_mask > 0)
     if indices_i.size == 0 or indices_j.size == 0:
         raise ValueError(f"The area defined by the provided HUCs is not part of the {grid} grid.")  
-    return _indices_to_ij(indices_j, indices_i)
+
+    bounds = _indices_to_ij(indices_j, indices_i)
+    imin, jmin, imax, jmax = bounds
+    return bounds, huc_mask[jmin:jmax, imin:imax].astype(int)
 
 
 def _get_conus_hucs_indices(huc_list, grid):

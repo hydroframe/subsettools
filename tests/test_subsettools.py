@@ -14,7 +14,8 @@ from parflow import Run
                                (["14080201", "14080202", "14080203", "14080204", "14080205"], "conus1", (572, 337, 797, 577))]
 )
 def test_huc_to_ij(huc_list, grid, result):
-    assert st.huc_to_ij(huc_list, grid) == result
+    bounds, _ = st.huc_to_ij(huc_list, grid)
+    assert bounds == result
 
     
 @pytest.mark.parametrize(

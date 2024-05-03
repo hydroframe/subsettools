@@ -26,7 +26,7 @@ def test_conus1_upper_verde_spinup(setup_dir_structure, remove_output_files):
     Q = 1
     reference_run = st.get_template_runscript(grid, "spinup", "solid", static_write_dir)
 
-    ij_bounds = st.huc_to_ij(huc_list=huc_list, grid=grid)
+    ij_bounds, _ = st.huc_to_ij(huc_list=huc_list, grid=grid)
     st.create_mask_solid(huc_list=huc_list, grid=grid, write_dir=static_write_dir)
     st.subset_static(ij_bounds, dataset=var_ds, write_dir=static_write_dir)
     init_press_filepath = st.subset_press_init(
