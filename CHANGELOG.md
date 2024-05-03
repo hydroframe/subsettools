@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## 1.0.4 (03/05/2024)
+- Added upstream_area_to_ij function to subset based on the upstream area of a point or collection of points in the grid
+
 ## 1.0.0 (07/12/2023)
 - Update versions for pftools, numpy, etc
 - Rename variables to keep consinsent with changes in the datacatalog
