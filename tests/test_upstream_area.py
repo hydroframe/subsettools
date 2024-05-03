@@ -4,12 +4,12 @@ from subsettools.upstream_area import upstream_area_to_ij
 
 
 @pytest.mark.parametrize(
-    "outlets, grid, points, bounds",
+    "outlets, grid, correct_mask, correct_bounds",
     [
         pytest.param(
             [[39.8344, -74.3853]],
             "conus2",
-            np.array([[1914, 4057]]),
+            np.array([[1]]),
             (4057, 1914, 4058, 1915),
             id="single point upstream area",
         ),
@@ -17,18 +17,9 @@ from subsettools.upstream_area import upstream_area_to_ij
             [[39.8522, -74.3786]],
             "conus2",
             np.array(
-                [
-                    [1914, 4055],
-                    [1914, 4056],
-                    [1914, 4057],
-                    [1915, 4054],
-                    [1915, 4055],
-                    [1915, 4056],
-                    [1915, 4057],
-                    [1916, 4054],
-                    [1916, 4055],
-                    [1916, 4056],
-                    [1916, 4057],
+                [[0, 1, 1, 1],
+                 [1, 1, 1, 1],
+                 [1, 1, 1, 1]
                 ]
             ),
             (4054, 1914, 4058, 1917),
@@ -38,38 +29,25 @@ from subsettools.upstream_area import upstream_area_to_ij
             [[44.1348, -95.5084], [44.1352, -95.4949]],
             "conus2",
             np.array(
-                [
-                    [2111, 2322],
-                    [2112, 2322],
-                    [2112, 2323],
-                    [2113, 2322],
-                    [2113, 2323],
-                    [2113, 2324],
-                    [2114, 2322],
-                    [2114, 2323],
-                    [2114, 2324],
-                    [2115, 2322],
-                    [2115, 2323],
-                    [2115, 2324],
+                [[1, 0, 0],
+                 [1, 1, 0],
+                 [1, 1, 1],
+                 [1, 1, 1],
+                 [1, 1, 1]
                 ]
             ),
             (2322, 2111, 2325, 2116),
-            id="two outlets with adjacent, disjoint upstream areas",
+            id="two outlets with adjacent, non-overlapping upstream areas",
         ),
         pytest.param(
             [[44.1348, -95.5084], [44.1074, -95.5086]],
             "conus2",
             np.array(
-                [
-                    [2111, 2322],
-                    [2112, 2322],
-                    [2112, 2323],
-                    [2113, 2322],
-                    [2113, 2323],
-                    [2114, 2322],
-                    [2114, 2323],
-                    [2115, 2322],
-                    [2115, 2323],
+                [[1, 0],
+                 [1, 1],
+                 [1, 1],
+                 [1, 1],
+                 [1, 1],
                 ]
             ),
             (2322, 2111, 2324, 2116),
@@ -84,10 +62,10 @@ from subsettools.upstream_area import upstream_area_to_ij
         ),
     ],
 )
-def test_upstream_area_to_ij(outlets, grid, points, bounds):
-    ij_bounds, mask = upstream_area_to_ij(outlets, grid)
-    assert np.array_equal(np.argwhere(mask == 1), points)
-    assert ij_bounds == bounds
+def test_upstream_area_to_ij(outlets, grid, correct_mask, correct_bounds):
+    bounds, mask = upstream_area_to_ij(outlets, grid)
+    assert np.array_equal(mask, correct_mask)
+    assert bounds == correct_bounds
 
 
 @pytest.mark.parametrize(

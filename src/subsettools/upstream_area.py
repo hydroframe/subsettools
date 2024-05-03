@@ -86,4 +86,7 @@ def upstream_area_to_ij(outlets, grid):
     masklist = np.argwhere(marked == 1)
     if masklist.size == 0:
         raise ValueError("Empty upstream area.")
-    return _indices_to_ij(masklist[:, 0], masklist[:, 1]), marked
+    bounds = _indices_to_ij(masklist[:, 0], masklist[:, 1])
+    imin, jmin, imax, jmax = bounds
+    mask = marked[jmin:jmax, imin:imax]
+    return bounds, mask
