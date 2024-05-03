@@ -30,7 +30,26 @@ def test_huc_to_ij_errors(huc_list, grid):
     """Check that a ValueError is raised if a HUC is not part of the grid."""
     with pytest.raises(ValueError) as e:
         st.huc_to_ij(huc_list, grid)
-    
+
+        
+@pytest.mark.parametrize(
+    "latlon_bounds, grid, result", [([[37.91, -91.43], [37.34, -90.63]], "conus1", (2285, 436, 2358, 495)),
+                                    ([[39.8379, -74.3791], [39.8379, -74.3791]], "conus2", (4057, 1915, 4057, 1915))]
+)
+def test_latlon_to_ij(latlon_bounds, grid, result):
+    assert st.latlon_to_ij(latlon_bounds, grid) == result
+        
+
+@pytest.mark.parametrize(
+    "latlon_bounds, grid",
+    [
+        pytest.param([[57.44, -107.33], [57.44, -107.33]], "conus2", id="outlet outside the grid"),
+    ],
+)
+def test_latlon_to_ij_errors(latlon_bounds, grid):
+    with pytest.raises(ValueError) as e:
+        st.latlon_to_ij(latlon_bounds, grid)
+
 
 def test_forcing_timezones(tmp_path):
     "Check if we get the correct forcing (temperature) in EST time."
@@ -49,13 +68,6 @@ def test_forcing_timezones(tmp_path):
     est_temp_correct = np.concatenate((utc_temp1[5:, :, :], utc_temp2[:5, :, :]), axis=0)
     est_temp = read_pfb(os.path.join(est, "NLDAS.Temp.000001_to_000024.pfb"))
     assert np.array_equal(est_temp_correct, est_temp)
-
-    
-def test_latlon_to_ij():
-    """Check that hf_hydrodata.grid.to_latlon and subsettools.latlon_to_ij are inverse to each other."""
-    latlon_points = hf_hydrodata.grid.to_latlon("conus1", *[375, 239, 487, 329])
-    latlon_points = [latlon_points[:2], latlon_points[2:]]
-    assert st.latlon_to_ij(latlon_points, "conus1") == (375, 239, 487, 329)
 
     
 def test_edit_runscript_for_subset_1(tmp_path):
