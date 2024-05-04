@@ -132,7 +132,11 @@ def latlon_to_ij(latlon_bounds, grid):
             the subset data will be returned on. Possible values: “conus1” or “conus2”
 
     Returns:
-        tuple[int]: A tuple of the form (imin, jmin, imax, jmax) representing the bounds in the conus grid of the area defined by latlon_bounds.  imin, jmin, imax, jmax are the west, south, east and north sides of the box respectively and all i,j indices are calculated relative to the lower southwest corner of the domain.
+        A tuple (bounds, mask).
+
+        Bounds is a tuple of the form (imin, jmin, imax, jmax) representing the bounds in the conus grid of the area defined by the latlon_bounds. imin, jmin, imax, jmax are the west, south, east and north sides of the box respectively and all i,j indices are calculated relative to the lower southwest corner of the domain.
+
+        Mask is a 2D numpy.ndarray that indicates which cells inside the bounding box are part of the selected area. Since in this case we subset the entire bounding box, the mask is always all-ones.
 
     Example:
 
