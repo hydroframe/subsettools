@@ -33,8 +33,8 @@ def test_huc_to_ij_errors(huc_list, grid):
 
         
 @pytest.mark.parametrize(
-    "latlon_bounds, grid, result", [([[37.91, -91.43], [37.34, -90.63]], "conus1", (2285, 436, 2358, 495)),
-                                    ([[39.8379, -74.3791], [39.8379, -74.3791]], "conus2", (4057, 1915, 4057, 1915))]
+    "latlon_bounds, grid, result", [([[37.91, -91.43], [37.34, -90.63]], "conus1", (2285, 436, 2359, 496)),
+                                    ([[39.8379, -74.3791], [39.8379, -74.3791]], "conus2", (4057, 1915, 4058, 1916))]
 )
 def test_latlon_to_ij(latlon_bounds, grid, result):
     assert st.latlon_to_ij(latlon_bounds, grid) == result

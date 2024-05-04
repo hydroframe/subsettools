@@ -149,11 +149,11 @@ def latlon_to_ij(latlon_bounds, grid):
     point0, point1 = [hf_hydrodata.to_ij(grid, latlon_pt[0], latlon_pt[1]) for latlon_pt in latlon_bounds]
     imin, imax = [
         min(point0[0], point1[0]),
-        max(point0[0], point1[0]),
+        max(point0[0], point1[0]) + 1
     ]
     jmin, jmax = [
         min(point0[1], point1[1]),
-        max(point0[1], point1[1]),
+        max(point0[1], point1[1]) + 1
     ]
     return (imin, jmin, imax, jmax)
 
