@@ -154,8 +154,8 @@ def latlon_to_ij(latlon_bounds, grid):
     jmin, jmax = [
         min(point0[1], point1[1]),
         max(point0[1], point1[1]) + 1
-    ]
-    return (imin, jmin, imax, jmax)
+    ] 
+    return (imin, jmin, imax, jmax), np.ones((jmax - jmin, imax - imin), dtype=int)
 
 
 def create_mask_solid(huc_list, grid, write_dir):
