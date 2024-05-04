@@ -146,8 +146,7 @@ def latlon_to_ij(latlon_bounds, grid):
         raise ValueError("latlon_bounds must contain exactly two lat-lon points: [[lat1, lon1], [lat2, lon2]]")
 
     grid = grid.lower()
-    point0 = hf_hydrodata.to_ij(grid, latlon_bounds[0][0], latlon_bounds[0][1])
-    point1 = hf_hydrodata.to_ij(grid, latlon_bounds[1][0], latlon_bounds[1][1])
+    point0, point1 = [hf_hydrodata.to_ij(grid, latlon_pt[0], latlon_pt[1]) for latlon_pt in latlon_bounds]
     imin, imax = [
         min(point0[0], point1[0]),
         max(point0[0], point1[0]),
