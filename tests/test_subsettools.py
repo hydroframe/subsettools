@@ -1,9 +1,9 @@
 import os
 import pytest
+import filecmp
 import subsettools as st
 from parflow.tools.io import read_pfb
 import numpy as np
-import hf_hydrodata
 from parflow import Run
 
 
@@ -51,6 +51,17 @@ def test_latlon_to_ij(latlon_bounds, grid, correct_bounds):
 def test_latlon_to_ij_errors(latlon_bounds, grid):
     with pytest.raises(ValueError) as e:
         st.latlon_to_ij(latlon_bounds, grid)
+
+
+def test_create_mask_solid(tmp_path):
+    huc_list = ["15060202"]
+    grid = "conus1"
+    test_dir = tmp_path / "test"
+    test_dir.mkdir()
+    st.create_mask_solid(huc_list, grid, test_dir)
+    correct_output_dir = os.path.join(os.getcwd(), "tests", "correct_output", "conus1_upper_verde")
+    match, mismatch, errors = filecmp.cmpfiles(test_dir, correct_output_dir, ["mask.pfb", "solidfile.pfsol"], shallow=False)
+    assert len(match) == 2 and len(mismatch) == 0 and len(errors) == 0
 
 
 def test_forcing_timezones(tmp_path):
