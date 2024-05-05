@@ -72,10 +72,8 @@ def upstream_area_to_ij(outlets, grid):
                 i_upstream = i - direction[0]
                 j_upstream = j - direction[1]
                 if (
-                    i_upstream >= 0
-                    and j_upstream >= 0
-                    and i_upstream < ni
-                    and j_upstream < nj
+                    0 <= i_upstream < ni
+                    and 0 <= j_upstream < nj
                     and marked[j_upstream, i_upstream] == 0
                     and flow_direction[j_upstream, i_upstream] == flow_value
                 ):
