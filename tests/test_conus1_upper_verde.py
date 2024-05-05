@@ -29,10 +29,10 @@ def setup_run(setup_dir_structure):
     forcing_ds = "NLDAS2"
     reference_run = st.get_template_runscript(grid, "transient", "solid", static_write_dir)
 
-    ij_bounds, _ = st.huc_to_ij(huc_list=huc_list, grid=grid)
+    ij_bounds, mask = st.huc_to_ij(huc_list=huc_list, grid=grid)
     assert ij_bounds == (375, 239, 487, 329)
     
-    st.create_mask_solid(huc_list=huc_list, grid=grid, write_dir=static_write_dir)
+    st.create_mask_solid(mask=mask, grid=grid, write_dir=static_write_dir)
     
     st.subset_static(ij_bounds, dataset=var_ds, write_dir=static_write_dir)
     

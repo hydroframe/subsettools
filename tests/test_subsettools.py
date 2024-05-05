@@ -56,9 +56,10 @@ def test_latlon_to_ij_errors(latlon_bounds, grid):
 def test_create_mask_solid(tmp_path):
     huc_list = ["15060202"]
     grid = "conus1"
+    _, mask = st.huc_to_ij(huc_list, grid)
     test_dir = tmp_path / "test"
     test_dir.mkdir()
-    st.create_mask_solid(huc_list, grid, test_dir)
+    st.create_mask_solid(mask, grid, test_dir)
     correct_output_dir = os.path.join(os.getcwd(), "tests", "correct_output", "conus1_upper_verde")
     match, mismatch, errors = filecmp.cmpfiles(test_dir, correct_output_dir, ["mask.pfb", "solidfile.pfsol"], shallow=False)
     assert len(match) == 2 and len(mismatch) == 0 and len(errors) == 0
