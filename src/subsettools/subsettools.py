@@ -162,7 +162,7 @@ def latlon_to_ij(latlon_bounds, grid):
     return (imin, jmin, imax, jmax), np.ones((jmax - jmin, imax - imin), dtype=int)
 
 
-def create_mask_solid(huc_list, grid, write_dir):
+def create_mask_solid(mask, grid, write_dir):
     """Create mask and solid files for a ParFlow simulation and write them in a user specified directory. 
 
     Given a list of HUC IDs, this function will define a bounding box that encompasses all of the selected HUCs and will create:
@@ -192,16 +192,10 @@ def create_mask_solid(huc_list, grid, write_dir):
             write_dir="/path/to/your/chosen/directory"
         )
     """
-    _validate_huc_list(huc_list)
+    # TODO: check mask array (dimensions, all 0-1 (other values allowed?), int/float/boolean type)
     _validate_grid(grid)
     _validate_dir(write_dir)
     grid = grid.lower()
-    _, sel_hucs, indices_j, indices_i = _get_conus_hucs_indices(huc_list, grid)
-    if indices_i.size == 0 or indices_j.size == 0:
-        raise ValueError(f"The area defined by the provided HUCs is not part of the {grid} grid.")      
-    imin, jmin, imax, jmax = _indices_to_ij(indices_j, indices_i)
-    nj = jmax - jmin
-    ni = imax - imin
 
     # checks conus1 / 2 grid and assigns appripriate dz and z_total for making the mask and solid file
     if grid  == "conus1":
@@ -214,11 +208,10 @@ def create_mask_solid(huc_list, grid, write_dir):
         z_total = str(2000)
 
     # create and write the pfb mask
-    mask_clip = np.zeros((1, nj, ni))
-    mask_clip[0, :, :] = sel_hucs[jmin:jmax, imin:imax]
-    mask_clip = mask_clip.astype(float)
+    nj, ni = mask.shape
+    new_mask = mask.reshape((1, nj, ni)).astype(float)
     mask_file_path = os.path.join(write_dir, "mask.pfb")
-    write_pfb(mask_file_path, mask_clip, dx=1000, dy=1000, dz=layz, dist=False)
+    write_pfb(mask_file_path, new_mask, dx=1000, dy=1000, dz=layz, dist=False)
     print("Wrote mask.pfb")
     mask_vtk_path = os.path.join(write_dir, "mask_vtk.vtk")
     solid_file_path = os.path.join(write_dir, "solidfile.pfsol")
