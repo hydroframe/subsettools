@@ -85,33 +85,6 @@ def huc_to_ij(huc_list, grid):
     return bounds, huc_mask[jmin:jmax, imin:imax].astype(int)
 
 
-def _get_conus_hucs_indices(huc_list, grid):
-    """Get the huc datafile as an ndarray and three mask arrays representing the selected hucs.
-    
-    Args:
-        huc_list (list[str]): a list of huc IDs 
-        grid (str): The spatial grid that the ij indices are calculated relative to and that the subset 
-            data will be returned on. Possible values: “conus1” or “conus2”
-
-    Returns:   
-        A tuple (conus_hucs, sel_hucs, indices_j, indices_i) where                                               
-        conus_hucs is an ndarray of the huc datafile, sel_hucs is
-        a mask array for the selected hucs, and indices_i and
-        indices_j mask arrays in the j and i directions.
-    """
-    huc_len = len(huc_list[0])
-    huc_list = [int(huc) for huc in huc_list]
-    entry = hf_hydrodata.get_catalog_entry(
-        dataset="huc_mapping", grid=grid, file_type="tiff"
-    )
-    if entry is None:
-        raise ValueError(f"There is no HUC mapping entry for grid {grid}.")
-    conus_hucs = hf_hydrodata.gridded.get_ndarray(entry, level=str(huc_len))
-    sel_hucs = np.isin(conus_hucs, huc_list).squeeze()
-    indices_j, indices_i = np.where(sel_hucs > 0)
-    return conus_hucs, sel_hucs, indices_j, indices_i
-
-
 def _indices_to_ij(indices_j, indices_i):
     """Get the conus ij-bounds for the boundary defined by indices_j and indices_i.                                                  
 
@@ -216,29 +189,29 @@ def create_mask_solid(mask, grid, write_dir):
     # create and write the pfb mask
     nj, ni = mask.shape
     new_mask = mask.reshape((1, nj, ni)).astype(float)
-    mask_file_path = os.path.join(write_dir, "mask.pfb")
-    write_pfb(mask_file_path, new_mask, dx=CONUS_DX, dy=CONUS_DY, dz=dz, dist=False)
+    mask_path = os.path.join(write_dir, "mask.pfb")
+    write_pfb(mask_path, new_mask, dx=CONUS_DX, dy=CONUS_DY, dz=dz, dist=False)
     print("Wrote mask.pfb")
     mask_vtk_path = os.path.join(write_dir, "mask_vtk.vtk")
-    solid_file_path = os.path.join(write_dir, "solidfile.pfsol")
+    solid_path = os.path.join(write_dir, "solidfile.pfsol")
 
     try:
         parflow_dir = os.environ["PARFLOW_DIR"]
     except KeyError:
         raise KeyError('The environment variable PARFLOW_DIR has not been defined. Please make sure you have ParFlow installed ' \
                        'and os.environ["PARFLOW_DIR"] points to that installation.')
-    file_path = os.path.join(parflow_dir, "bin", "pfmask-to-pfsol")
-    if not os.path.exists(file_path):
+    script_path = os.path.join(parflow_dir, "bin", "pfmask-to-pfsol")
+    if not os.path.exists(script_path):
         raise FileNotFoundError('pfmask-to-pfsol file not found. Please make sure you have ParFlow installed ' \
                        'and os.environ["PARFLOW_DIR"] points to that installation.')
     try:
         subprocess.run(
             [
-                file_path,
+                script_path,
                 "--mask",
-                mask_file_path,
+                mask_path,
                 "--pfsol",
-                solid_file_path,
+                solid_path,
                 "--vtk",
                 mask_vtk_path,
                 "--z-bottom",
@@ -253,7 +226,7 @@ def create_mask_solid(mask, grid, write_dir):
         raise subprocess.CalledProcessError("pfmask-to-pfsol error:", e.stderr)
 
     print(f"Wrote solidfile.pfsol and mask_vtk.vtk with total z of {z_top} meters")
-    file_paths = {"mask": mask_file_path, "mask_vtk": mask_vtk_path, "solid": solid_file_path}
+    file_paths = {"mask": mask_path, "mask_vtk": mask_vtk_path, "solid": solid_path}
     return file_paths 
 
 
