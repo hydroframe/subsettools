@@ -53,7 +53,7 @@ def test_latlon_to_ij_errors(latlon_bounds, grid):
         st.latlon_to_ij(latlon_bounds, grid)
 
 
-def test_create_mask_solid(tmp_path):
+def test_create_mask_solid(set_parflow_dir, tmp_path):
     huc_list = ["15060202"]
     grid = "conus1"
     _, mask = st.huc_to_ij(huc_list, grid)

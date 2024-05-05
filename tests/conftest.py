@@ -4,14 +4,25 @@ import pytest
 from parflow.tools.fs import mkdir, rm
 
 
+@pytest.fixture(scope="session")
+def set_parflow_dir():
+    old_parflow_dir = os.environ.get("PARFLOW_DIR")
+    if not old_parflow_dir:
+        # set PARFLOW_DIR to local installation where the tests will be run
+        os.environ["PARFLOW_DIR"] = "/home/SHARED/software/parflow/3.10.0"
+    yield None
+    if old_parflow_dir:
+        os.environ["PARFLOW_DIR"] = old_parflow_dir
+    else:
+        del os.environ["PARFLOW_DIR"]
+
+
 @pytest.fixture(scope="module")
-def setup_dir_structure():
+def setup_dir_structure(set_parflow_dir):
     home = os.path.expanduser("~")
     base_dir = os.path.join(home, "subsettools_test_output")
     input_dir = os.path.join(base_dir, "inputs")
     output_dir = os.path.join(base_dir, "outputs")
-    temp_pf_dir = os.environ.get("PARFLOW_DIR")
-    os.environ["PARFLOW_DIR"] = "/home/SHARED/software/parflow/3.10.0"
 
     def setup(run_name):
         static_write_dir = os.path.join(input_dir, run_name, "static")
@@ -31,12 +42,6 @@ def setup_dir_structure():
         )
 
     yield setup
-
-    if temp_pf_dir is not None:
-        os.environ["PARFLOW_DIR"] = temp_pf_dir
-    else:
-        del os.environ["PARFLOW_DIR"]
-
     rm(base_dir)
 
 
