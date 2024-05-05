@@ -27,6 +27,14 @@ from ._error_checking import (
 )
 
 
+CONUS_DX = 1000
+CONUS_DY = 1000
+CONUS1_DZ = 100
+CONUS1_Z_TOP = 500
+CONUS2_DZ = 200
+CONUS2_Z_TOP = 2000
+CONUS_Z_BOTTOM = 0
+
 def huc_to_ij(huc_list, grid):
     """Get the grid ij bounds of a bounding box that encompasses the HUC IDs provided in huc_list and a mask for that domain.
 
@@ -197,21 +205,19 @@ def create_mask_solid(mask, grid, write_dir):
     _validate_dir(write_dir)
     grid = grid.lower()
 
-    # checks conus1 / 2 grid and assigns appripriate dz and z_total for making the mask and solid file
+    # checks conus1 / 2 grid and assigns appropriate dz and z_total for making the mask and solid file
     if grid  == "conus1":
-        print("grid is conus1")
-        layz = 100
-        z_total = str(500)
-    else:
-        print("grid is conus2")
-        layz = 200
-        z_total = str(2000)
+        dz = CONUS1_DZ
+        z_top = CONUS1_Z_TOP
+    elif grid == "conus2":
+        dz = CONUS2_DZ
+        z_top = CONUS2_Z_TOP
 
     # create and write the pfb mask
     nj, ni = mask.shape
     new_mask = mask.reshape((1, nj, ni)).astype(float)
     mask_file_path = os.path.join(write_dir, "mask.pfb")
-    write_pfb(mask_file_path, new_mask, dx=1000, dy=1000, dz=layz, dist=False)
+    write_pfb(mask_file_path, new_mask, dx=CONUS_DX, dy=CONUS_DY, dz=dz, dist=False)
     print("Wrote mask.pfb")
     mask_vtk_path = os.path.join(write_dir, "mask_vtk.vtk")
     solid_file_path = os.path.join(write_dir, "solidfile.pfsol")
@@ -236,9 +242,9 @@ def create_mask_solid(mask, grid, write_dir):
                 "--vtk",
                 mask_vtk_path,
                 "--z-bottom",
-                "0.0",
+                str(CONUS_Z_BOTTOM),
                 "--z-top",
-                z_total,
+                str(z_top),
             ],
             check=True,
             capture_output=True,
@@ -246,7 +252,7 @@ def create_mask_solid(mask, grid, write_dir):
     except subprocess.CalledProcessError as e:
         raise subprocess.CalledProcessError("pfmask-to-pfsol error:", e.stderr)
 
-    print(f"Wrote solidfile.pfsol and mask_vtk.vtk with total z of {z_total} meters")
+    print(f"Wrote solidfile.pfsol and mask_vtk.vtk with total z of {z_top} meters")
     file_paths = {"mask": mask_file_path, "mask_vtk": mask_vtk_path, "solid": solid_file_path}
     return file_paths 
 
