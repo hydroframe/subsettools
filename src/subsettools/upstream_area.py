@@ -64,7 +64,7 @@ def upstream_area_to_ij(outlets, grid):
             marked[j, i] = 1
 
     while queue:
-        next = []
+        next_queue = []
         for point in queue:
             i, j = point
             # Look for cells that drain to this cell
@@ -72,16 +72,16 @@ def upstream_area_to_ij(outlets, grid):
                 i_upstream = i - direction[0]
                 j_upstream = j - direction[1]
                 if (
-                    i_upstream > 0
-                    and j_upstream > 0
+                    i_upstream >= 0
+                    and j_upstream >= 0
                     and i_upstream < ni
                     and j_upstream < nj
                     and marked[j_upstream, i_upstream] == 0
                     and flow_direction[j_upstream, i_upstream] == flow_value
                 ):
                     marked[j_upstream, i_upstream] = 1
-                    next.append([i_upstream, j_upstream])
-        queue = next
+                    next_queue.append([i_upstream, j_upstream])
+        queue = next_queue
 
     masklist = np.argwhere(marked == 1)
     if masklist.size == 0:
