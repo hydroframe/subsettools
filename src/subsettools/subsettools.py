@@ -68,13 +68,14 @@ def huc_to_ij(huc_list, grid):
 
     huc_len = len(huc_list[0])
     huc_list = [int(huc) for huc in huc_list]
-    entry = hf_hydrodata.get_catalog_entry(
-        dataset="huc_mapping", grid=grid, file_type="tiff"
-    )
-    if entry is None:
-        raise ValueError(f"There is no HUC mapping entry for grid {grid}.")
-    conus_hucs = hf_hydrodata.gridded.get_ndarray(entry, level=str(huc_len))
-
+    try:
+        conus_hucs = hf_hydrodata.get_gridded_data(dataset="huc_mapping",
+                                                   grid=grid,
+                                                   file_type="tiff",
+                                                   level=str(huc_len),
+        )
+    except Exception as exc:
+        raise ValueError(f"Failed to get huc mapping data for the grid {grid}.") from exc
     huc_mask = np.isin(conus_hucs, huc_list).squeeze()
     indices_j, indices_i = np.where(huc_mask > 0)
     if indices_i.size == 0 or indices_j.size == 0:
@@ -291,17 +292,21 @@ def subset_static(
         raise TypeError("All variable names should be strings.")
     file_paths = {}
     for var in var_list:
-        entry = hf_hydrodata.get_catalog_entry(
-            dataset=dataset, file_type="pfb", period="static", variable=var
-        )
-        if entry is not None:
-            subset_data = hf_hydrodata.gridded.get_ndarray(entry, grid_bounds=ij_bounds)
+        try:
+            subset_data = hf_hydrodata.get_gridded_data(dataset=dataset,
+                                                        variable=var,
+                                                        file_type="pfb",
+                                                        period="static",
+                                                        grid_bounds=ij_bounds,
+            )
+        except ValueError:
+            print(f"Variable '{var}' not found in dataset '{dataset}'.")
+        else:
             file_path = os.path.join(write_dir, f"{var}.pfb")
             write_pfb(file_path, subset_data, dist=False)
             file_paths[var] = file_path
             print(f"Wrote {var}.pfb in specified directory.")
-        else:
-            print(f"{var} not found in dataset {dataset}")
+            
     return file_paths
 
 
@@ -346,21 +351,21 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
     if not isinstance(time_zone, str):
         raise TypeError("time_zone must be a string.")
     
-    entry = hf_hydrodata.get_catalog_entry(
-        dataset=dataset, file_type="pfb", variable="pressure_head", period="hourly"
-    )
-    if entry is None:
-        print(f"No pressure file found for in dataset {dataset}")
-        return None
-    
     new_date = get_UTC_time(date, time_zone)
-    print(f"UTC Date: {new_date}")
-        
+    print(f"UTC Date: {new_date}")        
     date_string = new_date.strftime("%Y.%m.%d:%H.%M.%S_UTC0")
 
-    subset_data = hf_hydrodata.gridded.get_ndarray(
-        entry, grid_bounds=ij_bounds, start_time=new_date
-    )
+    try:
+        subset_data = hf_hydrodata.get_gridded_data(dataset=dataset,
+                                                    variable="pressure_head",
+                                                    file_type="pfb",
+                                                    period="hourly",
+                                                    grid_bounds=ij_bounds,
+                                                    start_time=new_date,
+        )
+    except ValueError:
+        print(f"No pressure file found in dataset '{dataset}'.")
+        return None
 
     file_path = os.path.join(write_dir, f"{dataset}_{date_string}_press.pfb")
     write_pfb(file_path, subset_data[0, :, :, :], dist=False)
@@ -413,48 +418,56 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
     file_type_list = ["vegp", "pfb", "drv_clm"] # get the pfb version of the vegm file
     file_paths = {}
     for file_type in file_type_list:
-        entry = hf_hydrodata.get_catalog_entry(dataset=dataset,
-                                                       file_type=file_type,
-                                                       variable="clm_run",
-                                                       period="static"
-        )
-        if entry is None:
-            raise ValueError("No {file_type} entry matches your request.")
-        print(f"processing {file_type}")
         if file_type == "vegp":
             file_path = os.path.join(write_dir, "drv_vegp.dat")
-            hf_hydrodata.get_raw_file(
-                file_path,
-                dataset=dataset,
-                file_type=file_type,
-                variable="clm_run",
-                period="static"
-            )
-            file_paths[file_type] = file_path
-            print("copied vegp")
+            try:
+                hf_hydrodata.get_raw_file(file_path,
+                                          dataset=dataset,
+                                          file_type=file_type,
+                                          variable="clm_run",
+                                          period="static"
+                )
+            except ValueError:
+                print(f"Failed to get {file_type} file for dataset '{dataset}'.")
+            else:
+                file_paths[file_type] = file_path
+                print("copied vegp")
         elif file_type == "pfb":
-            subset_data = hf_hydrodata.gridded.get_ndarray(entry, grid_bounds=ij_bounds)
-            land_cover_data = _reshape_ndarray_to_vegm_format(subset_data)
-            file_path = write_land_cover(land_cover_data, write_dir)
-            file_paths[file_type] = file_path
-            print("subset vegm")
+            try:
+                subset_data = hf_hydrodata.get_gridded_data(dataset=dataset,
+                                                            file_type=file_type,
+                                                            variable="clm_run",
+                                                            period="static",
+                                                            grid_bounds=ij_bounds,
+                )
+            except ValueError:
+                print(f"Failed to get vegm file for dataset '{dataset}'.")
+            else:
+                land_cover_data = _reshape_ndarray_to_vegm_format(subset_data)
+                file_path = write_land_cover(land_cover_data, write_dir)
+                file_paths[file_type] = file_path
+                print("subset vegm")
         elif file_type == "drv_clm":
             file_path = os.path.join(write_dir, "drv_clmin.dat")
-            hf_hydrodata.get_raw_file(file_path,
-                            dataset=dataset,
-                            file_type=file_type,
-                            variable="clm_run",
-                            period="static"
-            )
-            print("copied drv_clmin")
-            edit_drvclmin(
-                file_path=file_path,
-                start=start,
-                end=end,
-                time_zone=time_zone
-            )
-            file_paths[file_type] = file_path
-            print("edited drv_clmin")
+            try:
+                hf_hydrodata.get_raw_file(file_path,
+                                          dataset=dataset,
+                                          file_type=file_type,
+                                          variable="clm_run",
+                                          period="static"
+                )
+            except ValueError:
+                print(f"Failed to get {file_type} file for dataset '{dataset}'.")
+            else:
+                print("copied drv_clmin")
+                edit_drvclmin(
+                    file_path=file_path,
+                    start=start,
+                    end=end,
+                    time_zone=time_zone
+                )
+                file_paths[file_type] = file_path
+                print("edited drv_clmin")
     return file_paths
 
 
