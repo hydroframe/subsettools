@@ -1,8 +1,8 @@
-"""This module contains helper functions for error-checking user-provided arguments.
-"""
+"""This module contains helper functions for error-checking user-provided arguments."""
 
 import os 
 import re
+import numpy as np
 
 def _validate_huc_list(huc_list):
     """Check errors for a user-provided list of HUC IDs."""
@@ -60,3 +60,13 @@ def _validate_date(date):
     pattern = re.compile(r'\d{4}-\d{2}-\d{2}$')
     if not bool(pattern.match(date)):
         raise ValueError("invalid date format.")
+
+
+def _validate_mask(mask):
+    if not isinstance(mask, np.ndarray):
+        raise ValueError("mask must be a numpy array.")
+    if not np.issubdtype(mask.dtype, np.integer):
+        raise ValueError("mask elements must be integers.")
+    unique_values = np.unique(mask)
+    if len(unique_values) != 2 or (0 not in unique_values) or (1 not in unique_values):
+        raise ValueError("mask elements must be 0 or 1.")
