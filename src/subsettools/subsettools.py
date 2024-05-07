@@ -299,8 +299,8 @@ def subset_static(
                                                         period="static",
                                                         grid_bounds=ij_bounds,
             )
-        except ValueError:
-            print(f"Variable '{var}' not found in dataset '{dataset}'.")
+        except ValueError as err:
+            print(f"Variable '{var}' not found in dataset '{dataset}':", err)
         else:
             file_path = os.path.join(write_dir, f"{var}.pfb")
             write_pfb(file_path, subset_data, dist=False)
@@ -363,8 +363,8 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
                                                     grid_bounds=ij_bounds,
                                                     start_time=new_date,
         )
-    except ValueError:
-        print(f"No pressure file found in dataset '{dataset}'.")
+    except ValueError as err:
+        print(f"No pressure file found in dataset '{dataset}':", err)
         return None
 
     file_path = os.path.join(write_dir, f"{dataset}_{date_string}_press.pfb")
@@ -427,8 +427,8 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
                                           variable="clm_run",
                                           period="static"
                 )
-            except ValueError:
-                print(f"Failed to get {file_type} file for dataset '{dataset}'.")
+            except ValueError as err:
+                print(f"Failed to get {file_type} file for dataset '{dataset}':", err)
             else:
                 file_paths[file_type] = file_path
                 print("copied vegp")
@@ -440,8 +440,8 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
                                                             period="static",
                                                             grid_bounds=ij_bounds,
                 )
-            except ValueError:
-                print(f"Failed to get vegm file for dataset '{dataset}'.")
+            except ValueError as err:
+                print(f"Failed to get vegm file for dataset '{dataset}':", err)
             else:
                 land_cover_data = _reshape_ndarray_to_vegm_format(subset_data)
                 file_path = write_land_cover(land_cover_data, write_dir)
@@ -456,8 +456,8 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
                                           variable="clm_run",
                                           period="static"
                 )
-            except ValueError:
-                print(f"Failed to get {file_type} file for dataset '{dataset}'.")
+            except ValueError as err:
+                print(f"Failed to get {file_type} file for dataset '{dataset}':", err)
             else:
                 print("copied drv_clmin")
                 edit_drvclmin(
