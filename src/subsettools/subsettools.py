@@ -27,6 +27,7 @@ from ._error_checking import (
     _validate_date,
 )
 
+
 CONUS_DX = 1000
 CONUS_DY = 1000
 CONUS1_DZ = 100
@@ -34,6 +35,8 @@ CONUS1_Z_TOP = 500
 CONUS2_DZ = 200
 CONUS2_Z_TOP = 2000
 CONUS_Z_BOTTOM = 0
+_HOURS_PER_FORCING_FILE = 24
+
 
 def huc_to_ij(huc_list, grid):
     """Get the grid ij bounds of a bounding box that encompasses the HUC IDs provided in huc_list and a mask for that domain.
@@ -574,7 +577,7 @@ def _subset_forcing_variable(variable, ij_bounds, grid, start_date, end_date, da
     
     day = 1
     date = start_date
-    delta = timedelta(days=1)
+    delta = timedelta(hours=_HOURS_PER_FORCING_FILE)
     outputs[variable] = []
     print(f"Reading {variable} pfb sequence")
     
@@ -643,25 +646,25 @@ def _adjust_filename_hours(filename, day):
 
     The first day of the simulation the hours will be “.000001_to_000024.”, the second day the hours will be “.000025_to_000048.” and so on. 
     This is in case the first day of simulation does not coincide with the first day of the water year (Oct 1st), as the dataset 
-    filenames assume day 1 is Oct 1st. The input and output filenames must match the regular expression “..[0-9]{6}_to_[0-9]{6}.*”
+    filenames assume day 1 is Oct 1st. The input and output filenames must match the regular expression “*.*.[0-9]{6}_to_[0-9]{6}.*”
 
     Parameters:
-        filename (str) – original forcing filename
-        day (int) – day relative to the start date of forcing file subsetting
+        filename (str): original forcing filename
+        day (int): day relative to the start date of forcing file subsetting
 
     Returns:
         The forcing filename with adjusted hours.
 
     Raises:
-        AssertionError – If the input or output filename string do not match the above regex.
+        AssertionError: If the input or output filename string do not match the above regex.
     """
     assert day >= 1
     s1, s2, s3, s4 = filename.split(".")
     assert s1 != "" and s2 != "" and s4 != "", "invalid forcing filename"
     pattern = re.compile("[0-9]{6}_to_[0-9]{6}")
     assert pattern.fullmatch(s3) is not None, "invalid forcing filename"
-    start = str(24 * (day - 1) + 1).rjust(6, "0")
-    end = str(24 * day).rjust(6, "0")
+    start = str(_HOURS_PER_FORCING_FILE * (day - 1) + 1).rjust(6, "0")
+    end = str(_HOURS_PER_FORCING_FILE * day).rjust(6, "0")
     s3 = start + "_to_" + end
     assert pattern.fullmatch(s3) is not None, "invalid adjusted forcing filename"
     return ".".join([s1, s2, s3, s4])
@@ -753,12 +756,13 @@ def edit_runscript_for_subset(
             "GeomInput.domaininput.InputType detected as SolidFile, no additional keys to change for subset"
         )
     else:
+        run.Geom.domain.Upper.X = ni * CONUS_DX
+        run.Geom.domain.Upper.Y = nj * CONUS_DY
         print(
-            f"GeomInput.domaininput.InputType detected as Box, updating Geom.domain.Upper.X to {ni * 1000} and Y to {nj * 1000} to match subset"
+            f"""GeomInput.domaininput.InputType detected as Box, updating Geom.domain.Upper.X to 
+                {run.Geom.domain.Upper.X} and Y to {run.Geom.domain.Upper.Y} to match subset"""
         )
-        run.Geom.domain.Upper.X = ni * 1000
-        run.Geom.domain.Upper.Y = nj * 1000
-
+        
     print(f"Updated runscript written to {write_dir}")
     file_path, _ = run.write(
         working_directory=write_dir, file_format=f"{file_extension[1:]}"
