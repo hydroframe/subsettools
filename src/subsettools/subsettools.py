@@ -1,5 +1,4 @@
-"""This module contains subsetting functions for Parflow runs.
-"""
+"""This module contains subsetting functions for Parflow runs."""
 
 import os
 import shutil
@@ -25,6 +24,7 @@ from ._error_checking import (
     _validate_dir,
     _validate_grid_bounds,
     _validate_date,
+    _validate_mask,
 )
 
 
@@ -39,32 +39,43 @@ _HOURS_PER_FORCING_FILE = 24
 
 
 def huc_to_ij(huc_list, grid):
-    """Get the grid ij bounds of a bounding box that encompasses the HUC IDs provided in huc_list and a mask for that domain.
+    """Define a domain by a collection of HUCs.
 
-       All HUC IDs in huc_list must be the same length (HUCs of the same level). All HUCs 
-       should be adjacent. If a HUC is only partially covered by the provided grid, the grid 
-       bounds for the covered area will be returned.
+    The domain is defined by the grid ij bounds of a bounding box that
+    encompasses the HUCs in huc_list and a mask for that bounding box indicating
+    which cells are part of the HUCs.
+
+    All HUC IDs in huc_list must be the same length (HUCs of the same level).
+    All HUCs should be adjacent. If a HUC is only partially covered by the 
+    provided grid, the grid bounds for the covered area will be returned.
 
     Args:
         huc_list (list[str]): a list of USGS HUC IDs
-        grid (str): The spatial grid that the ij indices are calculated relative to and that the subset data will be returned on. Possible values: “conus1” or “conus2”
+        grid (str): The spatial grid that the ij indices are calculated relative
+            to and that the subset data will be returned on. Possible values: 
+            “conus1” or “conus2”
 
     Returns:
         A tuple (bounds, mask).
         
-        Bounds is a tuple of the form (imin, jmin, imax, jmax) representing the bounds in the conus grid of the area defined by the huc IDs in huc_list. imin, jmin, imax, jmax are the west, south, east and north sides of the box respectively and all i,j indices are calculated relative to the lower southwest corner of the domain.
+        Bounds is a tuple of the form (imin, jmin, imax, jmax) representing the
+        bounds in the conus grid of the area defined by the HUC IDs in huc_list.
+        imin, jmin, imax, jmax are the west, south, east and north sides of the
+        box respectively and all i,j indices are calculated relative to the
+        lower southwest corner of the domain.
 
-        Mask is a 2D numpy.ndarray that indicates which cells inside the bounding box are part of the selected HUC(s).
+        Mask is a 2D numpy.ndarray that indicates which cells inside the bounding
+        box are part of the selected HUC(s).
 
     Raises:
-        ValueError: If all HUC IDs are not the same length or if the area defined by the provided HUCs 
-            is not part of the given grid.
+        ValueError: If all HUC IDs are not the same length or if the area defined
+            by the provided HUCs is not part of the given grid.
 
     Example:
-
     .. code-block:: python
-
-        grid_bounds, mask = huc_to_ij(huc_list=["14080201", "14080202", "14080203"], grid="conus1")
+        grid_bounds, mask = huc_to_ij(
+            huc_list=["14080201", "14080202", "14080203"], grid="conus1"
+        )
     """
     _validate_huc_list(huc_list)
     _validate_grid(grid)
@@ -90,44 +101,57 @@ def huc_to_ij(huc_list, grid):
 
 
 def _indices_to_ij(indices_j, indices_i):
-    """Get the conus ij-bounds for the boundary defined by indices_j and indices_i.                                                  
+    """Get the grid ij bounds for the domain defined by indices_j and indices_i.
 
     Args:                                                                                                                           
-        indices_j (numpy.ndarray): mask in the j direction for selected hucs                                                                    
+        indices_j (numpy.ndarray): mask in the j direction for selected hucs                                                                
         indices_i (numpy.ndarray): mask in the i direction for selected hucs                                                                   
  
     Returns:                                                                                                         
         A tuple of the form (imin, jmin, imax, jmax) representing the bounds                                                                    
-        in conus_hucs defined by the two mask arrays indices_j and indices_i.                                                                   
+        in the grid defined by the two mask arrays indices_j and indices_i.
     """
     imin = np.min(indices_i)
-    imax = np.max(indices_i) + 1  # right bound inclusive
+    imax = np.max(indices_i) + 1
     jmin = np.min(indices_j)
-    jmax = np.max(indices_j) + 1  # right bound inclusive                                                                                   
+    jmax = np.max(indices_j) + 1
     return (int(imin), int(jmin), int(imax), int(jmax))
 
 
 def latlon_to_ij(latlon_bounds, grid):
-    """Get the ij bounds of the area defined by the the latitute/longitude bounds (latlon_bounds) relative to a selected conus grid.
+    """Define a domain by latitude/longitude bounds.
+
+    The domain is defined by the grid ij bounds of a bounding box formed by the
+    latitude/longitude bounds (latlon_bounds) relative to the selected conus grid
+    and a mask for that bounding box indicating which cells are valid CONUS
+    points.
 
     Args:
-        latlon_bounds (List[List[float]]): list of the form [[lat1, lon1], [lat2, lon2]].
-            [lat1, lon1] and [lat2, lon2] define the northwest and southeast corners of the desired box respectively.
-        grid (str):  The spatial grid that the ij indices are calculated relative to and that 
-            the subset data will be returned on. Possible values: “conus1” or “conus2”
+        latlon_bounds (List[List[float]]): list of the form [[lat1, lon1], 
+            [lat2, lon2]]. [lat1, lon1] and [lat2, lon2] define the northwest
+            and southeast corners of the desired box respectively.
+        grid (str):  The spatial grid that the ij indices are calculated relative
+            to and that the subset data will be returned on. Possible values: 
+            “conus1” or “conus2”.
 
     Returns:
         A tuple (bounds, mask).
 
-        Bounds is a tuple of the form (imin, jmin, imax, jmax) representing the bounds in the conus grid of the area defined by the latlon_bounds. imin, jmin, imax, jmax are the west, south, east and north sides of the box respectively and all i,j indices are calculated relative to the lower southwest corner of the domain.
+        Bounds is a tuple of the form (imin, jmin, imax, jmax) representing the
+        bounds in the conus grid of the area defined by the latlon_bounds. imin,
+        jmin, imax, jmax are the west, south, east and north sides of the box 
+        respectively and all i,j indices are calculated relative to the lower
+        southwest corner of the domain.
 
-        Mask is a 2D numpy.ndarray that indicates which cells inside the bounding box are part of the selected area. Since in this case we subset the entire bounding box, the mask is always all-ones.
+        Mask is a 2D numpy.ndarray that indicates which cells inside the bounding
+        box are valid CONUS points (for example, if ocean is part of the bounding
+        box the corresponding cells will not be part of the mask).
 
     Example:
-
     .. code-block:: python
-
-        grid_bounds = latlon_to_ij(latlon_bounds=[[37.91, -91.43], [37.34, -90.63]], grid="conus2")
+        grid_bounds = latlon_to_ij(
+            latlon_bounds=[[37.91, -91.43], [37.34, -90.63]], grid="conus2"
+        )
     """
     _validate_grid(grid)    
     _validate_latlon_list(latlon_bounds)
@@ -148,41 +172,42 @@ def latlon_to_ij(latlon_bounds, grid):
 
 
 def create_mask_solid(mask, grid, write_dir):
-    """Create mask and solid files for a ParFlow simulation and write them in a user specified directory. 
+    """Create ParFlow mask and solid files from a mask array. 
 
-    Given a list of HUC IDs, this function will define a bounding box that encompasses all of the selected HUCs and will create:
-        1. a 2D mask file that indicates which cells inside the box domain are part of the selected HUCS.
-        2. a solid file that defines a 3D domain extending to the depth of whichever grid has been selected and tracing the boundaries of the selected HUCS. 
+    Given a mask array, this function will create three files in write_dir.
+    1. a 2D mask file that indicates which cells inside the box domain are
+        part of the selected HUCS.
+    2. a solid file that defines a 3D domain extending to the depth of
+        whichever grid has been selected and tracing the boundaries of the
+        selected HUCS.
+    3. a vtk mask file: TODO
 
     Args:  
-        huc_list (list[str]): a list of HUC IDs   
-        grid (str): The spatial grid that the ij indices are calculated relative to and that 
-            the subset data will be returned on. Possible values: “conus1” or “conus2”
-        write_dir (str): directory path where the mask and solid files will be written  
+        mask (numpy.ndarray): an integer array such that mask[i, j] == 1 if the
+            cell (i, j) is part of the domain, and mask[i, j] == 0 otherwise.
+        grid (str): The spatial grid that the ij indices are calculated relative
+            to and that the subset data will be returned on. Possible values:
+            “conus1” or “conus2”
+        write_dir (str): directory path where the mask and solid files will be
+            written
 
     Returns:
-        dict: A dictionary of paths with keys ("mask", "mask_vtk", "solid") and values filepaths to the created files.
-
-    Raises:  
-        FileNotFoundError: If write_dir is not a valid directory.  
-        ValueError: If the area defined by the provided HUCs is not part of the given grid.
+        dict: A dictionary mapping the keys ("mask", "mask_vtk", "solid") to the
+            corresponding filepaths of the created files.
 
     Example:
-
     .. code-block:: python
-
         filepaths = create_mask_solid(
-            huc_list=["14080201", "14080202", "14080203"],
+            mask=np.array([[0, 1], [1, 1]]),
             grid="conus2",
             write_dir="/path/to/your/chosen/directory"
         )
     """
-    # TODO: check mask array (dimensions, all 0-1 (other values allowed?), int/float/boolean type)
+    _validate_mask(mask)
     _validate_grid(grid)
     _validate_dir(write_dir)
     grid = grid.lower()
 
-    # checks conus1 / 2 grid and assigns appropriate dz and z_total for making the mask and solid file
     if grid  == "conus1":
         dz = CONUS1_DZ
         z_top = CONUS1_Z_TOP
@@ -190,7 +215,6 @@ def create_mask_solid(mask, grid, write_dir):
         dz = CONUS2_DZ
         z_top = CONUS2_Z_TOP
 
-    # create and write the pfb mask
     nj, ni = mask.shape
     new_mask = mask.reshape((1, nj, ni)).astype(float)
     mask_path = os.path.join(write_dir, "mask.pfb")
