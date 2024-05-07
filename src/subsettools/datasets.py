@@ -1,5 +1,4 @@
-"""This module contains functions for accessing the template runscripts.
-"""
+"""This module contains functions for accessing the template runscripts."""
 
 from importlib import resources
 import os
