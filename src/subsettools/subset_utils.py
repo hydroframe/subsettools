@@ -8,6 +8,7 @@ import pytz
 import numpy as np
 from parflow.tools.io import read_clm
 
+_VEGM_COLUMNS = 25
 
 def subset_vegm(path, ij_bounds):
     """Read in vegm file and subset it according to ij_bounds.
@@ -24,21 +25,30 @@ def subset_vegm(path, ij_bounds):
         ndarray:
             Subset vegm data.
     """
-    vegm = read_clm(path, type="vegm")  # returns (j,i,k)
-    vegm = np.transpose(vegm, (2, 0, 1))  # transpose to k,j,i
+    vegm_data = read_clm(path, type="vegm")    # returns (j,i,k)
+    vegm_data = np.transpose(vegm_data, (2, 0, 1))  # transpose to k,j,i
 
     imin, jmin, imax, jmax = ij_bounds
-    vegm = vegm[:, jmin:jmax, imin:imax]  # slicing on k,j,i
+    vegm_data = vegm_data[:, jmin:jmax, imin:imax]  # slicing on k,j,i
 
-    _, nj, ni = vegm.shape
+    return _reshape_ndarray_to_vegm_format(vegm_data)
+
+
+def _reshape_ndarray_to_vegm_format(data):
+    """Reshape ndarray returned by datacatalog to vegm format.
+    
+    Args:
+        data (ndarray): raw subset vegm data (2d array)      
+    
+    Returns:
+        Ndarray reshaped to vegm format.
+    """
+    _, nj, ni = data.shape
     indices = np.indices((nj, ni)) + 1
     indices = indices[::-1, :, :]
-    vegm = np.vstack([indices, vegm])  # stack x,y indices on vegm
-
+    data = np.vstack([indices, data])  # stack x,y indices on vegm
     # transpose and reshape back into expected 2D vegm file format for the subset
-    vegm = vegm.transpose(1, 2, 0).reshape(-1, 25)
-
-    return vegm
+    return data.transpose(1, 2, 0).reshape(-1, _VEGM_COLUMNS)
 
 
 def write_land_cover(land_cover_data, write_dir):

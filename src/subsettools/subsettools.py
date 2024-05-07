@@ -16,6 +16,7 @@ from .subset_utils import (
     write_land_cover,
     edit_drvclmin,
     get_UTC_time,
+    _reshape_ndarray_to_vegm_format,
 )
 from ._error_checking import (
     _validate_huc_list,
@@ -25,7 +26,6 @@ from ._error_checking import (
     _validate_grid_bounds,
     _validate_date,
 )
-
 
 CONUS_DX = 1000
 CONUS_DY = 1000
@@ -140,7 +140,7 @@ def latlon_to_ij(latlon_bounds, grid):
     jmin, jmax = [
         min(point0[1], point1[1]),
         max(point0[1], point1[1]) + 1
-    ] 
+    ]
     return (imin, jmin, imax, jmax), np.ones((jmax - jmin, imax - imin), dtype=int)
 
 
@@ -469,23 +469,6 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
                 file_paths[file_type] = file_path
                 print("edited drv_clmin")
     return file_paths
-
-
-def _reshape_ndarray_to_vegm_format(data):
-    """Reshape ndarray returned by datacatalog to vegm format.
-
-    Parameters:
-        data (ndarray) – raw subset vegm data (2d array)
-
-    Returns:
-        Ndarray reshaped to vegm format.
-    """       
-    _, nj, ni = data.shape
-    indices = np.indices((nj, ni)) + 1
-    indices = indices[::-1, :, :]
-    data = np.vstack([indices, data])  # stack x,y indices on vegm                                                                              
-    # transpose and reshape back into expected 2D vegm file format for the subset                                                               
-    return data.transpose(1, 2, 0).reshape(-1, 25)
 
 
 def subset_forcing(
