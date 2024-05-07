@@ -588,12 +588,6 @@ def subset_forcing(
 
 def _subset_forcing_variable(variable, ij_bounds, grid, start_date, end_date, dataset, write_dir, time_zone, outputs, exit_event):
     """Helper function for subset_forcing that subsets data for one variable for the specified dates and dataset."""
-
-    entry = hf_hydrodata.get_catalog_entry(
-        dataset=dataset, variable=variable, grid=grid, file_type="pfb", period="hourly"
-    )
-    if entry is None:
-        raise ValueError(f"No {variable} entry matches your request.")
     
     day = 1
     date = start_date
@@ -606,34 +600,48 @@ def _subset_forcing_variable(variable, ij_bounds, grid, start_date, end_date, da
         end_time = date + delta
         # we need to distinguish between UTC and non-UTC as the datacatalog returns the wrong answer
         # for requests that start reading from the middle of a file and span multiple files
+        try:
+            if time_zone == "UTC":
+                subset_data = hf_hydrodata.get_gridded_data(dataset=dataset,
+                                                            variable=variable,
+                                                            grid=grid,
+                                                            file_type="pfb",
+                                                            period="hourly",
+                                                            start_time=start_time,
+                                                            end_time=end_time,
+                                                            grid_bounds=ij_bounds
+                )
+            else:
+                next_day_midnight = datetime(end_time.year, end_time.month, end_time.day)
+                data1 = hf_hydrodata.get_gridded_data(dataset=dataset,
+                                                      variable=variable,
+                                                      grid=grid,
+                                                      file_type="pfb",
+                                                      period="hourly",
+                                                      start_time=start_time,
+                                                      end_time=next_day_midnight,
+                                                      grid_bounds=ij_bounds,
+                )
+                data2 = hf_hydrodata.get_gridded_data(dataset=dataset,
+                                                      variable=variable,
+                                                      grid=grid,
+                                                      file_type="pfb",
+                                                      period="hourly",
+                                                      start_time=next_day_midnight,
+                                                      end_time=end_time,
+                                                      grid_bounds=ij_bounds,
+                )
+                subset_data = np.concatenate((data1, data2), axis=0)
+        except Exception as exc:
+            raise ValueError(f"Failed to get {variable} data from {start_time} to {end_time}.") from exc 
 
-        if time_zone == "UTC":
-            subset_data = hf_hydrodata.gridded.get_ndarray(
-                entry,
-                start_time=start_time,
-                end_time=end_time,
-                grid_bounds=ij_bounds,
-            )
-        else:
-            next_day_midnight = datetime(end_time.year, end_time.month, end_time.day)
-            data1 = hf_hydrodata.gridded.get_ndarray(
-                entry,
-                start_time=start_time,
-                end_time=next_day_midnight,
-                grid_bounds=ij_bounds,
-            )
-            data2 = hf_hydrodata.gridded.get_ndarray(
-                entry,
-                start_time=next_day_midnight,
-                end_time=end_time,
-                grid_bounds=ij_bounds,
-            )                
-            subset_data = np.concatenate((data1, data2), axis=0)
-            
-        assert subset_data.shape[0] == 24, "attempted to write more than 24 hours of data to a pfb file"
-
-        paths = hf_hydrodata.gridded.get_file_paths(
-            entry, start_time=start_time, end_time=end_time
+        paths = hf_hydrodata.get_paths(dataset=dataset,
+                                       variable=variable,
+                                       grid=grid,
+                                       file_type="pfb",
+                                       period="hourly",
+                                       start_time=start_time,
+                                       end_time=end_time
         )
         
         write_path = os.path.join(write_dir,
