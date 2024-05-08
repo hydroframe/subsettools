@@ -1,8 +1,9 @@
 """This module contains helper functions for error-checking user-provided arguments."""
 
-import os 
+import os
 import re
 import numpy as np
+
 
 def _validate_huc_list(huc_list):
     """Check errors for a user-provided list of HUC IDs."""
@@ -16,8 +17,8 @@ def _validate_huc_list(huc_list):
     if huc_len not in [2, 4, 6, 8, 10]:
         raise ValueError("HUC IDs are 2, 4, 6, 8, or 10-digit")
     if not all([len(huc) == huc_len for huc in huc_list]):
-        raise ValueError("All HUC IDs should have the same length")    
-    
+        raise ValueError("All HUC IDs should have the same length")
+
 
 def _validate_grid(grid):
     """Check errors for a user-provided grid argument."""
@@ -33,16 +34,20 @@ def _validate_latlon_list(latlon_pts):
     if not isinstance(latlon_pts, list):
         raise TypeError("latlon argument must be a list of points")
     for point in latlon_pts:
-        if not (isinstance(point, list) and
-                len(point) == 2 and
-                all(isinstance(value, (int, float)) for value in point)):
-            raise ValueError("Each element of the list must be a list of two floats of the form [lat, lon]")
+        if not (
+            isinstance(point, list)
+            and len(point) == 2
+            and all(isinstance(value, (int, float)) for value in point)
+        ):
+            raise ValueError(
+                "Each element of the list must be a list of two floats of the form [lat, lon]"
+            )
 
-    
+
 def _validate_dir(dir_name):
     """Check that dir_name is a valid directory."""
     if not os.path.isdir(dir_name):
-        raise FileNotFoundError(f"{dir_name} is not a valid existing directory") 
+        raise FileNotFoundError(f"{dir_name} is not a valid existing directory")
 
 
 def _validate_grid_bounds(grid_bounds):
@@ -53,11 +58,11 @@ def _validate_grid_bounds(grid_bounds):
     if not len(grid_bounds) == 4:
         raise ValueError("bounds must contain four elements (imin, imax, jmin, jmax).")
 
-    
+
 def _validate_date(date):
     if not isinstance(date, str):
         raise TypeError("date must be a string.")
-    pattern = re.compile(r'\d{4}-\d{2}-\d{2}$')
+    pattern = re.compile(r"\d{4}-\d{2}-\d{2}$")
     if not bool(pattern.match(date)):
         raise ValueError("invalid date format.")
 

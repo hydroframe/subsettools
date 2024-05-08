@@ -8,24 +8,30 @@ from ._error_checking import (
     _validate_dir,
 )
 
+
 def get_template_runscript(grid, mode, input_file_type, write_dir):
-    """Get a ParFlow template runscript based on grid, mode and input file type and write it to write_dir.
+    """Get a ParFlow template runscript.
+
+    The runscript is selected based on the grid, mode and input file type and
+    is copied to write_dir.
 
     Args:
-        grid (str): The spatial grid that the ij indices are calculated relative to and that the subset data 
-            will be returned on. Possible values: “conus1” or “conus2”
-        mode (str): The type of simulation you would like to do. Possible values: "spinup" (run ParFlow with a
-            constant recharge forcing at the upper boundary) and "transient" (coupled ParFlow-CLM run)
-        input_file_type (str): The type of domain you will run. Possible values: "box" or "solid"
-        write_dir (str): directory where the template runscript file will be copied
+        grid (str): The spatial grid that the ij indices are calculated relative
+            to and that the subset data will be returned on. Possible values:
+            “conus1” or “conus2”
+        mode (str): The type of simulation you would like to do. Possible values:
+            "spinup" (run ParFlow with a constant recharge forcing at the upper
+            boundary) and "transient" (coupled ParFlow-CLM run)
+        input_file_type (str): The type of domain you will run. Possible values:
+            "box" or "solid"
+        write_dir (str): directory where the template runscript file will be
+            copied
 
     Returns:
-        str: Path to the template runscript.
+        A path to the template runscript.
 
     Example:
-
     .. code-block:: python
-
         runscript_path = get_template_runscript(
             grid="conus1",
             mode="spinup",
@@ -34,7 +40,7 @@ def get_template_runscript(grid, mode, input_file_type, write_dir):
         )
     """
     _validate_grid(grid)
-    _validate_dir(write_dir)    
+    _validate_dir(write_dir)
     if not isinstance(mode, str):
         raise TypeError("mode must be a string")
     if not isinstance(input_file_type, str):
