@@ -67,8 +67,8 @@ def huc_to_ij(huc_list, grid):
         box are part of the selected HUC(s).
 
     Raises:
-        ValueError: If all HUC IDs are not the same length or if the area defined
-            by the provided HUCs is not part of the given grid.
+        ValueError: If the area defined by the provided HUCs is not part of the
+            given grid.
 
     Example:
 
