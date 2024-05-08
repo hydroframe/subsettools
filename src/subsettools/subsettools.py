@@ -761,20 +761,20 @@ def _adjust_filename_hours(filename, day):
 
     Returns:
         The new forcing filename with adjusted hours.
-
-    Raises:
-        AssertionError: If the input or output filename string do not match the
-            above regex.
     """
-    assert day >= 1
+    if day < 1:
+        raise ValueError("day must be >= 1")
     s1, s2, s3, s4 = filename.split(".")
-    assert s1 != "" and s2 != "" and s4 != "", "invalid forcing filename"
+    if not s1 or not s2 or not s3:
+        raise ValueError("invalid forcing filename")
     pattern = re.compile("[0-9]{6}_to_[0-9]{6}")
-    assert pattern.fullmatch(s3) is not None, "invalid forcing filename"
+    if pattern.fullmatch(s3) is None:
+        raise ValueError("invalid forcing filename")
     start = str(_HOURS_PER_FORCING_FILE * (day - 1) + 1).rjust(6, "0")
     end = str(_HOURS_PER_FORCING_FILE * day).rjust(6, "0")
     s3 = start + "_to_" + end
-    assert pattern.fullmatch(s3) is not None, "invalid adjusted forcing filename"
+    if pattern.fullmatch(s3) is None:
+        raise ValueError("invalid forcing filename")
     return ".".join([s1, s2, s3, s4])
 
 
