@@ -73,6 +73,7 @@ def huc_to_ij(huc_list, grid):
     Example:
 
     .. code-block:: python
+
         grid_bounds, mask = huc_to_ij(
             huc_list=["14080201", "14080202", "14080203"], grid="conus1"
         )
