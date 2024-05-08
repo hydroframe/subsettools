@@ -43,7 +43,9 @@ def upstream_area_to_ij(outlets, grid):
         ValueError: If the computed upstream area of the outlets is empty.
 
     Example:
+
     .. code-block:: python
+
         bounds, mask = upstream_area_to_ij(
             outlets=[[44.1348, -95.5084], [44.1352, -95.4949]],
             grid="conus2"

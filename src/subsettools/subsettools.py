@@ -154,7 +154,9 @@ def latlon_to_ij(latlon_bounds, grid):
         box the corresponding cells will not be part of the mask).
 
     Example:
+
     .. code-block:: python
+
         grid_bounds = latlon_to_ij(
             latlon_bounds=[[37.91, -91.43], [37.34, -90.63]], grid="conus2"
         )
@@ -199,7 +201,9 @@ def create_mask_solid(mask, grid, write_dir):
             corresponding filepaths of the created files.
 
     Example:
+
     .. code-block:: python
+
         filepaths = create_mask_solid(
             mask=np.array([[0, 1], [1, 1]]),
             grid="conus2",
@@ -320,7 +324,9 @@ def subset_static(
         paths where the subset data were written.
 
     Example:
+
     .. code-block:: python
+
         filepaths = subset_static(
             ij_bounds=(375, 239, 487, 329),
             dataset="conus1_domain",
@@ -382,7 +388,9 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
         that it can be used by later functions (e.g. edit_runscript_for_subset).
 
     Example:
+
     .. code-block:: python
+
         filepath = subset_press_init(
             ij_bounds=(375, 239, 487, 329),
             dataset="conus1_baseline_mod",
@@ -451,7 +459,9 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
         the corresponging filepaths where the CLM files were written.
 
     Example:
+
     .. code-block:: python
+
         filepaths = config_clm(
             ij_bounds=(375, 239, 487, 329),
             start="2005-10-01",
@@ -581,7 +591,9 @@ def subset_forcing(
         paths where the subset data were written.
 
     Example:
+
     .. code-block:: python
+
         filepaths = subset_forcing(
             ij_bounds=(1225, 1738, 1347, 1811),
             grid="conus2",
@@ -803,7 +815,9 @@ def edit_runscript_for_subset(
         A path to the new runscript file that will be created.
 
     Example:
+
     .. code-block:: python
+
         runscript_path = edit_runscript_for_subset(
             ij_bounds=(375, 239, 487, 329),
             runscript_path="/path/to/your/original/runscript",
@@ -883,7 +897,9 @@ def copy_files(read_dir, write_dir):
         write_dir (str): write-to directory path
 
     Example:
+
     .. code-block:: python
+
         copy_files(
             read_dir="/path/to/read-from/directory",
             write_dir="/path/to/write-to/directory"
@@ -951,7 +967,9 @@ def change_filename_values(
         A path to the new runscript file that will be created.
 
     Example:
+
     .. code-block:: python
+
         runscript_path = change_filename_values(
             runscript_path="/path/to/your/original/runscript",
             runname="my_conus1_run",
@@ -1026,7 +1044,9 @@ def dist_run(P, Q, runscript_path, working_dir=None, dist_clim_forcing=True):
         str: Path to the edited runscript file that will be created.
 
     Example:
+
     .. code-block:: python
+
         runscript_path = dist_run(
             P=2,
             Q=2,
