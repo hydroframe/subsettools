@@ -13,9 +13,8 @@ def upstream_area_to_ij(outlets, grid):
     """Define a domain that is the upstream area of the points in outlets.
 
     The domain is defined by the grid ij bounds of the bounding box that
-    encompasses the upstream area of all the points in outlets and a mask and a
-    mask for that bounding box indicating which cells are part of the selected
-    area.
+    encompasses the upstream area of all the points in outlets and a mask for
+    that bounding box indicating which cells are part of the selected area.
 
     The flow_direction files that are used to define the upstream area follow the
     convention: down: 1, left: 2, up: 3, right: 4.
