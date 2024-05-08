@@ -179,7 +179,8 @@ def latlon_to_ij(latlon_bounds, grid):
 def create_mask_solid(mask, grid, write_dir):
     """Create ParFlow mask and solid files from a mask array.
 
-    Given a mask array, this function will create three files in write_dir.
+    Given an integer mask array consisting of 0s and 1s, this function will
+    create three files in write_dir.
         - a 2D mask file that indicates which cells inside the box domain are
           part of the selected HUCS.
         - a solid file that defines a 3D domain extending to the depth of
