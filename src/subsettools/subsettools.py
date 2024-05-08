@@ -180,12 +180,12 @@ def create_mask_solid(mask, grid, write_dir):
     """Create ParFlow mask and solid files from a mask array.
 
     Given a mask array, this function will create three files in write_dir.
-    1. a 2D mask file that indicates which cells inside the box domain are
-        part of the selected HUCS.
-    2. a solid file that defines a 3D domain extending to the depth of
-        whichever grid has been selected and tracing the boundaries of the
-        selected HUCS.
-    3. a vtk mask file: TODO
+        - a 2D mask file that indicates which cells inside the box domain are
+          part of the selected HUCS.
+        - a solid file that defines a 3D domain extending to the depth of
+          whichever grid has been selected and tracing the boundaries of the
+          selected HUCS.
+        - a vtk mask file: TODO
 
     Args:
         mask (numpy.ndarray): an integer array such that mask[i, j] == 1 if the
@@ -288,9 +288,7 @@ def subset_static(
     """Subset static input files from national datasets in HydroData.
 
     The subset values will be written as ParFlow binary files (pfbs) in 
-    write_dir.
-
-    By default the following variables will be subset:
+    write_dir. By default the following variables will be subset.
         - Slope in the east/west direction (slope_x)
         - Slope in the north/south direction (slope_y)
         - Subsurface units indicator file (pf_indicator)
