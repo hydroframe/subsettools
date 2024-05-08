@@ -31,7 +31,9 @@ def get_template_runscript(grid, mode, input_file_type, write_dir):
         A path to the template runscript.
 
     Example:
+
     .. code-block:: python
+
         runscript_path = get_template_runscript(
             grid="conus1",
             mode="spinup",
