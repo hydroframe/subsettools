@@ -9,7 +9,7 @@ from ._error_checking import (
 )
 
 
-def upstream_area_to_ij(outlets, grid):
+def define_upstream_domain(outlets, grid):
     """Define a domain that is the upstream area of the points in outlets.
 
     The domain is defined by the grid ij bounds of the bounding box that
@@ -45,7 +45,7 @@ def upstream_area_to_ij(outlets, grid):
 
     .. code-block:: python
 
-        bounds, mask = upstream_area_to_ij(
+        bounds, mask = define_upstream_domain(
             outlets=[[44.1348, -95.5084], [44.1352, -95.4949]],
             grid="conus2"
         )

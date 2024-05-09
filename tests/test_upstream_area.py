@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from subsettools.upstream_area import upstream_area_to_ij
+import subsettools as st
 
 
 @pytest.mark.parametrize(
@@ -62,8 +62,8 @@ from subsettools.upstream_area import upstream_area_to_ij
         ),
     ],
 )
-def test_upstream_area_to_ij(outlets, grid, correct_mask, correct_bounds):
-    bounds, mask = upstream_area_to_ij(outlets, grid)
+def test_define_upstream_domain(outlets, grid, correct_mask, correct_bounds):
+    bounds, mask = st.define_upstream_domain(outlets, grid)
     assert np.array_equal(mask, correct_mask)
     assert bounds == correct_bounds
 
@@ -79,6 +79,6 @@ def test_upstream_area_to_ij(outlets, grid, correct_mask, correct_bounds):
         ),
     ],
 )
-def test_upstream_area_to_ij_errors(outlets, grid):
+def test_define_upstream_domain_errors(outlets, grid):
     with pytest.raises(ValueError) as e:
-        upstream_area_to_ij(outlets, grid)
+        st.define_upstream_domain(outlets, grid)
