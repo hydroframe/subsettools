@@ -20,8 +20,7 @@ def subset_vegm(path, ij_bounds):
         ij_bounds (Tuple[int]): bounding box for subset. This should be given as
             i,j index values where 0,0 is the lower left hand corner of a domain.
             ij_bounds are given relative to whatever grid is being used for the
-            subset. Use the latlon_to_ij function to determine ij indices from
-            lat-lon values.
+            subset.
 
     Returns:
         ndarray:

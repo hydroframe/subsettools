@@ -384,8 +384,7 @@ def subset_static(
         ij_bounds (tuple[int]): bounding box for subset. This should be given as
             i,j index values where 0,0 is the lower left hand corner of a domain.
             ij_bounds are given relative to whatever grid is being used for the
-            subset. Use the latlon_to_ij function to determine ij indices from
-            lat/lon values.
+            subset.
         dataset (str): static inputs dataset name from the HydroData catalog e.g.
             "conus1_domain"
         write_dir (str): directory where the subset files will be written
@@ -448,8 +447,7 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
         ij_bounds (tuple[int]): bounding box for subset. This should be given as
             i,j index values where 0,0 is the lower left hand corner of a domain.
             ij_bounds are given relative to whatever grid is being used for the
-            subset. Use the latlon_to_ij function to determine ij indices from
-            lat/lon values.
+            subset.
         dataset (str): dataset name from the HydroData catalog that the pressure
             file will be subset from e.g. "conus1_baseline_mod"
         date (str): The date of the pressure file that you would like to subset,
@@ -519,8 +517,7 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
         ij_bounds (tuple[int]): bounding box for subset. This should be given as
             i,j index values where 0,0 is the lower left hand corner of a domain.
             ij_bounds are given relative to whatever grid is being used for the
-            subset. Use the latlon_to_ij function to determine ij indices from
-            lat/lon values.
+            subset.
         start (str): start date (inclusive), in the form 'yyyy-mm-dd'
         end (str): end date (exlusive), in the form 'yyyy-mm-dd'
         dataset (str): the dataset that the files should be obtained from name
@@ -645,8 +642,7 @@ def subset_forcing(
         ij_bounds (tuple[int]): bounding box for subset. This should be given as
             i,j index values where 0,0 is the lower left hand corner of a domain.
             ij_bounds are given relative to whatever grid is being used for the
-            subset. Use the latlon_to_ij function to determine ij indices from
-            lat/lon values.
+            subset.
         grid (str): The spatial grid that the ij indices are calculated relative
             to and that the subset data will be returned on. Possible values:
             "conus1" or "conus2"
@@ -874,8 +870,7 @@ def edit_runscript_for_subset(
         ij_bounds (tuple[int]): bounding box for subset. This should be given as
             i,j index values where 0,0 is the lower left hand corner of a domain.
             ij_bounds are given relative to whatever grid is being used for the
-            subset. Use the latlon_to_ij function to determine ij indices from
-            lat/lon values.
+            subset.
         runscript_path (str): absolute path to the template parflow runscript
             file
         write_dir (str): directory where the new template file will be written.
