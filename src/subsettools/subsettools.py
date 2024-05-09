@@ -252,7 +252,7 @@ def latlon_to_ij(latlon_bounds, grid):
     return (imin, jmin, imax, jmax)
 
 
-def create_mask_solid(mask, grid, write_dir):
+def write_mask_solid(mask, grid, write_dir):
     """Create ParFlow mask and solid files from a mask array.
 
     Given an integer mask array consisting of 0s and 1s, this function will
@@ -281,7 +281,7 @@ def create_mask_solid(mask, grid, write_dir):
 
     .. code-block:: python
 
-        filepaths = create_mask_solid(
+        filepaths = write_mask_solid(
             mask=np.array([[0, 1], [1, 1]]),
             grid="conus2",
             write_dir="/path/to/your/chosen/directory"
@@ -346,6 +346,81 @@ def create_mask_solid(mask, grid, write_dir):
     print(f"Wrote solidfile and mask_vtk with total z of {z_top} meters")
     file_paths = {"mask": mask_path, "mask_vtk": mask_vtk_path, "solid": solid_path}
     return file_paths
+
+
+def create_mask_solid(huc_list, grid, write_dir):
+    """This function is deprecated.
+
+    Use write_mask_solid() instead.
+    """
+    warnings.warn("This function is deprecated. Use write_mask_solid() instead.",
+                  DeprecationWarning,
+                  stacklevel=2,
+    )
+    _validate_huc_list(huc_list)
+    _validate_grid(grid)
+    _validate_dir(write_dir)
+    grid = grid.lower()
+    _, sel_hucs, indices_j, indices_i = _get_conus_hucs_indices(huc_list, grid)
+    if indices_i.size == 0 or indices_j.size == 0:
+        raise ValueError(f"The area defined by the provided HUCs is not part of the {grid} grid.")      
+    imin, jmin, imax, jmax = _indices_to_ij(indices_j, indices_i)
+    nj = jmax - jmin
+    ni = imax - imin
+
+    # checks conus1 / 2 grid and assigns appripriate dz and z_total for making the mask and solid file
+    if grid  == "conus1":
+        print("grid is conus1")
+        layz = 100
+        z_total = str(500)
+    else:
+        print("grid is conus2")
+        layz = 200
+        z_total = str(2000)
+
+    # create and write the pfb mask
+    mask_clip = np.zeros((1, nj, ni))
+    mask_clip[0, :, :] = sel_hucs[jmin:jmax, imin:imax]
+    mask_clip = mask_clip.astype(float)
+    mask_file_path = os.path.join(write_dir, "mask.pfb")
+    write_pfb(mask_file_path, mask_clip, dx=1000, dy=1000, dz=layz, dist=False)
+    print("Wrote mask.pfb")
+    mask_vtk_path = os.path.join(write_dir, "mask_vtk.vtk")
+    solid_file_path = os.path.join(write_dir, "solidfile.pfsol")
+
+    try:
+        parflow_dir = os.environ["PARFLOW_DIR"]
+    except KeyError:
+        raise KeyError('The environment variable PARFLOW_DIR has not been defined. Please make sure you have ParFlow installed ' \
+                       'and os.environ["PARFLOW_DIR"] points to that installation.')
+    file_path = os.path.join(parflow_dir, "bin", "pfmask-to-pfsol")
+    if not os.path.exists(file_path):
+        raise FileNotFoundError('pfmask-to-pfsol file not found. Please make sure you have ParFlow installed ' \
+                       'and os.environ["PARFLOW_DIR"] points to that installation.')
+    try:
+        subprocess.run(
+            [
+                file_path,
+                "--mask",
+                mask_file_path,
+                "--pfsol",
+                solid_file_path,
+                "--vtk",
+                mask_vtk_path,
+                "--z-bottom",
+                "0.0",
+                "--z-top",
+                z_total,
+            ],
+            check=True,
+            capture_output=True,
+        )
+    except subprocess.CalledProcessError as e:
+        raise subprocess.CalledProcessError("pfmask-to-pfsol error:", e.stderr)
+
+    print(f"Wrote solidfile.pfsol and mask_vtk.vtk with total z of {z_total} meters")
+    file_paths = {"mask": mask_file_path, "mask_vtk": mask_vtk_path, "solid": solid_file_path}
+    return file_paths 
 
 
 def subset_static(

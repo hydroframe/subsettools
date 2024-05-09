@@ -36,7 +36,7 @@ def test_multiple_hucs(setup_dir_structure, remove_output_files):
     reference_run = st.get_template_runscript(grid, "transient", "solid", static_write_dir)
 
     ij_bounds, mask = st.define_huc_domain(hucs=hucs, grid=grid)
-    st.create_mask_solid(mask=mask, grid=grid, write_dir=static_write_dir)
+    st.write_mask_solid(mask=mask, grid=grid, write_dir=static_write_dir)
     st.subset_static(ij_bounds, dataset=var_ds, write_dir=static_write_dir)
     init_press_filepath = st.subset_press_init(
         ij_bounds,

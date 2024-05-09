@@ -32,7 +32,7 @@ def setup_run(setup_dir_structure):
     ij_bounds, mask = st.define_huc_domain(hucs=hucs, grid=grid)
     assert ij_bounds == (375, 239, 487, 329)
     
-    st.create_mask_solid(mask=mask, grid=grid, write_dir=static_write_dir)
+    st.write_mask_solid(mask=mask, grid=grid, write_dir=static_write_dir)
     
     st.subset_static(ij_bounds, dataset=var_ds, write_dir=static_write_dir)
     

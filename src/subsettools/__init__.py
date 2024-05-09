@@ -8,6 +8,7 @@ from subsettools.subsettools import (
     huc_to_ij,
     define_latlon_domain,
     latlon_to_ij,
+    write_mask_solid,
     create_mask_solid,
     subset_static,
     subset_press_init,
