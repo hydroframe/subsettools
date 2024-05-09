@@ -172,7 +172,7 @@ def _indices_to_ij(indices_j, indices_i):
     return (int(imin), int(jmin), int(imax), int(jmax))
 
 
-def latlon_to_ij(latlon_bounds, grid):
+def define_latlon_domain(latlon_bounds, grid):
     """Define a domain by latitude/longitude bounds.
 
     The domain is defined by the grid ij bounds of a bounding box formed by the
@@ -205,7 +205,7 @@ def latlon_to_ij(latlon_bounds, grid):
 
     .. code-block:: python
 
-        grid_bounds = latlon_to_ij(
+        grid_bounds = define_latlon_domain(
             latlon_bounds=[[37.91, -91.43], [37.34, -90.63]], grid="conus2"
         )
     """
@@ -222,6 +222,34 @@ def latlon_to_ij(latlon_bounds, grid):
     imin, imax = [min(point0[0], point1[0]), max(point0[0], point1[0]) + 1]
     jmin, jmax = [min(point0[1], point1[1]), max(point0[1], point1[1]) + 1]
     return (imin, jmin, imax, jmax), np.ones((jmax - jmin, imax - imin), dtype=int)
+
+
+def latlon_to_ij(latlon_bounds, grid):
+    """This function is deprecated.
+
+    Use define_latlon_domain() instead.
+    """
+    warnings.warn("This function is deprecated. Use define_latlon_domain() instead.",
+                  DeprecationWarning,
+                  stacklevel=2,
+    )
+    _validate_grid(grid)    
+    _validate_latlon_list(latlon_bounds)
+    if len(latlon_bounds) != 2:
+        raise ValueError("latlon_bounds must contain exactly two lat-lon points: [[lat1, lon1], [lat2, lon2]]")
+
+    grid = grid.lower()
+    point0 = hf_hydrodata.to_ij(grid, latlon_bounds[0][0], latlon_bounds[0][1])
+    point1 = hf_hydrodata.to_ij(grid, latlon_bounds[1][0], latlon_bounds[1][1])
+    imin, imax = [
+        min(point0[0], point1[0]),
+        max(point0[0], point1[0]),
+    ]
+    jmin, jmax = [
+        min(point0[1], point1[1]),
+        max(point0[1], point1[1]),
+    ]
+    return (imin, jmin, imax, jmax)
 
 
 def create_mask_solid(mask, grid, write_dir):

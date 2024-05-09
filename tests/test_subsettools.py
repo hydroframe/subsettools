@@ -35,8 +35,8 @@ def test_define_huc_domain_errors(hucs, grid):
     "latlon_bounds, grid, correct_bounds", [([[37.91, -91.43], [37.34, -90.63]], "conus1", (2285, 436, 2359, 496)),
                                             ([[39.8379, -74.3791], [39.8379, -74.3791]], "conus2", (4057, 1915, 4058, 1916))]
 )
-def test_latlon_to_ij(latlon_bounds, grid, correct_bounds):
-    bounds, mask = st.latlon_to_ij(latlon_bounds, grid)
+def test_define_latlon_domain(latlon_bounds, grid, correct_bounds):
+    bounds, mask = st.define_latlon_domain(latlon_bounds, grid)
     assert bounds == correct_bounds
     imin, jmin, imax, jmax = bounds
     assert np.array_equal(mask, np.ones((jmax - jmin, imax - imin), dtype=int))
@@ -48,9 +48,9 @@ def test_latlon_to_ij(latlon_bounds, grid, correct_bounds):
         pytest.param([[57.44, -107.33], [57.44, -107.33]], "conus2", id="outlet outside the grid"),
     ],
 )
-def test_latlon_to_ij_errors(latlon_bounds, grid):
+def test_define_latlon_domain_errors(latlon_bounds, grid):
     with pytest.raises(ValueError) as e:
-        st.latlon_to_ij(latlon_bounds, grid)
+        st.define_latlon_domain(latlon_bounds, grid)
 
 
 def test_create_mask_solid(set_parflow_dir, tmp_path):

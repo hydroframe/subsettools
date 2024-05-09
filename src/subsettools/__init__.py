@@ -6,6 +6,7 @@ __version__ = version("subsettools")
 from subsettools.subsettools import (
     define_huc_domain,
     huc_to_ij,
+    define_latlon_domain,
     latlon_to_ij,
     create_mask_solid,
     subset_static,
