@@ -4,6 +4,7 @@ from importlib.metadata import version
 __version__ = version("subsettools")
 
 from subsettools.subsettools import (
+    define_huc_domain,
     huc_to_ij,
     latlon_to_ij,
     create_mask_solid,

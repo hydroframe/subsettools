@@ -6,6 +6,7 @@ import subprocess
 from datetime import datetime, timedelta
 import threading
 import re
+import warnings
 import numpy as np
 import hf_hydrodata
 from parflow import Run
@@ -37,19 +38,19 @@ CONUS_Z_BOTTOM = 0
 _HOURS_PER_FORCING_FILE = 24
 
 
-def huc_to_ij(huc_list, grid):
+def define_huc_domain(hucs, grid):
     """Define a domain by a collection of HUCs.
 
     The domain is defined by the grid ij bounds of a bounding box that
-    encompasses the HUCs in huc_list and a mask for that bounding box indicating
-    which cells are part of the HUCs.
+    encompasses the HUCs in the list and a mask for that bounding box indicating
+    which cells in the bounding box are part of these HUCs.
 
-    All HUC IDs in huc_list must be the same length (HUCs of the same level).
+    All HUC IDs in hucs must be the same length (HUCs of the same level).
     All HUCs should be adjacent. If a HUC is only partially covered by the
     provided grid, the grid bounds for the covered area will be returned.
 
     Args:
-        huc_list (list[str]): a list of USGS HUC IDs
+        hucs (list[str]): a list of USGS HUC IDs
         grid (str): The spatial grid that the ij indices are calculated relative
             to and that the subset data will be returned on. Possible values:
             “conus1” or “conus2”
@@ -58,7 +59,7 @@ def huc_to_ij(huc_list, grid):
         A tuple (bounds, mask).
 
         Bounds is a tuple of the form (imin, jmin, imax, jmax) representing the
-        bounds in the conus grid of the area defined by the HUC IDs in huc_list.
+        bounds in the conus grid of the area defined by the HUC IDs in hucs.
         imin, jmin, imax, jmax are the west, south, east and north sides of the
         box respectively and all i,j indices are calculated relative to the
         lower southwest corner of the domain.
@@ -74,15 +75,15 @@ def huc_to_ij(huc_list, grid):
 
     .. code-block:: python
 
-        grid_bounds, mask = huc_to_ij(
-            huc_list=["14080201", "14080202", "14080203"], grid="conus1"
+        grid_bounds, mask = define_huc_domain(
+            hucs=["14080201", "14080202", "14080203"], grid="conus1"
         )
     """
-    _validate_huc_list(huc_list)
+    _validate_huc_list(hucs)
     _validate_grid(grid)
 
-    huc_len = len(huc_list[0])
-    huc_list = [int(huc) for huc in huc_list]
+    huc_len = len(hucs[0])
+    hucs = [int(huc) for huc in hucs]
     try:
         conus_hucs = hf_hydrodata.get_gridded_data(
             dataset="huc_mapping",
@@ -94,7 +95,7 @@ def huc_to_ij(huc_list, grid):
         raise ValueError(
             f"Failed to get huc mapping data for the grid {grid}."
         ) from exc
-    huc_mask = np.isin(conus_hucs, huc_list).squeeze()
+    huc_mask = np.isin(conus_hucs, hucs).squeeze()
     indices_j, indices_i = np.where(huc_mask > 0)
     if indices_i.size == 0 or indices_j.size == 0:
         raise ValueError(
@@ -104,6 +105,53 @@ def huc_to_ij(huc_list, grid):
     bounds = _indices_to_ij(indices_j, indices_i)
     imin, jmin, imax, jmax = bounds
     return bounds, huc_mask[jmin:jmax, imin:imax].astype(int)
+
+
+def huc_to_ij(huc_list, grid):
+    """This function is deprecated.
+
+    Use define_huc_domain() instead.
+    """
+    warnings.warn(
+        "This function is deprecated. Use define_huc_domain() instead.",
+        DeprecationWarning,
+        stacklevel=2
+    )
+    _validate_huc_list(huc_list)
+    _validate_grid(grid)
+    _, _, indices_j, indices_i = _get_conus_hucs_indices(huc_list, grid.lower())
+    if indices_i.size == 0 or indices_j.size == 0:
+        raise ValueError(
+            f"The area defined by the provided HUCs is not part of the {grid} grid."
+        )
+    return _indices_to_ij(indices_j, indices_i)
+
+
+def _get_conus_hucs_indices(huc_list, grid):
+    """Get the huc datafile as an ndarray and three mask arrays representing the selected hucs.
+
+    Args:
+        huc_list (list[str]): a list of huc IDs
+        grid (str): The spatial grid that the ij indices are calculated relative to and that the subset
+            data will be returned on. Possible values: “conus1” or “conus2”
+
+    Returns:
+        A tuple (conus_hucs, sel_hucs, indices_j, indices_i) where
+        conus_hucs is an ndarray of the huc datafile, sel_hucs is
+        a mask array for the selected hucs, and indices_i and
+        indices_j mask arrays in the j and i directions.
+    """
+    huc_len = len(huc_list[0])
+    huc_list = [int(huc) for huc in huc_list]
+    entry = hf_hydrodata.get_catalog_entry(
+        dataset="huc_mapping", grid=grid, file_type="tiff"
+    )
+    if entry is None:
+        raise ValueError(f"There is no HUC mapping entry for grid {grid}.")
+    conus_hucs = hf_hydrodata.gridded.get_ndarray(entry, level=str(huc_len))
+    sel_hucs = np.isin(conus_hucs, huc_list).squeeze()
+    indices_j, indices_i = np.where(sel_hucs > 0)
+    return conus_hucs, sel_hucs, indices_j, indices_i
 
 
 def _indices_to_ij(indices_j, indices_i):
@@ -164,7 +212,7 @@ def latlon_to_ij(latlon_bounds, grid):
     _validate_grid(grid)
     _validate_latlon_list(latlon_bounds)
     if len(latlon_bounds) != 2:
-        raise ValueError('latlon_bounds must contain exactly two points.')
+        raise ValueError("latlon_bounds must contain exactly two points.")
 
     grid = grid.lower()
     point0, point1 = [
@@ -235,16 +283,16 @@ def create_mask_solid(mask, grid, write_dir):
         parflow_dir = os.environ["PARFLOW_DIR"]
     except KeyError:
         raise KeyError(
-            'The environment variable PARFLOW_DIR is undefined. Please make '
+            "The environment variable PARFLOW_DIR is undefined. Please make "
             'sure you have ParFlow installed and os.environ["PARFLOW_DIR"] '
-            'points to that installation.'
+            "points to that installation."
         )
     script_path = os.path.join(parflow_dir, "bin", "pfmask-to-pfsol")
     if not os.path.exists(script_path):
         raise FileNotFoundError(
-            'pfmask-to-pfsol file not found. Please make sure you have ParFlow '
+            "pfmask-to-pfsol file not found. Please make sure you have ParFlow "
             'installed and os.environ["PARFLOW_DIR"] points to that '
-            'installation.'
+            "installation."
         )
     try:
         subprocess.run(
@@ -288,7 +336,7 @@ def subset_static(
 ):
     """Subset static input files from national datasets in HydroData.
 
-    The subset values will be written as ParFlow binary files (pfbs) in 
+    The subset values will be written as ParFlow binary files (pfbs) in
     write_dir. By default the following variables will be subset.
         - Slope in the east/west direction (slope_x)
         - Slope in the north/south direction (slope_y)
@@ -296,10 +344,10 @@ def subset_static(
         - Mannings roughness coefficients (mannings)
         - Depth to bedrock (pf_flowbarrier)
         - Long term average preciptation minus evaporation (i.e. recharge) (pme)
-        - Steady state pressure head used to initialize transient simulations 
+        - Steady state pressure head used to initialize transient simulations
           (ss_pressure_head)
 
-    Note that some datasets might not contain all 7 static input variables. In 
+    Note that some datasets might not contain all 7 static input variables. In
     that case, the subset_static function is going to get and save the data for
     the variables supported by the dataset and print out a message for those
     that are not.
@@ -307,8 +355,8 @@ def subset_static(
     Args:
         ij_bounds (tuple[int]): bounding box for subset. This should be given as
             i,j index values where 0,0 is the lower left hand corner of a domain.
-            ij_bounds are given relative to whatever grid is being used for the 
-            subset. Use the latlon_to_ij function to determine ij indices from 
+            ij_bounds are given relative to whatever grid is being used for the
+            subset. Use the latlon_to_ij function to determine ij indices from
             lat/lon values.
         dataset (str): static inputs dataset name from the HydroData catalog e.g.
             "conus1_domain"
@@ -365,14 +413,14 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
 
     This function will select the pressure file for midnight on the date provided
     and subset the selected pressure file to the ij_bounds provided. The subset
-    data will be written out as a ParFlow binary file (pfb) to be used as an 
+    data will be written out as a ParFlow binary file (pfb) to be used as an
     initial pressure file for a ParFlow simulation.
 
     Args:
         ij_bounds (tuple[int]): bounding box for subset. This should be given as
             i,j index values where 0,0 is the lower left hand corner of a domain.
             ij_bounds are given relative to whatever grid is being used for the
-            subset. Use the latlon_to_ij function to determine ij indices from 
+            subset. Use the latlon_to_ij function to determine ij indices from
             lat/lon values.
         dataset (str): dataset name from the HydroData catalog that the pressure
             file will be subset from e.g. "conus1_baseline_mod"
@@ -432,9 +480,9 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
 def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
     """Modify template CLM driver files for a desired subdomain and run duration.
 
-    This function will obtain template clm driver files (specifically vegm, vep 
+    This function will obtain template clm driver files (specifically vegm, vep
     and drv_clmin) from the existing national simulations on HydroData and modify
-    them to reflect the desired subdomain (indicated by the ij_bounds) and run 
+    them to reflect the desired subdomain (indicated by the ij_bounds) and run
     duration (indicated by the start and end dates). The modified files will be
     written out to a user specified directory. These files are required if you
     are going to run a ParFlow-CLM simulation.
@@ -443,14 +491,14 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
         ij_bounds (tuple[int]): bounding box for subset. This should be given as
             i,j index values where 0,0 is the lower left hand corner of a domain.
             ij_bounds are given relative to whatever grid is being used for the
-            subset. Use the latlon_to_ij function to determine ij indices from 
+            subset. Use the latlon_to_ij function to determine ij indices from
             lat/lon values.
         start (str): start date (inclusive), in the form 'yyyy-mm-dd'
         end (str): end date (exlusive), in the form 'yyyy-mm-dd'
         dataset (str): the dataset that the files should be obtained from name
             e.g. "conus1_baseline_mod"
         write_dir (str): directory where the subset files will be written
-        timezone (str): timezone information for start and end dates. 
+        timezone (str): timezone information for start and end dates.
             Defaults to "UTC".
 
     Returns:
@@ -479,7 +527,7 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
         raise TypeError("time_zone must be a string.")
 
     # get the pfb version of the vegm file
-    file_type_list = ["vegp", "pfb", "drv_clm"]  
+    file_type_list = ["vegp", "pfb", "drv_clm"]
     file_paths = {}
     for file_type in file_type_list:
         if file_type == "vegp":
@@ -567,12 +615,12 @@ def subset_forcing(
 
     Args:
         ij_bounds (tuple[int]): bounding box for subset. This should be given as
-            i,j index values where 0,0 is the lower left hand corner of a domain. 
-            ij_bounds are given relative to whatever grid is being used for the 
-            subset. Use the latlon_to_ij function to determine ij indices from 
+            i,j index values where 0,0 is the lower left hand corner of a domain.
+            ij_bounds are given relative to whatever grid is being used for the
+            subset. Use the latlon_to_ij function to determine ij indices from
             lat/lon values.
         grid (str): The spatial grid that the ij indices are calculated relative
-            to and that the subset data will be returned on. Possible values: 
+            to and that the subset data will be returned on. Possible values:
             "conus1" or "conus2"
         start (str): start date (inclusive), in the form 'yyyy-mm-dd'
         end (str): end date (exlusive), in the form 'yyyy-mm-dd'
@@ -745,14 +793,14 @@ def _subset_forcing_variable(
 
 
 def _adjust_filename_hours(filename, day):
-    """Adjust the part of the the forcing filename representing hours. 
+    """Adjust the part of the the forcing filename representing hours.
 
     The aim is to match what a parflow simulation expects on each day of the
-    simulation. The first day of the simulation the hours will be 
+    simulation. The first day of the simulation the hours will be
     “.000001_to_000024.”, the second day the hours will be “.000025_to_000048.”
     and so on. This is in case the first day of simulation does not coincide with
     the first day of the water year (Oct 1st), as the dataset filenames assume
-    day 1 is Oct 1st. The input and output filenames must match the regular 
+    day 1 is Oct 1st. The input and output filenames must match the regular
     expression “*.*.[0-9]{6}_to_[0-9]{6}.*”
 
     Parameters:
@@ -785,20 +833,20 @@ def edit_runscript_for_subset(
 
     This function is designed to start from a national ParFlow runscript template
     and perform the following three modifications.
-        1. Modify the geometry to reflect the bounds of the desired ij_bounds 
-           (i.e. the number of grid cells in the x and y direction and the upper 
+        1. Modify the geometry to reflect the bounds of the desired ij_bounds
+           (i.e. the number of grid cells in the x and y direction and the upper
            bounds of the geometry)
         2. Update the runname to for the desired new run.
         3. Update the location of the climate forcings for the new run.
 
-    If the runname is None and write_dir is the directory containing the 
+    If the runname is None and write_dir is the directory containing the
     runscript file, the runscript file will be overwritten.
 
     Args:
         ij_bounds (tuple[int]): bounding box for subset. This should be given as
             i,j index values where 0,0 is the lower left hand corner of a domain.
             ij_bounds are given relative to whatever grid is being used for the
-            subset. Use the latlon_to_ij function to determine ij indices from 
+            subset. Use the latlon_to_ij function to determine ij indices from
             lat/lon values.
         runscript_path (str): absolute path to the template parflow runscript
             file
@@ -840,23 +888,23 @@ def edit_runscript_for_subset(
     if runname is not None:
         run.set_name(runname)
         print(
-            f"New runname: {runname} provided, a new {file_extension[1:]} " \
-             "file will be created"
+            f"New runname: {runname} provided, a new {file_extension[1:]} "
+            "file will be created"
         )
     else:
-        print(f"No runname provided, old {file_extension[1:]} file will be " \
-               "overwritten"
+        print(
+            f"No runname provided, old {file_extension[1:]} file will be " "overwritten"
         )
 
     if forcing_dir is not None:
         print(
-            f"Climate forcing directory has been changed to {forcing_dir} " \
-             " in runscript."
+            f"Climate forcing directory has been changed to {forcing_dir} "
+            " in runscript."
         )
         run.Solver.CLM.MetFilePath = forcing_dir
     else:
-        print("No forcing directory provided, run.Solver.CLM.MetFilePath key " \
-              "not set"
+        print(
+            "No forcing directory provided, run.Solver.CLM.MetFilePath key " "not set"
         )
 
     imin, jmin, imax, jmax = ij_bounds
@@ -868,7 +916,7 @@ def edit_runscript_for_subset(
     domain_type = run.GeomInput.domaininput.InputType
     if domain_type == "SolidFile":
         print(
-            "GeomInput.domaininput.InputType detected as SolidFile, no " \
+            "GeomInput.domaininput.InputType detected as SolidFile, no "
             "additional keys to change for subset"
         )
     else:
@@ -940,11 +988,11 @@ def change_filename_values(
     that uses a solid file, adding a new solid file path will not configure the
     run to use a solid file).
 
-    Refer to the ParFlow manual for additional information on any of the keys 
+    Refer to the ParFlow manual for additional information on any of the keys
     listed above.
 
 
-    If the runname is None and write_dir is the directory containing the 
+    If the runname is None and write_dir is the directory containing the
     runscript file, the runscript file will be overwritten.
 
     Args:
@@ -986,8 +1034,8 @@ def change_filename_values(
     if runname is not None:
         run.set_name(runname)
         print(
-            f"New runname: {runname} provided, a new {file_extension[1:]} " \
-             "file will be created"
+            f"New runname: {runname} provided, a new {file_extension[1:]} "
+            "file will be created"
         )
     if slopex is not None:
         run.TopoSlopesX.FileName = slopex

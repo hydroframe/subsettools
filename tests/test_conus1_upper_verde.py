@@ -20,7 +20,7 @@ def setup_run(setup_dir_structure):
         target_runscript,
     ) = setup_dir_structure(run_name)
 
-    huc_list = ["15060202"]
+    hucs = ["15060202"]
     start = "2005-10-01"
     end = "2005-10-03"
     grid = "conus1"
@@ -29,7 +29,7 @@ def setup_run(setup_dir_structure):
     forcing_ds = "NLDAS2"
     reference_run = st.get_template_runscript(grid, "transient", "solid", static_write_dir)
 
-    ij_bounds, mask = st.huc_to_ij(huc_list=huc_list, grid=grid)
+    ij_bounds, mask = st.define_huc_domain(hucs=hucs, grid=grid)
     assert ij_bounds == (375, 239, 487, 329)
     
     st.create_mask_solid(mask=mask, grid=grid, write_dir=static_write_dir)

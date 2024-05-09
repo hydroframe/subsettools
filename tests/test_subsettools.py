@@ -8,27 +8,27 @@ from parflow import Run
 
 
 @pytest.mark.parametrize(
-    "huc_list, grid, result", [(["15060202"], "conus1", (375, 239, 487, 329)),
-                               (["140802"], "conus1", (572, 337, 797, 577)),
-                               (["14080201", "14080202", "14080203", "14080204", "14080205"], "conus1", (572, 337, 797, 577))]
+    "hucs, grid, result", [(["15060202"], "conus1", (375, 239, 487, 329)),
+                           (["140802"], "conus1", (572, 337, 797, 577)),
+                           (["14080201", "14080202", "14080203", "14080204", "14080205"], "conus1", (572, 337, 797, 577))]
 )
-def test_huc_to_ij(huc_list, grid, result):
-    bounds, _ = st.huc_to_ij(huc_list, grid)
+def test_define_huc_domain(hucs, grid, result):
+    bounds, _ = st.define_huc_domain(hucs, grid)
     assert bounds == result
 
     
 @pytest.mark.parametrize(
-    "huc_list, grid", [(["01010001"], "conus1"),
-                       (["01010001"], "conus2"),
-                       (["03130003"], "conus1"),
-                       (["1710"], "conus1"),
-                       (["01010002", "01010001"], "conus1"),
+    "hucs, grid", [(["01010001"], "conus1"),
+                   (["01010001"], "conus2"),
+                   (["03130003"], "conus1"),
+                   (["1710"], "conus1"),
+                   (["01010002", "01010001"], "conus1"),
     ]
 )
-def test_huc_to_ij_errors(huc_list, grid):
+def test_define_huc_domain_errors(hucs, grid):
     """Check that a ValueError is raised if a HUC is not part of the grid."""
     with pytest.raises(ValueError) as e:
-        st.huc_to_ij(huc_list, grid)
+        st.define_huc_domain(hucs, grid)
 
         
 @pytest.mark.parametrize(
@@ -54,9 +54,9 @@ def test_latlon_to_ij_errors(latlon_bounds, grid):
 
 
 def test_create_mask_solid(set_parflow_dir, tmp_path):
-    huc_list = ["15060202"]
+    hucs = ["15060202"]
     grid = "conus1"
-    _, mask = st.huc_to_ij(huc_list, grid)
+    _, mask = st.define_huc_domain(hucs, grid)
     test_dir = tmp_path / "test"
     test_dir.mkdir()
     st.create_mask_solid(mask, grid, test_dir)
