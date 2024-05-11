@@ -58,6 +58,8 @@ def get_template_runscript(grid, mode, input_file_type, write_dir):
         mode = "_pf_" + mode + "_"
 
     filename = grid + mode + input_file_type + ".yaml"
-    with resources.path("subsettools.ref_yamls", filename) as f:
+    with resources.as_file(
+        resources.files("subsettools.ref_yamls").joinpath(filename)
+    ) as f:
         shutil.copy(f, write_dir)
     return os.path.join(write_dir, filename)
