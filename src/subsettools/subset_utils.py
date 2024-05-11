@@ -157,8 +157,8 @@ def edit_drvclmin(
             lines[i] = f"{'clm_ic':<15}{startcode:<37} 1=restart file, 2=defined\n"
 
     if start is not None:
-        start_date = get_UTC_time(start, time_zone)
-        end_date = get_UTC_time(end, time_zone) - timedelta(hours=1)
+        start_date = get_utc_time(start, time_zone)
+        end_date = get_utc_time(end, time_zone) - timedelta(hours=1)
 
         for i, line in enumerate(lines):
             if "shr" in line:
@@ -182,7 +182,7 @@ def edit_drvclmin(
         f.writelines(lines)
 
 
-def get_UTC_time(date_string, time_zone):
+def get_utc_time(date_string, time_zone):
     """Convert the given date and time_zone to UTC time.
 
     Args:

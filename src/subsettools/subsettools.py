@@ -14,7 +14,7 @@ from parflow.tools.io import read_pfb, write_pfb
 from .subset_utils import (
     write_land_cover,
     edit_drvclmin,
-    get_UTC_time,
+    get_utc_time,
     _reshape_ndarray_to_vegm_format,
 )
 from ._error_checking import (
@@ -555,7 +555,7 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
     if not isinstance(time_zone, str):
         raise TypeError("time_zone must be a string.")
 
-    new_date = get_UTC_time(date, time_zone)
+    new_date = get_utc_time(date, time_zone)
     print(f"UTC Date: {new_date}")
     date_string = new_date.strftime("%Y.%m.%d:%H.%M.%S_UTC0")
 
@@ -762,8 +762,8 @@ def subset_forcing(
     if not all(isinstance(var, str) for var in forcing_vars):
         raise TypeError("All variable names should be strings.")
     outputs = {}
-    start_date = get_UTC_time(start, time_zone)
-    end_date = get_UTC_time(end, time_zone)
+    start_date = get_utc_time(start, time_zone)
+    end_date = get_utc_time(end, time_zone)
     exit_event = threading.Event()
     threads = [
         threading.Thread(
