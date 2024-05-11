@@ -1002,7 +1002,7 @@ def edit_runscript_for_subset(
         run.Solver.CLM.MetFilePath = forcing_dir
     else:
         print(
-            "No forcing directory provided, run.Solver.CLM.MetFilePath key " "not set"
+            "No forcing directory provided, run.Solver.CLM.MetFilePath key not set"
         )
 
     imin, jmin, imax, jmax = ij_bounds
