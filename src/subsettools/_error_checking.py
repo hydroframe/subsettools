@@ -16,7 +16,7 @@ def _validate_huc_list(huc_list):
     huc_len = len(huc_list[0])
     if huc_len not in [2, 4, 6, 8, 10]:
         raise ValueError("HUC IDs are 2, 4, 6, 8, or 10-digit")
-    if not all([len(huc) == huc_len for huc in huc_list]):
+    if not all(len(huc) == huc_len for huc in huc_list):
         raise ValueError("All HUC IDs should have the same length")
 
 
