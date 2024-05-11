@@ -52,14 +52,9 @@ def get_template_runscript(grid, mode, input_file_type, write_dir):
     if input_file_type not in ["box", "solid"]:
         raise ValueError("Supported input file types are 'box' and 'solid'")
 
-    if mode == "transient":
-        mode = "_pfclm_" + mode + "_"
-    elif mode == "spinup":
-        mode = "_pf_" + mode + "_"
-
-    filename = grid + mode + input_file_type + ".yaml"
+    filename = '_'.join([grid, mode, input_file_type]) + ".yaml"
     with resources.as_file(
-        resources.files("subsettools.ref_yamls").joinpath(filename)
+        resources.files("subsettools.template_runscripts").joinpath(filename)
     ) as f:
         shutil.copy(f, write_dir)
     return os.path.join(write_dir, filename)
