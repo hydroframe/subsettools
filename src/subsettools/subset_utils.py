@@ -139,7 +139,7 @@ def edit_drvclmin(
     """
     assert (start is None and end is None) or (start is not None and end is not None)
 
-    with open(file_path, "r") as f:
+    with open(file_path, encoding="utf-8") as f:
         lines = f.readlines()
 
     for i, line in enumerate(lines):
@@ -178,7 +178,7 @@ def edit_drvclmin(
             elif "eyr" in line:
                 lines[i] = f"{'eyr':<15}{end_date.year:<37} Ending Year\n"
 
-    with open(file_path, "w") as f:
+    with open(file_path, "w", encoding="utf-8") as f:
         f.writelines(lines)
 
 
