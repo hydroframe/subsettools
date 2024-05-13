@@ -115,7 +115,7 @@ def huc_to_ij(huc_list, grid):
     warnings.warn(
         "This function is deprecated. Use define_huc_domain() instead.",
         DeprecationWarning,
-        stacklevel=2
+        stacklevel=2,
     )
     _validate_huc_list(huc_list)
     _validate_grid(grid)
@@ -229,14 +229,17 @@ def latlon_to_ij(latlon_bounds, grid):
 
     Use define_latlon_domain() instead.
     """
-    warnings.warn("This function is deprecated. Use define_latlon_domain() instead.",
-                  DeprecationWarning,
-                  stacklevel=2,
+    warnings.warn(
+        "This function is deprecated. Use define_latlon_domain() instead.",
+        DeprecationWarning,
+        stacklevel=2,
     )
-    _validate_grid(grid)    
+    _validate_grid(grid)
     _validate_latlon_list(latlon_bounds)
     if len(latlon_bounds) != 2:
-        raise ValueError("latlon_bounds must contain exactly two lat-lon points: [[lat1, lon1], [lat2, lon2]]")
+        raise ValueError(
+            "latlon_bounds must contain exactly two lat-lon points: [[lat1, lon1], [lat2, lon2]]"
+        )
 
     grid = grid.lower()
     point0 = hf_hydrodata.to_ij(grid, latlon_bounds[0][0], latlon_bounds[0][1])
@@ -353,9 +356,10 @@ def create_mask_solid(huc_list, grid, write_dir):
 
     Use write_mask_solid() instead.
     """
-    warnings.warn("This function is deprecated. Use write_mask_solid() instead.",
-                  DeprecationWarning,
-                  stacklevel=2,
+    warnings.warn(
+        "This function is deprecated. Use write_mask_solid() instead.",
+        DeprecationWarning,
+        stacklevel=2,
     )
     _validate_huc_list(huc_list)
     _validate_grid(grid)
@@ -363,13 +367,15 @@ def create_mask_solid(huc_list, grid, write_dir):
     grid = grid.lower()
     _, sel_hucs, indices_j, indices_i = _get_conus_hucs_indices(huc_list, grid)
     if indices_i.size == 0 or indices_j.size == 0:
-        raise ValueError(f"The area defined by the provided HUCs is not part of the {grid} grid.")      
+        raise ValueError(
+            f"The area defined by the provided HUCs is not part of the {grid} grid."
+        )
     imin, jmin, imax, jmax = _indices_to_ij(indices_j, indices_i)
     nj = jmax - jmin
     ni = imax - imin
 
     # checks conus1 / 2 grid and assigns appripriate dz and z_total for making the mask and solid file
-    if grid  == "conus1":
+    if grid == "conus1":
         print("grid is conus1")
         layz = 100
         z_total = str(500)
@@ -391,12 +397,16 @@ def create_mask_solid(huc_list, grid, write_dir):
     try:
         parflow_dir = os.environ["PARFLOW_DIR"]
     except KeyError:
-        raise KeyError('The environment variable PARFLOW_DIR has not been defined. Please make sure you have ParFlow installed ' \
-                       'and os.environ["PARFLOW_DIR"] points to that installation.')
+        raise KeyError(
+            "The environment variable PARFLOW_DIR has not been defined. Please make sure you have ParFlow installed "
+            'and os.environ["PARFLOW_DIR"] points to that installation.'
+        )
     file_path = os.path.join(parflow_dir, "bin", "pfmask-to-pfsol")
     if not os.path.exists(file_path):
-        raise FileNotFoundError('pfmask-to-pfsol file not found. Please make sure you have ParFlow installed ' \
-                       'and os.environ["PARFLOW_DIR"] points to that installation.')
+        raise FileNotFoundError(
+            "pfmask-to-pfsol file not found. Please make sure you have ParFlow installed "
+            'and os.environ["PARFLOW_DIR"] points to that installation.'
+        )
     try:
         subprocess.run(
             [
@@ -419,8 +429,12 @@ def create_mask_solid(huc_list, grid, write_dir):
         raise subprocess.CalledProcessError("pfmask-to-pfsol error:", e.stderr)
 
     print(f"Wrote solidfile.pfsol and mask_vtk.vtk with total z of {z_total} meters")
-    file_paths = {"mask": mask_file_path, "mask_vtk": mask_vtk_path, "solid": solid_file_path}
-    return file_paths 
+    file_paths = {
+        "mask": mask_file_path,
+        "mask_vtk": mask_vtk_path,
+        "solid": solid_file_path,
+    }
+    return file_paths
 
 
 def subset_static(
@@ -1001,9 +1015,7 @@ def edit_runscript_for_subset(
         )
         run.Solver.CLM.MetFilePath = forcing_dir
     else:
-        print(
-            "No forcing directory provided, run.Solver.CLM.MetFilePath key not set"
-        )
+        print("No forcing directory provided, run.Solver.CLM.MetFilePath key not set")
 
     imin, jmin, imax, jmax = ij_bounds
     ni, nj = imax - imin, jmax - jmin
