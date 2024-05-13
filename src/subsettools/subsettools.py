@@ -262,7 +262,7 @@ def write_mask_solid(mask, grid, write_dir):
         - a solid file that defines a 3D domain extending to the depth of
           whichever grid has been selected and tracing the boundaries of the
           selected HUCS.
-        - a vtk mask file: TODO
+        - a vtk file, which can be used to visualize the solid file in ParaView.
 
     Args:
         mask (numpy.ndarray): an integer array such that mask[i, j] == 1 if the
