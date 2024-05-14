@@ -1179,18 +1179,32 @@ def change_filename_values(
     return file_path
 
 
-def dist_run(P, Q, runscript_path, working_dir=None, dist_clim_forcing=True):
+def re_arg(kwarg_map):
+    def decorator(func): 
+        def wrapped(*args, **kwargs):
+            new_kwargs = {}
+            for k, v in kwargs.items():
+                if k in kwarg_map:
+                    print(f"DEPRECATION WARNING: keyword argument '{k}' is no longer valid. Use '{kwarg_map[k]}' instead.")
+                new_kwargs[kwarg_map.get(k, k)] = v
+            return func(*args, **new_kwargs)
+        return wrapped
+    return decorator
+
+
+@re_arg({"P": "topo_p", "Q": "topo_q"})
+def dist_run(topo_p, topo_q, runscript_path, working_dir=None, dist_clim_forcing=True):
     """Distribute ParFlow input files for parallel computing.
 
-    This function will distribute input files to P grids in the
-    x direction and Q grids in the y direction. If dist_clim_forcing
+    This function will distribute input files to topo_p grids in the
+    x direction and topo_q grids in the y direction. If dist_clim_forcing
     is true, forcing files will be distributed as well according to the
     same topology. If working_dir is different that the directory containing
     the runscript file, the edited runscipt file will be written to working_dir.
 
     Args:
-        P (int): number of grids (processes) to create in the x direction
-        Q (int): number of grids (processes) to create in the y direction
+        topo_p (int): number of grids (processes) to create in the x direction
+        topo_q (int): number of grids (processes) to create in the y direction
         runscript_path (str): path to the runscript file (yaml or pfidb)
         working_dir (str): directory containing the files to be distributed.
             If it is None, it defaults to the directory containing the runscript
@@ -1205,16 +1219,16 @@ def dist_run(P, Q, runscript_path, working_dir=None, dist_clim_forcing=True):
     .. code-block:: python
 
         runscript_path = dist_run(
-            P=2,
-            Q=2,
+            topo_p=2,
+            topo_q=2,
             runscript_path="/path/to/your/original/runscript",
             dist_clim_forcing=False
         )
     """
-    if not isinstance(P, int) or P <= 0:
-        raise TypeError("P must be a positive integer.")
-    if not isinstance(Q, int) or Q <= 0:
-        raise TypeError("Q must be a positive integer.")
+    if not isinstance(topo_p, int) or topo_p <= 0:
+        raise TypeError("topo_p must be a positive integer.")
+    if not isinstance(topo_q, int) or topo_q <= 0:
+        raise TypeError("topo_q must be a positive integer.")
     if not os.path.isfile(runscript_path):
         raise FileNotFoundError("runscript_path must be a valid file path")
     if working_dir is None:
@@ -1222,8 +1236,8 @@ def dist_run(P, Q, runscript_path, working_dir=None, dist_clim_forcing=True):
     _validate_dir(working_dir)
 
     run = Run.from_definition(runscript_path)
-    run.Process.Topology.P = P
-    run.Process.Topology.Q = Q
+    run.Process.Topology.P = topo_p
+    run.Process.Topology.Q = topo_q
 
     if dist_clim_forcing:
         print("Distributing your climate forcing")
