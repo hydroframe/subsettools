@@ -17,6 +17,7 @@ from .subset_utils import (
     get_utc_time,
     _reshape_ndarray_to_vegm_format,
 )
+from ._dev_utils import replace_kwargs
 from ._error_checking import (
     _validate_huc_list,
     _validate_grid,
@@ -1179,20 +1180,7 @@ def change_filename_values(
     return file_path
 
 
-def re_arg(kwarg_map):
-    def decorator(func): 
-        def wrapped(*args, **kwargs):
-            new_kwargs = {}
-            for k, v in kwargs.items():
-                if k in kwarg_map:
-                    print(f"DEPRECATION WARNING: keyword argument '{k}' is no longer valid. Use '{kwarg_map[k]}' instead.")
-                new_kwargs[kwarg_map.get(k, k)] = v
-            return func(*args, **new_kwargs)
-        return wrapped
-    return decorator
-
-
-@re_arg({"P": "topo_p", "Q": "topo_q"})
+@replace_kwargs({"P": "topo_p", "Q": "topo_q"})
 def dist_run(topo_p, topo_q, runscript_path, working_dir=None, dist_clim_forcing=True):
     """Distribute ParFlow input files for parallel computing.
 

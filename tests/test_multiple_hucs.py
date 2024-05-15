@@ -70,8 +70,8 @@ def test_multiple_hucs(setup_dir_structure, remove_output_files):
         init_press=os.path.basename(init_press_filepath),
     )
     st.dist_run(
-        P=P,
-        Q=Q,
+        topo_p=P,
+        topo_q=Q,
         runscript_path=target_runscript,
         working_dir=pf_out_dir,
         dist_clim_forcing=True,
