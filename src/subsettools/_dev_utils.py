@@ -13,7 +13,7 @@ def replace_kwargs(kwarg_map):
             for k, v in kwargs.items():
                 if k in kwarg_map:
                     warnings.warn(
-                        f"keywork argument '{k}' is no longer valid. "
+                        f"keyword argument '{k}' is no longer valid. "
                         f"Use '{kwarg_map[k]}' instead.",
                         DeprecationWarning,
                         stacklevel=2,
