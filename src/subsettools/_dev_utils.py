@@ -1,11 +1,12 @@
 """This module contains utilities for subsettools developers."""
+
 import warnings
 import functools
 
 
 def replace_kwargs(kwarg_map):
-    """Deprecate and replace function kwargs without changing the function.      
-    """
+    """Deprecate and replace function kwargs without changing the function."""
+
     def decorator(func):
         @functools.wraps(func)
         def wrapped(*args, **kwargs):
@@ -20,6 +21,7 @@ def replace_kwargs(kwarg_map):
                     )
                 new_kwargs[kwarg_map.get(k, k)] = v
             return func(*args, **new_kwargs)
-        return wrapped
-    return decorator
 
+        return wrapped
+
+    return decorator
