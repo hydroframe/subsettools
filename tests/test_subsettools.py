@@ -32,20 +32,23 @@ def test_define_huc_domain_errors(hucs, grid):
 
         
 @pytest.mark.parametrize(
-    "latlon_bounds, grid, correct_bounds", [([[37.91, -91.43], [37.34, -90.63]], "conus1", (2285, 436, 2359, 496)),
-                                            ([[39.8379, -74.3791], [39.8379, -74.3791]], "conus2", (4057, 1915, 4058, 1916))]
+    "latlon_bounds, grid, correct_bounds, correct_mask",
+    [
+        ([[37.91, -91.43], [37.34, -90.63]], "conus1", (2285, 436, 2359, 496), np.ones((60, 74))),
+        ([[37.91, -91.43], [37.34, -90.63]], "conus2", (2684, 1403, 2758, 1461), np.ones((58, 74))),
+        ([[40.17, -124.27], [40.19, -124.25]], "conus2", (4, 2066, 7, 2069), np.array([[0, 0, 1], [0, 0, 1], [0, 1, 1]])),
+    ]
 )
-def test_define_latlon_domain(latlon_bounds, grid, correct_bounds):
+def test_define_latlon_domain(latlon_bounds, grid, correct_bounds, correct_mask):
     bounds, mask = st.define_latlon_domain(latlon_bounds, grid)
     assert bounds == correct_bounds
-    imin, jmin, imax, jmax = bounds
-    assert np.array_equal(mask, np.ones((jmax - jmin, imax - imin), dtype=int))
+    assert np.array_equal(mask, correct_mask)
 
 
 @pytest.mark.parametrize(
     "latlon_bounds, grid",
     [
-        pytest.param([[57.44, -107.33], [57.44, -107.33]], "conus2", id="outlet outside the grid"),
+        pytest.param([[57.44, -107.33], [57.44, -107.33]], "conus2", id="lat/lon points outside the grid"),
     ],
 )
 def test_define_latlon_domain_errors(latlon_bounds, grid):

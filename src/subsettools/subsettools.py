@@ -178,7 +178,7 @@ def define_latlon_domain(latlon_bounds, grid):
 
     The domain is defined by the grid ij bounds of a bounding box formed by the
     latitude/longitude bounds (latlon_bounds) relative to the selected conus grid
-    and a mask for that bounding box indicating which cells are valid CONUS
+    and a mask for that bounding box indicating which cells are active CONUS
     points.
 
     Args:
@@ -199,14 +199,14 @@ def define_latlon_domain(latlon_bounds, grid):
         southwest corner of the domain.
 
         Mask is a 2D numpy.ndarray that indicates which cells inside the bounding
-        box are valid CONUS points (for example, if ocean is part of the bounding
+        box are active CONUS points (for example, if ocean is part of the bounding
         box the corresponding cells will not be part of the mask).
 
     Example:
 
     .. code-block:: python
 
-        grid_bounds = define_latlon_domain(
+        grid_bounds, mask = define_latlon_domain(
             latlon_bounds=[[37.91, -91.43], [37.34, -90.63]], grid="conus2"
         )
     """
@@ -222,7 +222,20 @@ def define_latlon_domain(latlon_bounds, grid):
     ]
     imin, imax = [min(point0[0], point1[0]), max(point0[0], point1[0]) + 1]
     jmin, jmax = [min(point0[1], point1[1]), max(point0[1], point1[1]) + 1]
-    return (imin, jmin, imax, jmax), np.ones((jmax - jmin, imax - imin), dtype=int)
+    grid_bounds = (imin, jmin, imax, jmax)
+    try:
+        mask = hf_hydrodata.get_gridded_data(
+            dataset="huc_mapping",
+            grid=grid,
+            level="2",
+            grid_bounds=grid_bounds,
+        )
+    except Exception as exc:
+        raise ValueError(
+            f"Failed to get huc mapping data for the grid {grid}."
+        ) from exc
+    mask[mask > 0] = 1
+    return grid_bounds, mask.astype(int)
 
 
 def latlon_to_ij(latlon_bounds, grid):
