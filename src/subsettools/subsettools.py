@@ -511,7 +511,7 @@ def subset_static(
                 dataset=dataset,
                 variable=var,
                 file_type="pfb",
-                period="static",
+                temporal_resolution="static",
                 grid_bounds=ij_bounds,
             )
         except ValueError as err:
@@ -579,7 +579,7 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
             dataset=dataset,
             variable="pressure_head",
             file_type="pfb",
-            period="hourly",
+            temporal_resolution="hourly",
             grid_bounds=ij_bounds,
             start_time=new_date,
         )
@@ -653,7 +653,7 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
                     dataset=dataset,
                     file_type=file_type,
                     variable="clm_run",
-                    period="static",
+                    temporal_resolution="static",
                 )
             except ValueError as err:
                 print(f"Failed to get {file_type} file for dataset '{dataset}':", err)
@@ -666,7 +666,7 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
                     dataset=dataset,
                     file_type=file_type,
                     variable="clm_run",
-                    period="static",
+                    temporal_resolution="static",
                     grid_bounds=ij_bounds,
                 )
             except ValueError as err:
@@ -684,7 +684,7 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
                     dataset=dataset,
                     file_type=file_type,
                     variable="clm_run",
-                    period="static",
+                    temporal_resolution="static",
                 )
             except ValueError as err:
                 print(f"Failed to get {file_type} file for dataset '{dataset}':", err)
@@ -850,7 +850,7 @@ def _subset_forcing_variable(
                     variable=variable,
                     grid=grid,
                     file_type="pfb",
-                    period="hourly",
+                    temporal_resolution="hourly",
                     start_time=start_time,
                     end_time=end_time,
                     grid_bounds=ij_bounds,
@@ -864,7 +864,7 @@ def _subset_forcing_variable(
                     variable=variable,
                     grid=grid,
                     file_type="pfb",
-                    period="hourly",
+                    temporal_resolution="hourly",
                     start_time=start_time,
                     end_time=next_day_midnight,
                     grid_bounds=ij_bounds,
@@ -874,7 +874,7 @@ def _subset_forcing_variable(
                     variable=variable,
                     grid=grid,
                     file_type="pfb",
-                    period="hourly",
+                    temporal_resolution="hourly",
                     start_time=next_day_midnight,
                     end_time=end_time,
                     grid_bounds=ij_bounds,
@@ -890,7 +890,7 @@ def _subset_forcing_variable(
             variable=variable,
             grid=grid,
             file_type="pfb",
-            period="hourly",
+            temporal_resolution="hourly",
             start_time=start_time,
             end_time=end_time,
         )
