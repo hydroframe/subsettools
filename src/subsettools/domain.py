@@ -12,9 +12,9 @@ The mask is a 0/1 NumPy array which has the same shape as the bounding box and
 indicates which cells are part of the subset domain.
 
 SubsetTools provides functions to define domains in different ways.
-- A domain that is a collections of HUCs.
-- A box that is defined by two latitude-longitude points.
-- A domain that is the upstream area of a collection of outlets.
+    - A domain that is a collections of HUCs.
+    - A box that is defined by two latitude-longitude points.
+    - A domain that is the upstream area of a collection of outlets.
 """
 
 
