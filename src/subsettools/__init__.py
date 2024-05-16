@@ -12,11 +12,13 @@ from subsettools.domain import (
     latlon_to_ij,
     create_mask_solid,
 )
-from subsettools.subsettools import (
+from subsettools.subsetting import (
     subset_static,
     subset_press_init,
-    config_clm,
     subset_forcing,
+)
+from subsettools.subsettools import (
+    config_clm,
     edit_runscript_for_subset,
     copy_files,
     change_filename_values,
