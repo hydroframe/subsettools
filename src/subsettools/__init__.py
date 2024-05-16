@@ -3,13 +3,16 @@ from importlib.metadata import version
 
 __version__ = version("subsettools")
 
-from subsettools.subsettools import (
+from subsettools.domain import (
     define_huc_domain,
-    huc_to_ij,
     define_latlon_domain,
-    latlon_to_ij,
+    define_upstream_domain,
     write_mask_solid,
+    huc_to_ij,
+    latlon_to_ij,
     create_mask_solid,
+)
+from subsettools.subsettools import (
     subset_static,
     subset_press_init,
     config_clm,
@@ -21,7 +24,4 @@ from subsettools.subsettools import (
 )
 from subsettools.datasets import (
     get_template_runscript,
-)
-from subsettools.upstream_area import (
-    define_upstream_domain,
 )
