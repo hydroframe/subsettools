@@ -17,7 +17,7 @@ from subsettools.subsetting import (
     subset_press_init,
     subset_forcing,
 )
-from subsettools.subsettools import (
+from subsettools.clm import (
     config_clm,
 )
 from subsettools.parflow_run import (
