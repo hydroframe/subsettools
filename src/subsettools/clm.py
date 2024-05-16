@@ -4,15 +4,17 @@ import os
 from datetime import timedelta
 import numpy as np
 import hf_hydrodata
-from .subset_utils import (
+from ._common import (
     get_utc_time,
-    _reshape_ndarray_to_vegm_format,
 )
 from ._error_checking import (
     _validate_dir,
     _validate_grid_bounds,
     _validate_date,
 )
+
+
+_VEGM_COLUMNS = 25
 
 
 def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
@@ -118,6 +120,23 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
                 file_paths[file_type] = file_path
                 print("edited drv_clmin")
     return file_paths
+
+
+def _reshape_ndarray_to_vegm_format(data):
+    """Reshape ndarray returned by datacatalog to vegm format.
+
+    Args:
+        data (ndarray): raw subset vegm data (2d array)
+
+    Returns:
+        Ndarray reshaped to vegm format.
+    """
+    _, nj, ni = data.shape
+    indices = np.indices((nj, ni)) + 1
+    indices = indices[::-1, :, :]
+    data = np.vstack([indices, data])  # stack x,y indices on vegm
+    # transpose and reshape back into expected 2D vegm file format for the subset
+    return data.transpose(1, 2, 0).reshape(-1, _VEGM_COLUMNS)
 
 
 def _write_land_cover(land_cover_data, write_dir):
