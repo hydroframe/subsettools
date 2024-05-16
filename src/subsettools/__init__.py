@@ -19,11 +19,11 @@ from subsettools.subsetting import (
 )
 from subsettools.subsettools import (
     config_clm,
+)
+from subsettools.parflow_run import (
+    get_template_runscript,
     edit_runscript_for_subset,
     copy_files,
     change_filename_values,
     dist_run,
-)
-from subsettools.datasets import (
-    get_template_runscript,
 )
