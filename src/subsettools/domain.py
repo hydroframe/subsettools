@@ -17,7 +17,6 @@ SubsetTools provides functions to define domains in different ways.
     - A domain that is the upstream area of a collection of outlets.
 """
 
-
 import os
 import subprocess
 import warnings
@@ -31,15 +30,15 @@ from ._error_checking import (
     _validate_dir,
     _validate_mask,
 )
-
-
-CONUS_DX = 1000
-CONUS_DY = 1000
-CONUS1_DZ = 100
-CONUS1_Z_TOP = 500
-CONUS2_DZ = 200
-CONUS2_Z_TOP = 2000
-CONUS_Z_BOTTOM = 0
+from ._constants import (
+    CONUS_DX,
+    CONUS_DY,
+    CONUS1_DZ,
+    CONUS1_Z_TOP,
+    CONUS2_DZ,
+    CONUS2_Z_TOP,
+    CONUS_Z_BOTTOM,
+)
 
 
 def define_huc_domain(hucs, grid):
