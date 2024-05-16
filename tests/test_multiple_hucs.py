@@ -17,7 +17,7 @@ def test_multiple_hucs(setup_dir_structure, remove_output_files):
         target_runscript,
     ) = setup_dir_structure(run_name)
 
-    huc_list = [
+    hucs = [
         "1302020701",
         "1302020702",
         "1408010604",
@@ -35,8 +35,8 @@ def test_multiple_hucs(setup_dir_structure, remove_output_files):
     Q = 1
     reference_run = st.get_template_runscript(grid, "transient", "solid", static_write_dir)
 
-    ij_bounds = st.huc_to_ij(huc_list=huc_list, grid=grid)
-    st.create_mask_solid(huc_list=huc_list, grid=grid, write_dir=static_write_dir)
+    ij_bounds, mask = st.define_huc_domain(hucs=hucs, grid=grid)
+    st.write_mask_solid(mask=mask, grid=grid, write_dir=static_write_dir)
     st.subset_static(ij_bounds, dataset=var_ds, write_dir=static_write_dir)
     init_press_filepath = st.subset_press_init(
         ij_bounds,
@@ -70,8 +70,8 @@ def test_multiple_hucs(setup_dir_structure, remove_output_files):
         init_press=os.path.basename(init_press_filepath),
     )
     st.dist_run(
-        P=P,
-        Q=Q,
+        topo_p=P,
+        topo_q=Q,
         runscript_path=target_runscript,
         working_dir=pf_out_dir,
         dist_clim_forcing=True,
