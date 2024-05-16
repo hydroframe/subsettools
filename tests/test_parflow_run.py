@@ -1,10 +1,7 @@
 import os
 import pytest
-import filecmp
-import subsettools as st
-from parflow.tools.io import read_pfb
-import numpy as np
 from parflow import Run
+import subsettools as st
 
 
 def test_get_ref_yaml_path(tmp_path):
@@ -15,7 +12,7 @@ def test_get_ref_yaml_path(tmp_path):
     run = Run.from_definition(runscript)
     assert run.ComputationalGrid.NX == 3342
     assert run.GeomInput.domaininput.InputType == "Box"
-    
+
 
 def test_edit_runscript_for_subset_1(tmp_path):
     """Check the edited fiedls of the runscript file."""
@@ -65,7 +62,7 @@ def test_edit_runscript_for_subset_3(tmp_path):
     test_dir.mkdir()
     runscript = st.get_template_runscript("conus1", "transient", "box", test_dir)
     forcing_dir = os.path.join(tmp_path, "forcing")
-    with pytest.raises(Exception) as e_info:
+    with pytest.raises(Exception):
         runscript = st.edit_runscript_for_subset(
             (10, 10, 25, 25), runscript, runname="my_new_run", forcing_dir=forcing_dir
         )

@@ -16,6 +16,7 @@ from ._constants import (
     CONUS_DY,
 )
 
+
 def get_template_runscript(grid, mode, input_file_type, write_dir):
     """Get a ParFlow template runscript.
 
@@ -59,7 +60,7 @@ def get_template_runscript(grid, mode, input_file_type, write_dir):
     if input_file_type not in ["box", "solid"]:
         raise ValueError("Supported input file types are 'box' and 'solid'")
 
-    filename = '_'.join([grid, mode, input_file_type]) + ".yaml"
+    filename = "_".join([grid, mode, input_file_type]) + ".yaml"
     with resources.as_file(
         resources.files("subsettools.template_runscripts").joinpath(filename)
     ) as f:
