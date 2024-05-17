@@ -2,6 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## 1.0.5 (17/05/2024)
+- huc_to_ij, latlon_to_ij, upstream_area_to_ij and create_mask_solid have been deprecated.
+  They have been replaced by define_huc_domain, define_latlon_domain, define_upstream_domain
+  and write_mask_solid.
+
 ## 1.0.4 (03/05/2024)
 - Added upstream_area_to_ij function to subset based on the upstream area of a point or collection of points in the grid
 
