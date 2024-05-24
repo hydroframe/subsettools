@@ -17,6 +17,7 @@ import hf_hydrodata
 from parflow.tools.io import write_pfb
 from ._common import (
     get_utc_time,
+    get_hf_gridded_data,
 )
 from ._error_checking import (
     _validate_grid,
@@ -52,14 +53,15 @@ def subset_static(
         - Subsurface units indicator file (pf_indicator)
         - Mannings roughness coefficients (mannings)
         - Depth to bedrock (pf_flowbarrier)
-        - Long term average preciptation minus evaporation (i.e. recharge) (pme)
+        - Long term average precipitation minus evaporation (i.e. recharge) (pme)
         - Steady state pressure head used to initialize transient simulations
           (ss_pressure_head)
 
     Note that some datasets might not contain all 7 static input variables. In
-    that case, the subset_static function is going to get and save the data for
-    the variables supported by the dataset and print out a message for those
-    that are not.
+    that case, the subset_static function is going to raise a ValueError for any
+    variables that do not exist in the dataset. The default variable list 
+    contains the necessary static variables for the CONUS2 grid. For CONUS1-based
+    datasets, "mannings" and "pf_flowbarrier" should be removed from the list.
 
     Args:
         ij_bounds (tuple[int]): bounding box for subset. This should be given as
@@ -96,22 +98,19 @@ def subset_static(
     if not all(isinstance(var, str) for var in var_list):
         raise TypeError("All variable names should be strings.")
     file_paths = {}
+    options = {
+        "dataset": dataset,
+        "file_type": "pfb",
+        "temporal_resolution": "static",
+        "grid_bounds": ij_bounds,
+    }
     for var in var_list:
-        try:
-            subset_data = hf_hydrodata.get_gridded_data(
-                dataset=dataset,
-                variable=var,
-                file_type="pfb",
-                temporal_resolution="static",
-                grid_bounds=ij_bounds,
-            )
-        except ValueError as err:
-            print(f"Variable '{var}' not found in dataset '{dataset}':", err)
-        else:
-            file_path = os.path.join(write_dir, f"{var}.pfb")
-            write_pfb(file_path, subset_data, dist=False)
-            file_paths[var] = file_path
-            print(f"Wrote {var}.pfb in specified directory.")
+        options["variable"] = var
+        subset_data = get_hf_gridded_data(options)
+        file_path = os.path.join(write_dir, f"{var}.pfb")
+        write_pfb(file_path, subset_data, dist=False)
+        file_paths[var] = file_path
+        print(f"Wrote {var}.pfb in specified directory.")
 
     return file_paths
 

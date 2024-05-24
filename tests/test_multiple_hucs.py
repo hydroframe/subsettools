@@ -33,11 +33,24 @@ def test_multiple_hucs(setup_dir_structure, remove_output_files):
     forcing_ds = "NLDAS2"
     P = 1
     Q = 1
-    reference_run = st.get_template_runscript(grid, "transient", "solid", static_write_dir)
+    reference_run = st.get_template_runscript(
+        grid, "transient", "solid", static_write_dir
+    )
 
     ij_bounds, mask = st.define_huc_domain(hucs=hucs, grid=grid)
     st.write_mask_solid(mask=mask, grid=grid, write_dir=static_write_dir)
-    st.subset_static(ij_bounds, dataset=var_ds, write_dir=static_write_dir)
+    st.subset_static(
+        ij_bounds,
+        dataset=var_ds,
+        write_dir=static_write_dir,
+        var_list=(
+            "slope_x",
+            "slope_y",
+            "pf_indicator",
+            "pme",
+            "ss_pressure_head",
+        ),
+    )
     init_press_filepath = st.subset_press_init(
         ij_bounds,
         dataset=run_ds,

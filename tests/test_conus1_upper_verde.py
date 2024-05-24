@@ -27,15 +27,28 @@ def setup_run(setup_dir_structure):
     run_ds = "conus1_baseline_mod"
     var_ds = "conus1_domain"
     forcing_ds = "NLDAS2"
-    reference_run = st.get_template_runscript(grid, "transient", "solid", static_write_dir)
+    reference_run = st.get_template_runscript(
+        grid, "transient", "solid", static_write_dir
+    )
 
     ij_bounds, mask = st.define_huc_domain(hucs=hucs, grid=grid)
     assert ij_bounds == (375, 239, 487, 329)
-    
+
     st.write_mask_solid(mask=mask, grid=grid, write_dir=static_write_dir)
-    
-    st.subset_static(ij_bounds, dataset=var_ds, write_dir=static_write_dir)
-    
+
+    st.subset_static(
+        ij_bounds,
+        dataset=var_ds,
+        write_dir=static_write_dir,
+        var_list=(
+            "slope_x",
+            "slope_y",
+            "pf_indicator",
+            "pme",
+            "ss_pressure_head",
+        ),
+    )
+
     init_press_filepath = st.subset_press_init(
         ij_bounds,
         dataset=run_ds,
@@ -55,7 +68,7 @@ def setup_run(setup_dir_structure):
     st.config_clm(
         ij_bounds, start=start, end=end, dataset=run_ds, write_dir=static_write_dir
     )
-    
+
     st.subset_forcing(
         ij_bounds,
         grid=grid,
