@@ -2,6 +2,17 @@
 
 from datetime import datetime
 import pytz
+import hf_hydrodata as hf
+
+
+def get_hf_gridded_data(options):
+    try:
+        data = hf.get_gridded_data(options)
+    except ValueError as err:
+        raise ValueError(f"No HydroData entry found for the requested filters: {options}") from err
+    except Exception as exc:
+        raise RuntimeError(f"Failed to get data for the requested filters: {options}") from exc
+    return data
 
 
 def get_utc_time(date_string, time_zone):
