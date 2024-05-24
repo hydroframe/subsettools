@@ -300,13 +300,13 @@ def subset_forcing(
     except KeyboardInterrupt:
         print("Interrupted. Stopping threads...")
         exit_event.set()
-
         for thread in threads:
             thread.join()
-
         print("All threads stopped.")
-    finally:
-        return outputs
+
+    if exit_event.is_set():
+        raise ValueError("One or more threads were interrupted.")
+    return outputs
 
 
 def _subset_forcing_variable(
@@ -349,7 +349,9 @@ def _subset_forcing_variable(
                 options["end_time"] = end_time
                 subset_data = get_hf_gridded_data(options)
             else:
-                next_day_midnight = datetime(end_time.year, end_time.month, end_time.day)
+                next_day_midnight = datetime(
+                    end_time.year, end_time.month, end_time.day
+                )
                 options["start_time"] = start_time
                 options["end_time"] = next_day_midnight
                 data_day1 = get_hf_gridded_data(options)
