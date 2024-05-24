@@ -73,7 +73,7 @@ def subset_static(
         write_dir (str): directory where the subset files will be written
         var_list (tuple[str]): tuple of variables to subset from the dataset.
             By default all 7 variables above will be subset. The user can specify
-            as subset of these variables or list additional variables that are
+            a subset of these variables or list additional variables that are
             available in their dataset of choice.
 
     Returns:
@@ -84,11 +84,22 @@ def subset_static(
 
     .. code-block:: python
 
+        # Subsetting static variables for a CONUS1 workflow
+        # We need to remove "pf_flowbarrier" and "mannings" from the list
         filepaths = subset_static(
             ij_bounds=(375, 239, 487, 329),
             dataset="conus1_domain",
             write_dir="/path/to/your/chosen/directory",
-            var_list=("slope_x", "slope_y")
+            var_list=("slope_x", "slope_y", "pf_indicator", "pme",
+                      "ss_pressure_head")
+        )
+
+        # Subsetting static variables for a CONUS2 workflow
+        # Note that we can use the default var_list here
+        filepaths = subset_static(
+            ij_bounds=(3701, 1544, 3792, 1633),
+            dataset="conus2_domain",
+            write_dir="/path/to/your/chosen/directory",
         )
     """
     _validate_grid_bounds(ij_bounds)
