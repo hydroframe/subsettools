@@ -268,10 +268,12 @@ def subset_forcing(
         raise TypeError("time_zone must be a string.")
     if not all(isinstance(var, str) for var in forcing_vars):
         raise TypeError("All variable names should be strings.")
+    forcing_vars = tuple(set(forcing_vars))
     outputs = {}
     start_date = get_utc_time(start, time_zone)
     end_date = get_utc_time(end, time_zone)
     exit_event = threading.Event()
+    lock = threading.Lock()
     threads = [
         threading.Thread(
             target=_subset_forcing_variable,
@@ -286,6 +288,7 @@ def subset_forcing(
                 time_zone,
                 outputs,
                 exit_event,
+                lock,
             ),
         )
         for variable in forcing_vars
@@ -320,13 +323,14 @@ def _subset_forcing_variable(
     time_zone,
     outputs,
     exit_event,
+    lock,
 ):
     """Helper for subset_forcing that subsets data for one forcing variable."""
 
     day = 1
     date = start_date
     delta = timedelta(hours=_HOURS_PER_FORCING_FILE)
-    outputs[variable] = []
+    write_paths = []
     print(f"Reading {variable} pfb sequence")
     options = {
         "dataset": dataset,
@@ -366,11 +370,13 @@ def _subset_forcing_variable(
         write_path = os.path.join(
             write_dir, _adjust_filename_hours(os.path.basename(paths[0]), day)
         )
-        outputs[variable].append(write_path)
+        write_paths.append(write_path)
         write_pfb(write_path, subset_data[:, :, :], dist=False)
         date = date + delta
         day = day + 1
     if not exit_event.is_set():
+        with lock:
+            outputs[variable] = write_paths
         print(f"Finished writing {variable} to folder")
 
 
