@@ -175,19 +175,15 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
     print(f"UTC Date: {new_date}")
     date_string = new_date.strftime("%Y.%m.%d:%H.%M.%S_UTC0")
 
-    try:
-        subset_data = hf_hydrodata.get_gridded_data(
-            dataset=dataset,
-            variable="pressure_head",
-            file_type="pfb",
-            temporal_resolution="hourly",
-            grid_bounds=ij_bounds,
-            start_time=new_date,
-        )
-    except ValueError as err:
-        print(f"No pressure file found in dataset '{dataset}':", err)
-        return None
-
+    options = {
+        "dataset": dataset,
+        "variable": "pressure_head",
+        "file_type": "pfb",
+        "temporal_resolution": "hourly",
+        "grid_bounds": ij_bounds,
+        "start_time": new_date,
+    }
+    subset_data = get_hf_gridded_data(options)
     file_path = os.path.join(write_dir, f"{dataset}_{date_string}_press.pfb")
     write_pfb(file_path, subset_data[0, :, :, :], dist=False)
     print(f"Wrote {file_path} in specified directory.")
