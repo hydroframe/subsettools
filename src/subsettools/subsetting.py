@@ -12,6 +12,7 @@ import os
 from datetime import datetime, timedelta
 import threading
 import re
+import warnings
 import numpy as np
 import hf_hydrodata
 from parflow.tools.io import write_pfb
@@ -102,6 +103,16 @@ def subset_static(
             write_dir="/path/to/your/chosen/directory",
         )
     """
+    warnings.warn(
+        "Note that for subsettools versions >= 2.0.0, this function will raise "
+        "a ValueError if a variable in var_list is not supported in the "
+        "dataset. (In older versions, it just printed an error message and "
+        "continued executing normally). You can check in the HydroData "
+        "documentation which variables are contained in each dataset "
+        "(https://hf-hydrodata.readthedocs.io/en/latest/available_data.html)."
+        DeprecationWarning,
+        stacklevel=2,
+    )
     _validate_grid_bounds(ij_bounds)
     if not isinstance(dataset, str):
         raise TypeError("dataset name must be a string.")
