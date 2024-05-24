@@ -59,7 +59,7 @@ def subset_static(
 
     Note that some datasets might not contain all 7 static input variables. In
     that case, the subset_static function is going to raise a ValueError for any
-    variables that do not exist in the dataset. The default variable list 
+    variables that do not exist in the dataset. The default variable list
     contains the necessary static variables for the CONUS2 grid. For CONUS1-based
     datasets, "mannings" and "pf_flowbarrier" should be removed from the list.
 
@@ -336,29 +336,30 @@ def _subset_forcing_variable(
         "temporal_resolution": "hourly",
         "grid_bounds": ij_bounds,
     }
-    
+
     while date < end_date and not exit_event.is_set():
         start_time = date
         end_time = date + delta
         # we need to distinguish between UTC and non-UTC as the datacatalog
         # returns the wrong answer for requests that start reading from the
         # middle of a file and span multiple files
-        if time_zone == "UTC":
-            options["start_time"] = start_time
-            options["end_time"] = end_time
-            subset_data = get_hf_gridded_data(options)
-        else:
-            next_day_midnight = datetime(
-                end_time.year, end_time.month, end_time.day
-            )
-            options["start_time"] = start_time
-            options["end_time"] = next_day_midnight
-            data_day1 = get_hf_gridded_data(options)
-            options["start_time"] = next_day_midnight
-            options["end_time"] = end_time
-            data_day2 = get_hf_gridded_data(options)
-            subset_data = np.concatenate((data_day1, data_day2), axis=0)
-            
+        try:
+            if time_zone == "UTC":
+                options["start_time"] = start_time
+                options["end_time"] = end_time
+                subset_data = get_hf_gridded_data(options)
+            else:
+                next_day_midnight = datetime(end_time.year, end_time.month, end_time.day)
+                options["start_time"] = start_time
+                options["end_time"] = next_day_midnight
+                data_day1 = get_hf_gridded_data(options)
+                options["start_time"] = next_day_midnight
+                options["end_time"] = end_time
+                data_day2 = get_hf_gridded_data(options)
+                subset_data = np.concatenate((data_day1, data_day2), axis=0)
+        except Exception:
+            exit_event.set()
+            raise
         paths = hf_hydrodata.get_paths(options)
         write_path = os.path.join(
             write_dir, _adjust_filename_hours(os.path.basename(paths[0]), day)
