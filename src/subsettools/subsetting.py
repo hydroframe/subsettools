@@ -109,7 +109,7 @@ def subset_static(
         "dataset. (In older versions, it just printed an error message and "
         "continued executing normally). You can check in the HydroData "
         "documentation which variables are contained in each dataset "
-        "(https://hf-hydrodata.readthedocs.io/en/latest/available_data.html)."
+        "(https://hf-hydrodata.readthedocs.io/en/latest/available_data.html).",
         DeprecationWarning,
         stacklevel=2,
     )
