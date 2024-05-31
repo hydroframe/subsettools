@@ -6,6 +6,7 @@ import numpy as np
 import hf_hydrodata
 from ._common import (
     get_utc_time,
+    get_hf_gridded_data,
 )
 from ._error_checking import (
     _validate_dir,
@@ -85,21 +86,18 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
                 file_paths[file_type] = file_path
                 print("copied vegp")
         elif file_type == "pfb":
-            try:
-                subset_data = hf_hydrodata.get_gridded_data(
-                    dataset=dataset,
-                    file_type=file_type,
-                    variable="clm_run",
-                    temporal_resolution="static",
-                    grid_bounds=ij_bounds,
-                )
-            except ValueError as err:
-                print(f"Failed to get vegm file for dataset '{dataset}':", err)
-            else:
-                land_cover_data = _reshape_ndarray_to_vegm_format(subset_data)
-                file_path = _write_land_cover(land_cover_data, write_dir)
-                file_paths[file_type] = file_path
-                print("subset vegm")
+            options = {
+                "dataset": dataset,
+                "file_type": file_type,
+                "variable": "clm_run",
+                "temporal_resolution": "static",
+                "grid_bounds": ij_bounds,
+            }
+            subset_data = get_hf_gridded_data(options)
+            land_cover_data = _reshape_ndarray_to_vegm_format(subset_data)
+            file_path = _write_land_cover(land_cover_data, write_dir)
+            file_paths[file_type] = file_path
+            print("subset vegm")
         elif file_type == "drv_clm":
             file_path = os.path.join(write_dir, "drv_clmin.dat")
             try:
@@ -231,15 +229,13 @@ def _edit_drvclmin(
 
     for i, line in enumerate(lines):
         if "vegtf" in line:
-            lines[i] = (
-                f"{'vegtf':<15}{vegm_name:<37} Vegetation Tile Specification File\n"
-            )
+            lines[
+                i
+            ] = f"{'vegtf':<15}{vegm_name:<37} Vegetation Tile Specification File\n"
         elif "vegpf" in line:
             lines[i] = f"{'vegpf':<15}{vegp_name:<37} Vegetation Type Parameter\n"
         elif "startcode" in line:
-            lines[i] = (
-                f"{'startcode':<15}{startcode:<37} 1=restart file, 2=defined\n"
-            )
+            lines[i] = f"{'startcode':<15}{startcode:<37} 1=restart file, 2=defined\n"
         elif "clm_ic" in line:
             lines[i] = f"{'clm_ic':<15}{startcode:<37} 1=restart file, 2=defined\n"
 

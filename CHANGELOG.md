@@ -2,6 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## 2.0.0 (30/05/2024)
+- subset_static will raise a ValueError if a variable is requested that does not
+  exist in the dataset instead of just printing an error message.
+- subset_forcing has been refactored to improve cooperation between threads.
+
 ## 1.0.5 (17/05/2024)
 - huc_to_ij, latlon_to_ij, upstream_area_to_ij and create_mask_solid have been deprecated.
   They have been replaced by define_huc_domain, define_latlon_domain, define_upstream_domain

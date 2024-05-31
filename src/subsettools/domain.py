@@ -30,6 +30,9 @@ from ._error_checking import (
     _validate_dir,
     _validate_mask,
 )
+from ._common import (
+    get_hf_gridded_data,
+)
 from ._constants import (
     CONUS_DX,
     CONUS_DY,
@@ -87,17 +90,13 @@ def define_huc_domain(hucs, grid):
 
     huc_len = len(hucs[0])
     hucs = [int(huc) for huc in hucs]
-    try:
-        conus_hucs = hf_hydrodata.get_gridded_data(
-            dataset="huc_mapping",
-            grid=grid,
-            file_type="tiff",
-            level=str(huc_len),
-        )
-    except Exception as exc:
-        raise ValueError(
-            f"Failed to get huc mapping data for the grid {grid}."
-        ) from exc
+    options = {
+        "dataset": "huc_mapping",
+        "grid": grid,
+        "file_type": "tiff",
+        "level": str(huc_len),
+    }
+    conus_hucs = get_hf_gridded_data(options)
     huc_mask = np.isin(conus_hucs, hucs).squeeze()
     indices_j, indices_i = np.where(huc_mask > 0)
     if indices_i.size == 0 or indices_j.size == 0:
@@ -225,17 +224,13 @@ def define_latlon_domain(latlon_bounds, grid):
     imin, imax = [min(point0[0], point1[0]), max(point0[0], point1[0]) + 1]
     jmin, jmax = [min(point0[1], point1[1]), max(point0[1], point1[1]) + 1]
     grid_bounds = (imin, jmin, imax, jmax)
-    try:
-        mask = hf_hydrodata.get_gridded_data(
-            dataset="huc_mapping",
-            grid=grid,
-            level="2",
-            grid_bounds=grid_bounds,
-        )
-    except Exception as exc:
-        raise ValueError(
-            f"Failed to get huc mapping data for the grid {grid}."
-        ) from exc
+    options = {
+        "dataset": "huc_mapping",
+        "grid": grid,
+        "level": "2",
+        "grid_bounds": grid_bounds,
+    }
+    mask = get_hf_gridded_data(options)
     mask[mask > 0] = 1
     return grid_bounds, mask.astype(int)
 
@@ -497,14 +492,12 @@ def define_upstream_domain(outlets, grid):
     _validate_latlon_list(outlets)
     _validate_grid(grid)
     grid = grid.lower()
-    try:
-        flow_direction = hf_hydrodata.get_gridded_data(
-            variable="flow_direction", grid=grid, file_type="tiff"
-        )
-    except Exception as exc:
-        raise ValueError(
-            f"Failed to get flow direction data for the grid {grid}."
-        ) from exc
+    options = {
+        "variable": "flow_direction",
+        "grid": grid,
+        "file_type": "tiff",
+    }
+    flow_direction = get_hf_gridded_data(options)
     nj, ni = flow_direction.shape
     marked = np.zeros((nj, ni), dtype=int)
     flow_values = [1, 2, 3, 4]  # D4 neighbors
