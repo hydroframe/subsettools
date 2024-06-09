@@ -2,9 +2,9 @@ import os
 from pathlib import Path
 import pytest
 from parflow.tools.fs import mkdir, rm
-import hf_hydrodata as hf
+# import hf_hydrodata as hf
 
-hf.register_api_pin("email", "hf_pin")
+# hf.register_api_pin("email", "hf_pin")
 
 @pytest.fixture(scope="session")
 def set_parflow_dir():
