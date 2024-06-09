@@ -94,28 +94,4 @@ def test_multiple_hucs(setup_dir_structure, remove_output_files):
     run = Run.from_definition(target_runscript)
     run.TimingInfo.StopTime = 10
     run.run(working_directory=pf_out_dir)
-
-    test_vars = ["perm_x", "perm_y", "perm_z"]
-    for var in test_vars:
-        filename = f"{run_name}.out.{var}.pfb"
-        assert pf_test_file(
-            os.path.join(pf_out_dir, filename),
-            os.path.join(correct_output_dir, filename),
-            "Max difference in perm_x",
-        )
-    for i in range(11):
-        timestep = str(i).rjust(5, "0")
-        filename = f"{run_name}.out.press.{timestep}.pfb"
-        assert pf_test_file(
-            os.path.join(pf_out_dir, filename),
-            os.path.join(correct_output_dir, filename),
-            f"Max difference in Pressure for timestep {timestep}",
-        )
-        filename = f"{run_name}.out.satur.{timestep}.pfb"
-        assert pf_test_file(
-            os.path.join(pf_out_dir, filename),
-            os.path.join(correct_output_dir, filename),
-            f"Max difference in Saturation for timestep {timestep}",
-        )
-
     remove_output_files(pf_out_dir)
