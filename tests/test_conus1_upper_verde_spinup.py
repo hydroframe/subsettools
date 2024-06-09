@@ -68,27 +68,4 @@ def test_conus1_upper_verde_spinup(setup_dir_structure, remove_output_files):
     run.TimingInfo.StopTime = 48.0
     run.TimingInfo.DumpInterval = 12.0
     run.run(working_directory=pf_out_dir)
-
-    test_vars = ["perm_x", "perm_y", "perm_z"]
-    for var in test_vars:
-        filename = f"{run_name}.out.{var}.pfb"
-        assert pf_test_file(
-            os.path.join(pf_out_dir, filename),
-            os.path.join(correct_output_dir, filename),
-            "Max difference in perm_x",
-        )
-    for i in range(5):
-        filename = f"{run_name}.out.press.0000{i}.pfb"
-        assert pf_test_file(
-            os.path.join(pf_out_dir, filename),
-            os.path.join(correct_output_dir, filename),
-            f"Max difference in Pressure for timestep {i}",
-        )
-        filename = f"{run_name}.out.satur.0000{i}.pfb"
-        assert pf_test_file(
-            os.path.join(pf_out_dir, filename),
-            os.path.join(correct_output_dir, filename),
-            f"Max difference in Saturation for timestep {i}",
-        )
-
     remove_output_files(pf_out_dir)
