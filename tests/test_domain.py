@@ -3,6 +3,7 @@ import filecmp
 import pytest
 import numpy as np
 import subsettools as st
+from parflow.tools.io import read_pfb
 
 
 @pytest.mark.parametrize(
@@ -166,3 +167,27 @@ def test_write_mask_solid(set_parflow_dir, tmp_path):
         test_dir, correct_output_dir, ["mask.pfb", "solidfile.pfsol"], shallow=False
     )
     assert len(match) == 2 and len(mismatch) == 0 and len(errors) == 0
+
+@pytest.mark.parametrize(
+    "mask", [
+        pytest.param(np.array([[1]]),id="mask of just 1"),
+        pytest.param(np.array([[0,1],[0,1]]), id="simple coastal mask"),
+    ],
+)
+def test_write_mask_solid_simple(mask, set_parflow_dir,tmp_path):
+    test_dir = tmp_path / "test"
+    test_dir.mkdir()
+    st.write_mask_solid(mask=mask, grid="conus2", write_dir=test_dir)
+    data = read_pfb(f'{test_dir}/mask.pfb')
+    assert (data==mask).all(), "Error generating mask.pfb file"
+
+def test_write_mask_solid_zero(set_parflow_dir, tmp_path):
+    mask = np.array([[0]])
+    result = np.array(['1\n', '0\n', '1\n', '0\n', '0\n'])
+    test_dir = tmp_path / "test"
+    test_dir.mkdir()
+    st.write_mask_solid(mask=mask, grid="conus2", write_dir=test_dir)
+    f = open(f'{test_dir}/solidfile.pfsol', "r")
+    data = np.array(f.readlines())
+    assert (data == result).all(), "Error generating solidfile.pfsol"
+    mask = np.array([[0]])
