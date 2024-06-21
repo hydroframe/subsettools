@@ -23,6 +23,26 @@ wanted" is open to whoever wants to implement it.
 Look through the GitHub issues for features. Anything tagged with "enhancement"
 and "help wanted" is open to whoever wants to implement it.
 
+### Tests
+
+We use [pytest](https://docs.pytest.org/) to run our tests. In general, a file
+called `module.py` in our source code will have a corresponding `test_module.py`
+in the test directory.
+
+You can run the tests from the `subsettools` root directory with
+```bash
+pytest tests/
+```
+
+or just
+
+```bash
+pytest
+```
+
+If you add a new feature, please make sure to include appropriate tests for that
+feature in your pull request.
+
 ### Write Documentation
 
 You can never have enough documentation! Please feel free to contribute to any
