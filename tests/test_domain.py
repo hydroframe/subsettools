@@ -9,13 +9,15 @@ from parflow.tools.io import read_pfb
 @pytest.mark.parametrize(
     "hucs, grid, result",
     [
-        (["15060202"], "conus1", (375, 239, 487, 329)),
-        (["140802"], "conus1", (572, 337, 797, 577)),
-        (
+        pytest.param(["15060202"], "conus1", (375, 239, 487, 329),id="simple conus1 level 8 huc domain"),
+        pytest.param(["140802"], "conus1", (572, 337, 797, 577), id="simple conus1 level 6 huc domain"),
+        pytest.param(
             ["14080201", "14080202", "14080203", "14080204", "14080205"],
             "conus1",
-            (572, 337, 797, 577),
+            (572, 337, 797, 577), id="list of hucs in conus 1"
         ),
+        pytest.param(["02050304"], "conus2", (3744, 1853, 3854, 1952), id="level 8 conus2 huc domain"),
+        pytest.param(["17100306"], "conus2", (73, 2295, 110, 2368), id="level 8 conus2 coastal huc domain")
     ],
 )
 def test_define_huc_domain(hucs, grid, result):
