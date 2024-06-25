@@ -171,7 +171,7 @@ def test_write_mask_solid(set_parflow_dir, tmp_path):
 @pytest.mark.parametrize(
     "mask", [
         pytest.param(np.array([[1]]),id="mask of just 1"),
-        pytest.param(np.array([[0,1],[0,1]]), id="simple coastal mask"),
+        pytest.param(np.array([[0,1],[0,1]]), id="simple 2D mask"),
     ],
 )
 def test_write_mask_solid_simple(mask, set_parflow_dir,tmp_path):
