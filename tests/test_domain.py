@@ -28,11 +28,14 @@ def test_define_huc_domain(hucs, grid, result):
 @pytest.mark.parametrize(
     "hucs, grid",
     [
-        (["01010001"], "conus1"),
+        pytest.param(["01010001"], "conus1", id="Level 8 HUC located outside of conus1 grid"),
         (["01010001"], "conus2"),
-        (["03130003"], "conus1"),
-        (["1710"], "conus1"),
-        (["01010002", "01010001"], "conus1"),
+        pytest.param(["03130003"], "conus1", id="Level 8 HUC located outside of conus1 grid"),
+        pytest.param(["1710"], "conus1", id="Level 4 HUC located outside of conus1 grid"),
+        pytest.param(["01010002", "01010001"], "conus1", id="list of Level 8 HUC located outside of conus1 grid"),
+        pytest.param(["220102"], "conus2", id="HUC number does not exist"),
+        pytest.param(["14080205", "140700"], "conus2", id="HUC IDs of different levels")
+
     ],
 )
 def test_define_huc_domain_errors(hucs, grid):
