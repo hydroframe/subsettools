@@ -29,7 +29,7 @@ def test_define_huc_domain(hucs, grid, result):
     "hucs, grid",
     [
         pytest.param(["01010001"], "conus1", id="Level 8 HUC located outside of conus1 grid"),
-        (["01010001"], "conus2"),
+        pytest.param(["21010005"], "conus2", id="Level 8 HUC located outside of conus2 grid"),
         pytest.param(["03130003"], "conus1", id="Level 8 HUC located outside of conus1 grid"),
         pytest.param(["1710"], "conus1", id="Level 4 HUC located outside of conus1 grid"),
         pytest.param(["01010002", "01010001"], "conus1", id="list of Level 8 HUC located outside of conus1 grid"),
