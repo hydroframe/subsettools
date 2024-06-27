@@ -67,7 +67,7 @@ Hydrologic models are an integral part of understanding and managing water suppl
 
 ParFlow is a scientifically rigorous hydrologic model; however, its application by the broader community has been limited to a degree by its technical complexity which creates a high barrier to entry for new users. Intensive training and hydrologic expertise is required to appropriately build a ParFlow model from scratch.
 
-`SubsetTools` is a Python package that seeks to lower the barrier to entry by allowing a user to subset published and verified ParFlow inputs and model configurations to build their own watershed models. These tools allow a user to set up and run a model in a matter of minutes, rather than weeks or months. `SubsetTools` is designed to interface with the [CONUS1](https://hydroframe.org/parflow-conus1) [@RN257; @RN257; @RN353] and [CONUS2](https://hydroframe.org/parflow-conus2) [@RN352] ParFlow configurations. These domains provide hydrogeological model inputs for the contiguous United States (CONUS). 
+`SubsetTools` is a Python package that seeks to lower the barrier to entry by allowing a user to subset published and verified ParFlow inputs and model configurations to build their own watershed models. These tools allow a user to set up and run a model in a matter of minutes, rather than weeks or months. `SubsetTools` is designed to interface with two domains covering the contiguous United States (CONUS), [CONUS1](https://hydroframe.org/parflow-conus1) [@RN257; @RN257; @RN353] and [CONUS2](https://hydroframe.org/parflow-conus2) [@RN352]. These domains determine which hydrogeologic inputs are used to build the ParFlow model. 
 
 
 # Statement of need
