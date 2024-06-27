@@ -67,7 +67,7 @@ Hydrologic models are an integral part of understanding and managing water suppl
 
 ParFlow is a scientifically rigorous hydrologic model; however, its application by the broader community has been limited to a degree by its technical complexity which creates a high barrier to entry for new users. Intensive training and hydrologic expertise is required to appropriately build a ParFlow model from scratch.
 
-`SubsetTools` is a Python package that seeks to lower the barrier to entry by allowing a user to subset published and verified ParFlow inputs and model configurations to build their own watershed models. These tools allow a user to set up and run a model in a matter of minutes, rather than weeks or months. `SubsetTools` is designed to interface with the [first](https://hydroframe.org/parflow-conus1) [@RN257; @RN257; @RN353]and [second](https://hydroframe.org/parflow-conus2) [@RN352] generation ParFlow configurations which provide model inputs for the contiguous United States (CONUS). 
+`SubsetTools` is a Python package that seeks to lower the barrier to entry by allowing a user to subset published and verified ParFlow inputs and model configurations to build their own watershed models. These tools allow a user to set up and run a model in a matter of minutes, rather than weeks or months. `SubsetTools` is designed to interface with the [CONUS1](https://hydroframe.org/parflow-conus1) [@RN257; @RN257; @RN353] and [CONUS2](https://hydroframe.org/parflow-conus2) [@RN352] ParFlow configurations. These domains provide hydrogeological model inputs for the contiguous United States (CONUS). 
 
 
 # Statement of need
@@ -91,7 +91,7 @@ In summary, the `SubsetTools` package provides functions that simplify the proce
 
 # Functionality 
 
-The source code for `SubsetTools` is available on [GitHub](https://github.com/hydroframe/subsettools). The documentation for the package is hosted on [ReadTheDocs](https://hydroframesubsettools.readthedocs.io/en/latest/) and includes installation instructions, short tutorials, example notebooks, a complete API reference, as well as contributing guidelines. In the section below we will go through an abbreviated outline of how a user can interact with `SubsetTools` to build and run their own ParFlow model. 
+The source code for `SubsetTools` is available on [GitHub](https://github.com/hydroframe/subsettools) and the entire package is covered under the MIT License. The documentation for the package is hosted on [ReadTheDocs](https://hydroframesubsettools.readthedocs.io/en/latest/) and includes installation instructions, short tutorials, example notebooks, a complete API reference, as well as contributing guidelines. In the section below we will go through an abbreviated outline of how a user can interact with `SubsetTools` to build and run their own ParFlow model. 
 
 First, the user should supply information about what geographic area they want to model. This may be given as a hydrologic unit code (HUC) or list of HUCs, a bounding box or a single point of latitude and longitude. The user should also specify timing information such as a date range for their simulation. Finally, they should choose what dataset they would like to use in their simulation, for example CONUS1 or CONUS2. 
 
