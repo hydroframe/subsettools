@@ -177,7 +177,6 @@ def test_write_mask_solid(set_parflow_dir, tmp_path):
 def test_write_mask_solid_simple(mask, set_parflow_dir,tmp_path):
     test_dir = tmp_path / "test"
     test_dir.mkdir()
-    print(os.path)
     st.write_mask_solid(mask=mask, grid="conus2", write_dir=test_dir)
     assert os.path.isfile(f"{test_dir}/mask.pfb"), "Error generating mask.pfb file"
     data = read_pfb(f'{test_dir}/mask.pfb')
@@ -189,7 +188,7 @@ def test_write_mask_solid_zero(set_parflow_dir, tmp_path):
     test_dir = tmp_path / "test"
     test_dir.mkdir()
     st.write_mask_solid(mask=mask, grid="conus2", write_dir=test_dir)
-    f = open(f'{test_dir}/solidfile.pfsol', "r")
-    assert os.path.isfile(f'{test_dir}/solidfile.pfsol'), "Error generating solidfile.pfsol"
-    data = np.array(f.readlines())
-    assert (data == result).all(), "Error: solidfile.pfsol file generated does not match expected result array"
+    with open(f'{test_dir}/solidfile.pfsol') as f:
+        assert os.path.isfile(f'{test_dir}/solidfile.pfsol'), "Error generating solidfile.pfsol"
+        data = np.array(f.readlines())
+        assert (data == result).all(), "Error: solidfile.pfsol file generated does not match expected result array"
