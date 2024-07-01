@@ -2,7 +2,37 @@ import os
 from parflow.tools.io import read_pfb
 import numpy as np
 import subsettools as st
+import hf_hydrodata as hf
+import pytest
 
+
+@pytest.fixture
+def mock_hf(monkeypatch):
+
+    def mock_get_data(options):
+        grid_bounds = options["grid_bounds"]
+        imin, jmin, imax, jmax = grid_bounds
+        return np.ones((jmax - jmin, imax - imin))
+
+    monkeypatch.setattr(hf, "get_gridded_data", mock_get_data) 
+
+
+def test_subset_static(tmp_path, mock_hf):
+    test_dir = tmp_path / "test_static"
+    test_dir.mkdir()
+    paths = st.subset_static(
+        ij_bounds=(0, 0, 10, 10),
+        dataset="my_dataset",
+        var_list=("var1", "var2"),
+        write_dir=test_dir,
+    )    
+    assert os.path.isfile(paths["var1"])
+    data1 = read_pfb(paths["var1"])
+    assert np.array_equal(data1, np.ones((1, 10, 10)))
+    assert os.path.isfile(paths["var2"])
+    data2 = read_pfb(paths["var2"])
+    assert np.array_equal(data2, np.ones((1, 10, 10)))
+    
 
 def test_forcing_timezones(tmp_path):
     "Check if we get the correct forcing (temperature) in EST time."
