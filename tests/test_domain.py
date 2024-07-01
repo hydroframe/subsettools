@@ -80,7 +80,7 @@ def test_define_latlon_domain(latlon_bounds, grid, correct_bounds, correct_mask)
             "conus2",
             id="lat/lon points outside the grid",
         ),
-        pytest.param([57.44, -107.33], "conus2", id="only one lat/lon point"),
+        pytest.param([[57.44, -107.33]], "conus2", id="only one lat/lon point"),
         pytest.param([[57.44, -107.33],[57.44, -107.33], [57.55, -108.00]], "conus2", id="more than two lat/lon points")
     ],
 )
