@@ -6,6 +6,25 @@ import hf_hydrodata as hf
 import pytest
 
 
+#  resolution: static or hourly
+#  if it hourly
+#      hourly press -> 4D -> 3D (t, p_x, p_y, p_z) and t = 0
+#      forcing data -> 3D (t, f_x, f_y)
+#  if static, 2-d or 3-d, can pretend always 3-d
+#
+#  have options dict
+#  imin, jmin, imax, jmax = options['grid_bounds']
+#  ni, nj = imax - imin, jmax - jmin
+#  if resolution == 'hourly':
+#      nt = end_time - start_time
+#      if variable == 'pressure_head':
+#          shape = (nt, nz, nj, ni)    
+#      else:
+#          shape = (nt, nj, ni)
+#  else if resolution == 'static':
+#      shape = (nz, nj, ni)
+
+
 @pytest.fixture
 def mock_hf(monkeypatch):
 
@@ -13,7 +32,7 @@ def mock_hf(monkeypatch):
         grid_bounds = options["grid_bounds"]
         imin, jmin, imax, jmax = grid_bounds
         return np.ones((jmax - jmin, imax - imin))
-
+    
     monkeypatch.setattr(hf, "get_gridded_data", mock_get_data) 
 
 
