@@ -16,22 +16,40 @@ import pytest
 #  imin, jmin, imax, jmax = options['grid_bounds']
 #  ni, nj = imax - imin, jmax - jmin
 #  if resolution == 'hourly':
-#      nt = end_time - start_time
-#      if variable == 'pressure_head':
-#          shape = (nt, nz, nj, ni)    
-#      else:
-#          shape = (nt, nj, ni)
-#  else if resolution == 'static':
-#      shape = (nz, nj, ni)
+#      nt = end_time - start_time if end_time is not None else 1
+#  if variable == 'pressure_head':
+#      shape = (nt, 5, nj, ni)    
+#  else:
+#      shape = (nt, nj, ni)
+#  if resolution == 'static':
+#      shape = (5, nj, ni)
 
+_SECONDS_PER_HOUR = 3600
+_DUMMY_NZ = 5
 
 @pytest.fixture
 def mock_hf(monkeypatch):
 
     def mock_get_data(options):
-        grid_bounds = options["grid_bounds"]
+        grid_bounds = options.get("grid_bounds")
+        resolution = options.get("temporal_resolution")
+        variable = options.get("variable")
+        start_time = options.get("start_time")
+        end_time = options.get("end_time")
         imin, jmin, imax, jmax = grid_bounds
-        return np.ones((jmax - jmin, imax - imin))
+        ni, nj = imax - imin, jmax - jmin
+        if resolution == "hourly":
+            if end_time is not None:
+                nt = int((end_time - start_time).total_seconds() / _SECONDS_PER_HOUR)
+            else:
+                nt = 1
+            if variable == "pressure_head":
+                shape = (nt, _DUMMY_NZ, ni, nj)
+            else:
+                shape = (nt, ni, nj)
+        elif resolution == "static":
+            shape = (_DUMMY_NZ, ni, nj)            
+        return np.ones(shape)
     
     monkeypatch.setattr(hf, "get_gridded_data", mock_get_data) 
 
@@ -40,17 +58,17 @@ def test_subset_static(tmp_path, mock_hf):
     test_dir = tmp_path / "test_static"
     test_dir.mkdir()
     paths = st.subset_static(
-        ij_bounds=(0, 0, 10, 10),
+        ij_bounds=(0, 0, 10, 20),
         dataset="my_dataset",
         var_list=("var1", "var2"),
         write_dir=test_dir,
     )    
     assert os.path.isfile(paths["var1"])
     data1 = read_pfb(paths["var1"])
-    assert np.array_equal(data1, np.ones((1, 10, 10)))
+    assert np.array_equal(data1, np.ones((_DUMMY_NZ, 10, 20)))
     assert os.path.isfile(paths["var2"])
     data2 = read_pfb(paths["var2"])
-    assert np.array_equal(data2, np.ones((1, 10, 10)))
+    assert np.array_equal(data2, np.ones((_DUMMY_NZ, 10, 20)))
     
 
 def test_forcing_timezones(tmp_path):
