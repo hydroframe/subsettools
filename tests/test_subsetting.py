@@ -44,11 +44,11 @@ def mock_hf(monkeypatch):
             else:
                 nt = 1
             if variable == "pressure_head":
-                shape = (nt, _DUMMY_NZ, ni, nj)
+                shape = (nt, _DUMMY_NZ, nj, ni)
             else:
-                shape = (nt, ni, nj)
+                shape = (nt, nj, ni)
         elif resolution == "static":
-            shape = (_DUMMY_NZ, ni, nj)            
+            shape = (_DUMMY_NZ, nj, ni)            
         return np.ones(shape)
     
     monkeypatch.setattr(hf, "get_gridded_data", mock_get_data)
@@ -76,10 +76,10 @@ def test_subset_static(tmp_path, mock_hf):
     )
     assert os.path.isfile(paths["var1"])
     data1 = read_pfb(paths["var1"])
-    assert np.array_equal(data1, np.ones((_DUMMY_NZ, 10, 20)))
+    assert np.array_equal(data1, np.ones((_DUMMY_NZ, 20, 10)))
     assert os.path.isfile(paths["var2"])
     data2 = read_pfb(paths["var2"])
-    assert np.array_equal(data2, np.ones((_DUMMY_NZ, 10, 20)))
+    assert np.array_equal(data2, np.ones((_DUMMY_NZ, 20, 10)))
 
 def test_subset_press_init_function(tmp_path, mock_hf):
     test_dir = tmp_path / "test_press_init"
