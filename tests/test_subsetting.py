@@ -51,7 +51,7 @@ def mock_hf(monkeypatch):
             shape = (_DUMMY_NZ, ni, nj)            
         return np.ones(shape)
     
-    monkeypatch.setattr(hf, "get_gridded_data", mock_get_data) 
+    monkeypatch.setattr(hf, "get_gridded_data", mock_get_data)
 
 
 def test_subset_static(tmp_path, mock_hf):
@@ -62,13 +62,36 @@ def test_subset_static(tmp_path, mock_hf):
         dataset="my_dataset",
         var_list=("var1", "var2"),
         write_dir=test_dir,
-    )    
+    )
     assert os.path.isfile(paths["var1"])
     data1 = read_pfb(paths["var1"])
     assert np.array_equal(data1, np.ones((_DUMMY_NZ, 10, 20)))
     assert os.path.isfile(paths["var2"])
     data2 = read_pfb(paths["var2"])
     assert np.array_equal(data2, np.ones((_DUMMY_NZ, 10, 20)))
+
+def test_subset_press_init_function(tmp_path, mock_hf):
+    test_dir = tmp_path / "test_press_init"
+    test_dir.mkdir()
+    file_path = st.subset_press_init(
+        ij_bounds=(0,0,10,20),
+        dataset="my_dataset",
+        date="2010-10-02",
+        write_dir=test_dir
+    )
+    assert os.path.isfile(file_path)
+    data = read_pfb(file_path)
+    print(data.shape)
+    assert np.array_equal(data, np.ones((_DUMMY_NZ, 10, 20)))
+
+def test_subset_forcing(tmp_path, mock_hf):
+    test_dir = tmp_path / "test_forcing"
+    test_dir.mkdir()
+    paths = st.subset_forcing(
+        ij_bounds=(0,0,10,20),
+        grid=""
+    )
+
     
 
 def test_forcing_timezones(tmp_path):
