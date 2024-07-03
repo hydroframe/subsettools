@@ -53,6 +53,17 @@ def mock_hf(monkeypatch):
     
     monkeypatch.setattr(hf, "get_gridded_data", mock_get_data)
 
+@pytest.fixture
+def mock_get_paths(monkeypatch):
+
+    def mock_hf_get_paths(options):
+        dataset = options.get("dataset")
+        variable = options.get("variable")
+        file_path = [f"/folder/{dataset}.{variable}.000001_to_000024.pfb"]
+        return file_path
+
+    monkeypatch.setattr(hf, "get_paths", mock_hf_get_paths)
+
 
 def test_subset_static(tmp_path, mock_hf):
     test_dir = tmp_path / "test_static"
@@ -81,16 +92,26 @@ def test_subset_press_init_function(tmp_path, mock_hf):
     )
     assert os.path.isfile(file_path)
     data = read_pfb(file_path)
-    print(data.shape)
     assert np.array_equal(data, np.ones((_DUMMY_NZ, 10, 20)))
 
-def test_subset_forcing(tmp_path, mock_hf):
+def test_subset_forcing(tmp_path, mock_hf, mock_get_paths):
     test_dir = tmp_path / "test_forcing"
     test_dir.mkdir()
     paths = st.subset_forcing(
         ij_bounds=(0,0,10,20),
-        grid=""
+        grid="conus1",
+        start="2005-10-02", 
+        end="2005-10-04", 
+        dataset="noaa",
+        forcing_vars=("var1", "var2"),
+        write_dir=test_dir,
     )
+    assert os.path.isfile(paths["var1"][0])
+    assert np.array_equal(read_pfb(paths["var1"][0]), np.ones((24, 10, 20)))
+    assert np.array_equal(read_pfb(paths["var1"][1]), np.ones((24, 10, 20)))
+    assert np.array_equal(read_pfb(paths["var2"][0]), np.ones((24, 10, 20)))
+    assert np.array_equal(read_pfb(paths["var2"][1]), np.ones((24, 10, 20)))
+    
 
     
 
