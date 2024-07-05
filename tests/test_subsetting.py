@@ -81,20 +81,35 @@ def test_subset_static(tmp_path, mock_hf):
     data2 = read_pfb(paths["var2"])
     assert np.array_equal(data2, np.ones((_DUMMY_NZ, 20, 10)))
 
-def test_subset_press_init_function(tmp_path, mock_hf):
+@pytest.mark.parametrize(
+    "time_zone",
+    [
+        pytest.param("UTC", id="UTC timezone"),
+        pytest.param("EST", id="non-UTC timezone"),
+    ],
+    )
+def test_subset_press_init_function(time_zone, tmp_path, mock_hf):
     test_dir = tmp_path / "test_press_init"
     test_dir.mkdir()
     file_path = st.subset_press_init(
         ij_bounds=(0,0,10,20),
         dataset="my_dataset",
         date="2010-10-02",
-        write_dir=test_dir
+        write_dir=test_dir,
+        time_zone=time_zone,
     )
     assert os.path.isfile(file_path)
     data = read_pfb(file_path)
-    assert np.array_equal(data, np.ones((_DUMMY_NZ, 10, 20)))
+    assert np.array_equal(data, np.ones((_DUMMY_NZ, 20, 10)))
 
-def test_subset_forcing(tmp_path, mock_hf, mock_get_paths):
+@pytest.mark.parametrize(
+    "time_zone",
+    [
+        pytest.param("UTC", id="UTC timezone"),
+        pytest.param("EST", id="non-UTC timezone"),
+    ],
+)
+def test_subset_forcing(time_zone, tmp_path, mock_hf, mock_get_paths):
     test_dir = tmp_path / "test_forcing"
     test_dir.mkdir()
     paths = st.subset_forcing(
@@ -102,15 +117,16 @@ def test_subset_forcing(tmp_path, mock_hf, mock_get_paths):
         grid="conus1",
         start="2005-10-02", 
         end="2005-10-04", 
-        dataset="noaa",
+        dataset="my_ds",
         forcing_vars=("var1", "var2"),
         write_dir=test_dir,
+        time_zone=time_zone
     )
     assert os.path.isfile(paths["var1"][0])
-    assert np.array_equal(read_pfb(paths["var1"][0]), np.ones((24, 10, 20)))
-    assert np.array_equal(read_pfb(paths["var1"][1]), np.ones((24, 10, 20)))
-    assert np.array_equal(read_pfb(paths["var2"][0]), np.ones((24, 10, 20)))
-    assert np.array_equal(read_pfb(paths["var2"][1]), np.ones((24, 10, 20)))
+    assert np.array_equal(read_pfb(paths["var1"][0]), np.ones((24, 20, 10)))
+    assert np.array_equal(read_pfb(paths["var1"][1]), np.ones((24, 20, 10)))
+    assert np.array_equal(read_pfb(paths["var2"][0]), np.ones((24, 20, 10)))
+    assert np.array_equal(read_pfb(paths["var2"][1]), np.ones((24, 20, 10)))
     
 
     
