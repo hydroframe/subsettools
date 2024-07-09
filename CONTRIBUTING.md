@@ -23,7 +23,7 @@ wanted" is open to whoever wants to implement it.
 Look through the GitHub issues for features. Anything tagged with "enhancement"
 and "help wanted" is open to whoever wants to implement it.
 
-### Tests
+### Running the test suite
 
 We use [pytest](https://docs.pytest.org/) to run our tests. In general, a file
 called `module.py` in our source code will have a corresponding `test_module.py`
