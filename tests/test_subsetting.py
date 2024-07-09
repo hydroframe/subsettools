@@ -2,34 +2,16 @@ import os
 from parflow.tools.io import read_pfb
 import numpy as np
 import subsettools as st
-import hf_hydrodata as hf
+import hf_hydrodata
 import pytest
 
-
-#  resolution: static or hourly
-#  if it hourly
-#      hourly press -> 4D -> 3D (t, p_x, p_y, p_z) and t = 0
-#      forcing data -> 3D (t, f_x, f_y)
-#  if static, 2-d or 3-d, can pretend always 3-d
-#
-#  have options dict
-#  imin, jmin, imax, jmax = options['grid_bounds']
-#  ni, nj = imax - imin, jmax - jmin
-#  if resolution == 'hourly':
-#      nt = end_time - start_time if end_time is not None else 1
-#  if variable == 'pressure_head':
-#      shape = (nt, 5, nj, ni)    
-#  else:
-#      shape = (nt, nj, ni)
-#  if resolution == 'static':
-#      shape = (5, nj, ni)
 
 _SECONDS_PER_HOUR = 3600
 _DUMMY_NZ = 5
 
-@pytest.fixture
-def mock_hf(monkeypatch):
 
+@pytest.fixture
+def mock_hf_data(monkeypatch):
     def mock_get_data(options):
         grid_bounds = options.get("grid_bounds")
         resolution = options.get("temporal_resolution")
@@ -48,25 +30,24 @@ def mock_hf(monkeypatch):
             else:
                 shape = (nt, nj, ni)
         elif resolution == "static":
-            shape = (_DUMMY_NZ, nj, ni)            
+            shape = (_DUMMY_NZ, nj, ni)
         return np.ones(shape)
-    
-    monkeypatch.setattr(hf, "get_gridded_data", mock_get_data)
+
+    monkeypatch.setattr(hf_hydrodata, "get_gridded_data", mock_get_data)
 
 
 @pytest.fixture
-def mock_get_paths(monkeypatch):
-
-    def mock_hf_get_paths(options):
+def mock_hf_paths(monkeypatch):
+    def mock_get_paths(options):
         dataset = options.get("dataset")
         variable = options.get("variable")
         file_path = [f"/folder/{dataset}.{variable}.000000_to_000000.pfb"]
         return file_path
 
-    monkeypatch.setattr(hf, "get_paths", mock_hf_get_paths)
+    monkeypatch.setattr(hf_hydrodata, "get_paths", mock_get_paths)
 
 
-def test_subset_static(tmp_path, mock_hf):
+def test_subset_static(tmp_path, mock_hf_data):
     test_dir = tmp_path / "test_static"
     test_dir.mkdir()
     paths = st.subset_static(
@@ -89,12 +70,12 @@ def test_subset_static(tmp_path, mock_hf):
         pytest.param("UTC", id="UTC timezone"),
         pytest.param("EST", id="non-UTC timezone"),
     ],
-    )
-def test_subset_press_init_function(time_zone, tmp_path, mock_hf):
+)
+def test_subset_press_init_function(time_zone, tmp_path, mock_hf_data):
     test_dir = tmp_path / "test_press_init"
     test_dir.mkdir()
     file_path = st.subset_press_init(
-        ij_bounds=(0,0,10,20),
+        ij_bounds=(0, 0, 10, 20),
         dataset="my_dataset",
         date="2010-10-02",
         write_dir=test_dir,
@@ -112,18 +93,18 @@ def test_subset_press_init_function(time_zone, tmp_path, mock_hf):
         pytest.param("EST", id="non-UTC timezone"),
     ],
 )
-def test_subset_forcing(time_zone, tmp_path, mock_hf, mock_get_paths):
+def test_subset_forcing(time_zone, tmp_path, mock_hf_data, mock_hf_paths):
     test_dir = tmp_path / "test_forcing"
     test_dir.mkdir()
     paths = st.subset_forcing(
-        ij_bounds=(0,0,10,20),
+        ij_bounds=(0, 0, 10, 20),
         grid="conus1",
-        start="2005-10-02", 
-        end="2005-10-04", 
+        start="2005-10-02",
+        end="2005-10-04",
         dataset="my_ds",
         forcing_vars=("var1", "var2"),
         write_dir=test_dir,
-        time_zone=time_zone
+        time_zone=time_zone,
     )
     assert os.path.isfile(paths["var1"][0])
     assert os.path.isfile(paths["var1"][1])
@@ -133,18 +114,18 @@ def test_subset_forcing(time_zone, tmp_path, mock_hf, mock_get_paths):
     assert np.array_equal(read_pfb(paths["var2"][1]), np.ones((24, 20, 10)))
 
 
-def test_subset_forcing_files(tmp_path, mock_hf, mock_get_paths):
+def test_subset_forcing_files(tmp_path, mock_hf_data, mock_hf_paths):
     test_dir = tmp_path / "test_forcing_files"
     test_dir.mkdir()
     paths = st.subset_forcing(
-        ij_bounds=(0,0,10,20),
+        ij_bounds=(0, 0, 10, 20),
         grid="conus1",
-        start="2005-10-02", 
-        end="2005-10-05", 
+        start="2005-10-02",
+        end="2005-10-05",
         dataset="my_ds",
         forcing_vars=(["var1"]),
         write_dir=test_dir,
-        )
+    )
     print(type(os.path.basename(paths["var1"][0])), os.path.basename(paths["var1"][0]))
     assert os.path.basename(paths["var1"][0]) == "my_ds.var1.000001_to_000024.pfb"
     assert os.path.basename(paths["var1"][1]) == "my_ds.var1.000025_to_000048.pfb"
