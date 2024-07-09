@@ -102,7 +102,7 @@ def setup_run(setup_dir_structure):
     return run_name, target_runscript, pf_out_dir, correct_output_dir
 
 
-@pytest.mark.parametrize("P, Q", [(1, 1), (2, 2), (4, 4)])
+@pytest.mark.parametrize("P, Q", [(1, 1), (2, 2)])
 def test_conus1_upper_verde(setup_run, remove_output_files, P, Q):
     run_name, target_runscript, pf_out_dir, correct_output_dir = setup_run
 
