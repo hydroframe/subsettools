@@ -40,6 +40,29 @@ or just
 pytest
 ```
 
+To run the tests, you need to provide your HydroGEN PIN and email. To provide a
+HydroGEN PIN for the tests, open the file subsettools/tests/conftest.py, 
+uncomment lines 5 and 7 and provide your email and PIN.
+
+After doing that, all the tests that check pure subsettools functionality should
+pass. In addition, there are three test files (test_conus1_upper_verde.py,
+test_conus1_upper_verde_spinup.py and test_multiple_hucs.py) that check
+integration with ParFlow. These tests require an installation of ParFlow to run.
+As ParFlow can be tricky to install, the easiest way would be to run them in our
+ParFlow Docker container.
+
+If you would like to run the ParFlow integration tests as well, you can:
+
+1. Get our Docker container (https://hydroframesubsettools.readthedocs.io/en/latest/getting_started.html#using-docker)
+2. Open a terminal inside the container and do:
+
+```bash
+$ pip install pytest
+$ git clone https://github.com/hydroframe/subsettools.git
+```
+
+Then, you can edit the `conftest.py` file as described above and run `pytest`.
+
 If you add a new feature, please make sure to include appropriate tests for that
 feature in your pull request.
 
