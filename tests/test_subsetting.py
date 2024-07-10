@@ -4,6 +4,7 @@ import numpy as np
 import subsettools as st
 import hf_hydrodata
 import pytest
+import glob
 
 
 _SECONDS_PER_HOUR = 3600
@@ -47,53 +48,107 @@ def mock_hf_paths(monkeypatch):
     monkeypatch.setattr(hf_hydrodata, "get_paths", mock_get_paths)
 
 
-def test_subset_static(tmp_path, mock_hf_data):
+def test_subset_static_filenames(tmp_path, mock_hf_data):
     test_dir = tmp_path / "test_static"
     test_dir.mkdir()
-    paths = st.subset_static(
+    var_list = ("var1", "var2", "var3")
+    static_paths = st.subset_static(
         ij_bounds=(0, 0, 10, 20),
-        dataset="my_dataset",
-        var_list=("var1", "var2"),
+        dataset="dataset",
+        var_list=var_list,
         write_dir=test_dir,
     )
-    assert os.path.isfile(paths["var1"])
-    data1 = read_pfb(paths["var1"])
-    assert np.array_equal(data1, np.ones((_DUMMY_NZ, 20, 10)))
-    assert os.path.isfile(paths["var2"])
-    data2 = read_pfb(paths["var2"])
-    assert np.array_equal(data2, np.ones((_DUMMY_NZ, 20, 10)))
+    expected_paths = {
+        var: glob.glob(os.path.join(test_dir, "*" + var + "*"), root_dir=test_dir)[0]
+        for var in var_list
+    }
+    assert static_paths == expected_paths
 
 
-@pytest.mark.parametrize(
-    "time_zone",
-    [
-        pytest.param("UTC", id="UTC timezone"),
-        pytest.param("EST", id="non-UTC timezone"),
-    ],
-)
-def test_subset_press_init_function(time_zone, tmp_path, mock_hf_data):
-    test_dir = tmp_path / "test_press_init"
+def test_subset_static_data(tmp_path, mock_hf_data):
+    test_dir = tmp_path / "test_static"
+    test_dir.mkdir()
+    static_paths = st.subset_static(
+        ij_bounds=(0, 0, 10, 20),
+        dataset="dataset",
+        var_list=("precipitation",),
+        write_dir=test_dir,
+    )
+    data = read_pfb(static_paths["precipitation"])
+    assert np.array_equal(data, np.ones((_DUMMY_NZ, 20, 10)))
+
+
+def test_subset_press_init_filenames(tmp_path, mock_hf_data):
+    test_dir = tmp_path / "test_press_filenames"
     test_dir.mkdir()
     file_path = st.subset_press_init(
         ij_bounds=(0, 0, 10, 20),
-        dataset="my_dataset",
+        dataset="dataset",
         date="2010-10-02",
         write_dir=test_dir,
-        time_zone=time_zone,
     )
-    assert os.path.isfile(file_path)
+    assert os.path.join(test_dir, os.listdir(test_dir)[0]) == file_path
+
+
+def test_subset_press_init_data(tmp_path, mock_hf_data):
+    test_dir = tmp_path / "test_press_data"
+    test_dir.mkdir()
+    file_path = st.subset_press_init(
+        ij_bounds=(0, 0, 10, 20),
+        dataset="dataset",
+        date="2010-10-02",
+        write_dir=test_dir,
+    )
     data = read_pfb(file_path)
     assert np.array_equal(data, np.ones((_DUMMY_NZ, 20, 10)))
 
 
 @pytest.mark.parametrize(
-    "time_zone",
+    "end_date, num_files",
     [
-        pytest.param("UTC", id="UTC timezone"),
-        pytest.param("EST", id="non-UTC timezone"),
+        ("2005-10-02", 1),
+        ("2005-10-05", 4),
+        ("2005-11-01", 31),
     ],
 )
-def test_subset_forcing(time_zone, tmp_path, mock_hf_data, mock_hf_paths):
+def test_subset_forcing_num_files(
+    end_date, num_files, tmp_path, mock_hf_data, mock_hf_paths
+):
+    test_dir = tmp_path / "test_forcing"
+    test_dir.mkdir()
+    paths = st.subset_forcing(
+        ij_bounds=(0, 0, 10, 20),
+        grid="conus1",
+        start="2005-10-01",
+        end=end_date,
+        dataset="dataset",
+        forcing_vars=("var1",),
+        write_dir=test_dir,
+    )
+    assert len(os.listdir(test_dir)) == num_files
+
+
+def test_subset_forcing_filenames(tmp_path, mock_hf_data, mock_hf_paths):
+    test_dir = tmp_path / "test_forcing"
+    test_dir.mkdir()
+    paths = st.subset_forcing(
+        ij_bounds=(0, 0, 10, 20),
+        grid="conus1",
+        start="2005-09-01",
+        end="2005-10-01",
+        dataset="my_ds",
+        forcing_vars=("var1",),
+        write_dir=test_dir,
+    )
+    expected_files = [
+        f"my_ds.var1.{start:06d}_to_{(start + 23):06d}.pfb"
+        for start in range(1, 721, 24)
+    ]
+    assert [os.path.basename(path) for path in paths["var1"]] == expected_files
+
+
+@pytest.mark.parametrize("time_zone", ["UTC", "EST"])
+def test_subset_forcing_data(time_zone, tmp_path, mock_hf_data, mock_hf_paths):
     test_dir = tmp_path / "test_forcing"
     test_dir.mkdir()
     paths = st.subset_forcing(
@@ -106,30 +161,15 @@ def test_subset_forcing(time_zone, tmp_path, mock_hf_data, mock_hf_paths):
         write_dir=test_dir,
         time_zone=time_zone,
     )
-    assert os.path.isfile(paths["var1"][0])
-    assert os.path.isfile(paths["var1"][1])
-    assert np.array_equal(read_pfb(paths["var1"][0]), np.ones((24, 20, 10)))
-    assert np.array_equal(read_pfb(paths["var1"][1]), np.ones((24, 20, 10)))
-    assert np.array_equal(read_pfb(paths["var2"][0]), np.ones((24, 20, 10)))
-    assert np.array_equal(read_pfb(paths["var2"][1]), np.ones((24, 20, 10)))
-
-
-def test_subset_forcing_files(tmp_path, mock_hf_data, mock_hf_paths):
-    test_dir = tmp_path / "test_forcing_files"
-    test_dir.mkdir()
-    paths = st.subset_forcing(
-        ij_bounds=(0, 0, 10, 20),
-        grid="conus1",
-        start="2005-10-02",
-        end="2005-10-05",
-        dataset="my_ds",
-        forcing_vars=(["var1"]),
-        write_dir=test_dir,
+    all_paths = paths["var1"] + paths["var2"]
+    assert all(
+        np.array_equal(read_pfb(path), np.ones((24, 20, 10))) for path in all_paths
     )
-    print(type(os.path.basename(paths["var1"][0])), os.path.basename(paths["var1"][0]))
-    assert os.path.basename(paths["var1"][0]) == "my_ds.var1.000001_to_000024.pfb"
-    assert os.path.basename(paths["var1"][1]) == "my_ds.var1.000025_to_000048.pfb"
-    assert os.path.basename(paths["var1"][2]) == "my_ds.var1.000049_to_000072.pfb"
+
+
+#####################
+# Integration tests #
+#####################
 
 
 def test_forcing_timezones(tmp_path):
