@@ -3,6 +3,7 @@ import filecmp
 import pytest
 import numpy as np
 import subsettools as st
+from parflow.tools.io import read_pfb
 
 
 @pytest.mark.parametrize(
@@ -166,3 +167,26 @@ def test_write_mask_solid(set_parflow_dir, tmp_path):
         test_dir, correct_output_dir, ["mask.pfb", "solidfile.pfsol"], shallow=False
     )
     assert len(match) == 2 and len(mismatch) == 0 and len(errors) == 0
+
+
+@pytest.mark.parametrize(
+    "mask",
+    [np.array([[0]]), np.array([[1]]), np.array([[0, 1], [0, 1]])],
+)
+def test_write_mask(mask, set_parflow_dir, tmp_path):
+    test_dir = tmp_path / "test"
+    test_dir.mkdir()
+    st.write_mask_solid(mask=mask, grid="conus2", write_dir=test_dir)
+    data = read_pfb(f"{test_dir}/mask.pfb")[0]
+    assert np.array_equal(data, mask)
+
+
+def test_write_solid(set_parflow_dir, tmp_path):
+    mask = np.array([[0]])
+    test_dir = tmp_path / "test"
+    test_dir.mkdir()
+    st.write_mask_solid(mask=mask, grid="conus2", write_dir=test_dir)
+    expected_solid = ['1\n', '0\n', '1\n', '0\n', '0\n']
+    with open(f"{test_dir}/solidfile.pfsol") as f:
+        solid  = f.readlines()
+    assert solid == expected_solid

@@ -72,6 +72,8 @@ def _validate_mask(mask):
         raise ValueError("mask must be a numpy array.")
     if not np.issubdtype(mask.dtype, np.integer):
         raise ValueError("mask elements must be integers.")
+    if len(mask.shape) != 2:
+        raise ValueError("mask must be 2D numpy array")
     unique_values = np.unique(mask)
-    if len(unique_values) != 2 or (0 not in unique_values) or (1 not in unique_values):
+    if len(unique_values) > 2 or not all(v in [0,1] for v in unique_values):
         raise ValueError("mask elements must be 0 or 1.")
