@@ -14,6 +14,81 @@ def test_get_ref_yaml_path(tmp_path):
     assert run.GeomInput.domaininput.InputType == "Box"
 
 
+@pytest.mark.parametrize(
+    "grid, mode, input_file_type",
+    [
+        pytest.param("conus1", "spinup", "box"),
+        pytest.param("conus2", "spinup", "box"),
+        pytest.param("conus1", "transient", "box"),
+        pytest.param("conus2", "transient", "box"),
+        pytest.param("conus1", "spinup", "solid"),
+        pytest.param("conus2", "spinup", "solid"),
+        pytest.param("conus1", "transient", "solid"),
+        pytest.param("conus2", "transient", "solid"),
+
+    ]
+)
+def test_get_template_runscript_filepaths(grid, mode, input_file_type, tmp_path):
+    test_dir = tmp_path / "test_runscript"
+    test_dir.mkdir()
+    runscript_path = st.get_template_runscript(
+        grid=grid,
+        mode=mode,
+        input_file_type=input_file_type,
+        write_dir=test_dir,
+)
+    output=f"{test_dir}/{grid}_{mode}_{input_file_type}.yaml"
+    print(os.path.exists(runscript_path))
+    assert runscript_path == output
+    assert os.path.exists(runscript_path)
+
+
+@pytest.mark.parametrize(
+    "grid, mode, input_file_type",
+    [
+        pytest.param("conus1", "spinup", "box"),
+        pytest.param("conus2", "spinup", "box"),
+        pytest.param("conus1", "transient", "box"),
+        pytest.param("conus2", "transient", "box"),
+        pytest.param("conus1", "spinup", "solid"),
+        pytest.param("conus2", "spinup", "solid"),
+        pytest.param("conus1", "transient", "solid"),
+        pytest.param("conus2", "transient", "solid"),
+
+    ]
+)
+def test_get_template_runscript_data(grid, mode, input_file_type, tmp_path):
+    test_dir = tmp_path / "test_runscript_data"
+    test_dir.mkdir()
+    runscript_path = st.get_template_runscript(
+    grid=grid,
+    mode=mode,
+    input_file_type=input_file_type,
+    write_dir=test_dir
+)
+    run = Run.from_definition(runscript_path)
+
+    #check mode
+    if mode == "transient":
+        assert run.Solver.LSM == "CLM"
+    else:
+        assert run.Solver.LSM == "none"
+    #check grid
+    if grid == "conus1":
+        assert run.ComputationalGrid.NX == 3342
+        assert run.ComputationalGrid.NY == 1888
+    else:
+        assert run.ComputationalGrid.NX == 4442
+        assert run.ComputationalGrid.NY == 3256
+    #check input_file_type
+    if input_file_type == "box":
+        assert run.Geom.domain.Upper.X == run.ComputationalGrid.NX*1000.0
+        assert run.Geom.domain.Upper.Y == run.ComputationalGrid.NY*1000.0
+    else:
+        assert run.Geom.domain.Upper.X == None
+        assert run.Geom.domain.Upper.Y == None
+
+
 def test_edit_runscript_for_subset_1(tmp_path):
     """Check the edited fiedls of the runscript file."""
     test_dir = tmp_path / "test"
