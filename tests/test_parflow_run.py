@@ -4,16 +4,6 @@ from parflow import Run
 import subsettools as st
 
 
-def test_get_ref_yaml_path(tmp_path):
-    test_dir = tmp_path / "test"
-    test_dir.mkdir()
-    runscript = st.get_template_runscript("conus1", "transient", "box", test_dir)
-    assert runscript == os.path.join(test_dir, "conus1_transient_box.yaml")
-    run = Run.from_definition(runscript)
-    assert run.ComputationalGrid.NX == 3342
-    assert run.GeomInput.domaininput.InputType == "Box"
-
-
 @pytest.mark.parametrize(
     "grid, mode, input_file_type",
     [
@@ -37,9 +27,7 @@ def test_get_template_runscript_filepaths(grid, mode, input_file_type, tmp_path)
         input_file_type=input_file_type,
         write_dir=test_dir,
 )
-    output=f"{test_dir}/{grid}_{mode}_{input_file_type}.yaml"
-    print(os.path.exists(runscript_path))
-    assert runscript_path == output
+    assert runscript_path == os.path.join(test_dir, os.listdir(test_dir)[0])
     assert os.path.exists(runscript_path)
 
 
@@ -61,11 +49,11 @@ def test_get_template_runscript_data(grid, mode, input_file_type, tmp_path):
     test_dir = tmp_path / "test_runscript_data"
     test_dir.mkdir()
     runscript_path = st.get_template_runscript(
-    grid=grid,
-    mode=mode,
-    input_file_type=input_file_type,
-    write_dir=test_dir
-)
+        grid=grid,
+        mode=mode,
+        input_file_type=input_file_type,
+        write_dir=test_dir
+    )
     run = Run.from_definition(runscript_path)
 
     #check mode
@@ -87,6 +75,74 @@ def test_get_template_runscript_data(grid, mode, input_file_type, tmp_path):
     else:
         assert run.Geom.domain.Upper.X == None
         assert run.Geom.domain.Upper.Y == None
+
+
+def test_edit_runscript_filepaths(tmp_path):
+    test_dir = tmp_path / "test"
+    test_dir.mkdir()
+    write_dir = tmp_path / "write"
+    write_dir.mkdir()
+    forcing_dir = tmp_path / "forcing"
+    forcing_dir.mkdir()
+    runscript_path = st.get_template_runscript("conus1", "transient", "box",test_dir)
+    ij_bounds = (10, 10, 25, 25)
+    runname = "test-edit-runscript"
+
+    new_runscript_path = st.edit_runscript_for_subset(
+        ij_bounds=ij_bounds, 
+        runscript_path=runscript_path, 
+        write_dir=write_dir,
+        runname=runname, 
+        forcing_dir=forcing_dir,
+    )
+    assert os.path.exists(new_runscript_path)
+    assert os.path.join(write_dir, os.listdir(write_dir)[0]) == new_runscript_path
+
+@pytest.mark.parametrize(
+    "runname, ij_bounds",
+    [
+        pytest.param("new_runscript", (10,10,25,25)),
+        pytest.param(None, (10,10,25,23))
+    ]
+)
+def test_edit_runscript_data(runname, ij_bounds, tmp_path):
+    test_dir = tmp_path / "test"
+    test_dir.mkdir()
+    write_dir = tmp_path / "write"
+    write_dir.mkdir()
+    forcing_dir = tmp_path / "forcing"
+    forcing_dir.mkdir()
+    old_runscript_path = st.get_template_runscript("conus1", "transient", "box", test_dir)
+    new_runscript_path = st.edit_runscript_for_subset(
+        ij_bounds=ij_bounds,
+        runscript_path=old_runscript_path,
+        write_dir=write_dir,
+        runname=runname,
+        forcing_dir=str(forcing_dir),
+    )
+    i_min, j_min, i_max, j_max = ij_bounds
+    nx, ny = (i_max-i_min, j_max-j_min)
+    new_run = Run.from_definition(new_runscript_path)
+    old_run = Run.from_definition(old_runscript_path)
+
+    if runname:
+        assert new_run.get_name() == runname
+    else:
+        assert new_run.get_name() == old_run.get_name()
+    assert new_run.ComputationalGrid.NX == nx
+    assert new_run.ComputationalGrid.NY == ny
+    assert new_run.Geom.domain.Upper.X == nx*1000
+    assert new_run.Geom.domain.Upper.Y == ny*1000
+
+
+def test_get_ref_yaml_path(tmp_path):
+    test_dir = tmp_path / "test"
+    test_dir.mkdir()
+    runscript = st.get_template_runscript("conus1", "transient", "box", test_dir)
+    assert runscript == os.path.join(test_dir, "conus1_transient_box.yaml")
+    run = Run.from_definition(runscript)
+    assert run.ComputationalGrid.NX == 3342
+    assert run.GeomInput.domaininput.InputType == "Box"
 
 
 def test_edit_runscript_for_subset_1(tmp_path):
