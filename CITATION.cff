@@ -1,0 +1,89 @@
+cff-version: "1.2.0"
+authors:
+- family-names: Triplett
+  given-names: Amanda K.
+  orcid: "https://orcid.org/0009-0009-8085-3938"
+- family-names: Artavanis
+  given-names: Georgios
+  orcid: "https://orcid.org/0009-0007-6015-7746"
+- family-names: Hasling
+  given-names: William M.
+- family-names: Maxwell
+  given-names: Reed M.
+  orcid: "https://orcid.org/0000-0002-1364-4441"
+- family-names: Defnet
+  given-names: Amy
+  orcid: "https://orcid.org/0000-0003-2261-708X"
+- family-names: Johnson
+  given-names: Amy M.
+- family-names: Lytle
+  given-names: William
+- family-names: Bennett
+  given-names: Andrew
+- family-names: Leonarduzzi
+  given-names: Elena
+- family-names: Gallagher
+  given-names: Lisa K.
+- family-names: Condon
+  given-names: Laura E.
+  orcid: "https://orcid.org/0000-0003-3639-8076"
+contact:
+- family-names: Triplett
+  given-names: Amanda K.
+  orcid: "https://orcid.org/0009-0009-8085-3938"
+- family-names: Artavanis
+  given-names: Georgios
+  orcid: "https://orcid.org/0009-0007-6015-7746"
+- family-names: Maxwell
+  given-names: Reed M.
+  orcid: "https://orcid.org/0000-0002-1364-4441"
+- family-names: Condon
+  given-names: Laura E.
+  orcid: "https://orcid.org/0000-0003-3639-8076"
+doi: 10.5281/zenodo.12707059
+message: If you use this software, please cite our article in the
+  Journal of Open Source Software.
+preferred-citation:
+  authors:
+  - family-names: Triplett
+    given-names: Amanda K.
+    orcid: "https://orcid.org/0009-0009-8085-3938"
+  - family-names: Artavanis
+    given-names: Georgios
+    orcid: "https://orcid.org/0009-0007-6015-7746"
+  - family-names: Hasling
+    given-names: William M.
+  - family-names: Maxwell
+    given-names: Reed M.
+    orcid: "https://orcid.org/0000-0002-1364-4441"
+  - family-names: Defnet
+    given-names: Amy
+    orcid: "https://orcid.org/0000-0003-2261-708X"
+  - family-names: Johnson
+    given-names: Amy M.
+  - family-names: Lytle
+    given-names: William
+  - family-names: Bennett
+    given-names: Andrew
+  - family-names: Leonarduzzi
+    given-names: Elena
+  - family-names: Gallagher
+    given-names: Lisa K.
+  - family-names: Condon
+    given-names: Laura E.
+    orcid: "https://orcid.org/0000-0003-3639-8076"
+  date-published: 2024-07-17
+  doi: 10.21105/joss.06752
+  issn: 2475-9066
+  issue: 99
+  journal: Journal of Open Source Software
+  publisher:
+    name: Open Journals
+  start: 6752
+  title: "SubsetTools: A Python package to subset data to build and run
+    ParFlow hydrologic models"
+  type: article
+  url: "https://joss.theoj.org/papers/10.21105/joss.06752"
+  volume: 9
+title: "SubsetTools: A Python package to subset data to build and run
+  ParFlow hydrologic models"
