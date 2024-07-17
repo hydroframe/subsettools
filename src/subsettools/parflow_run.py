@@ -382,3 +382,28 @@ def dist_run(topo_p, topo_q, runscript_path, working_dir=None, dist_clim_forcing
         working_directory=working_dir, file_format=f"{file_extension[1:]}"
     )
     return file_path
+
+
+def restart_run(runscript_path, new_dir=None):
+    if not os.path.isfile(runscript_path):
+        raise FileNotFoundError("runscript_path must be a valid file path")
+    if new_dir is not None:
+        os.mkdir(new_dir)
+        _copy_static_inputs(runscript_path, new_dir)
+        
+
+def _copy_static_inputs(runscript_path, new_dir):
+    filenames = _extract_filenames_from_runscript(runscript_path)
+    old_dir = os.path.dirname(runscript_path)
+    for filename in filenames:
+        shutil.copy(os.path.join(old_dir, filename), new_dir)
+
+    
+def _extract_filenames_from_runscript(runscript_path):
+    filenames = []
+    with open(runscript_path, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line.startswith("FileName: "):
+                filenames.append(line[len("FileName: "):])
+    return filenames

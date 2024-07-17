@@ -102,3 +102,40 @@ def test_change_filename_values_2(tmp_path):
     # check the edited fields of the new runscript:
     run = Run.from_definition(new_runscript)
     assert run.TopoSlopesX.FileName == str(test_file)
+
+
+def test_restart_run_directories(tmp_path):
+    old_dir = tmp_path / "old"
+    old_dir.mkdir()
+    new_dir = tmp_path / "new"
+    run = Run("dummy_run")
+    runscript_path, _ = run.write(
+        file_format='yaml',
+        working_directory=old_dir
+    )
+    assert not os.path.isdir(new_dir)
+    st.restart_run(runscript_path=runscript_path, new_dir=new_dir)
+    assert os.path.isdir(new_dir)
+
+
+def test_restart_run_copy_inputs(tmp_path):
+    old_dir = tmp_path / "old"
+    old_dir.mkdir()
+    slope_x = old_dir / "slope_x.pfb"
+    slope_x.write_text("Dummy slope_x input file")
+    slope_y = old_dir / "slope_y.pfb"
+    slope_y.write_text("Dummy slope_y input file")
+    run = Run("dummy_run")
+    run.TopoSlopesX.FileName = str(slope_x)
+    run.TopoSlopesY.FileName = str(slope_y)
+    runscript_path, _ = run.write(
+        file_format="yaml",
+        working_directory=old_dir
+    )
+    new_dir = tmp_path / "new"
+    st.restart_run(
+        runscript_path=runscript_path,
+        new_dir=new_dir
+    )
+    assert os.listdir(new_dir) == ["slope_x.pfb", "slope_y.pfb"]
+    
