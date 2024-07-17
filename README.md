@@ -14,7 +14,9 @@ Checkout our Getting Started guide for installation instructions, information on
 
 ## Citing SubsetTools
 
-If you use our tools please cite this package in your work. In addition please make sure to cite all of the datasets that you subset. Examples for obtaining the DOIs for any dataset you use are provided in the examples. 
+If you use our tools please cite this package in your work. You can cite the package by citing this paper [![DOI](https://joss.theoj.org/papers/10.21105/joss.06752/status.svg)](https://doi.org/10.21105/joss.06752)
+
+In addition please make sure to cite all of the datasets that you subset. Examples for obtaining the DOIs for any dataset you use are provided in the examples. 
 
 ## Contributing
 
