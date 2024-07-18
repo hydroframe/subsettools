@@ -104,21 +104,8 @@ def test_change_filename_values_2(tmp_path):
     assert run.TopoSlopesX.FileName == str(test_file)
 
 
-def test_restart_run_directories(tmp_path):
-    old_dir = tmp_path / "old"
-    old_dir.mkdir()
-    new_dir = tmp_path / "new"
-    run = Run("dummy_run")
-    runscript_path, _ = run.write(
-        file_format='yaml',
-        working_directory=old_dir
-    )
-    assert not os.path.isdir(new_dir)
-    st.restart_run(runscript_path=runscript_path, new_dir=new_dir)
-    assert os.path.isdir(new_dir)
-
-
-def test_restart_run_copy_inputs(tmp_path):
+@pytest.fixture
+def setup_dummy_run(request, tmp_path):
     old_dir = tmp_path / "old"
     old_dir.mkdir()
     slope_x = old_dir / "slope_x.pfb"
@@ -132,6 +119,19 @@ def test_restart_run_copy_inputs(tmp_path):
         file_format="yaml",
         working_directory=old_dir
     )
+    return runscript_path
+    
+
+def test_restart_run_directories(setup_dummy_run, tmp_path):
+    runscript_path = setup_dummy_run
+    new_dir = tmp_path / "new"
+    assert not os.path.isdir(new_dir)
+    st.restart_run(runscript_path=runscript_path, new_dir=new_dir)
+    assert os.path.isdir(new_dir)
+
+
+def test_restart_run_copy_inputs(setup_dummy_run, tmp_path):
+    runscript_path = setup_dummy_run
     new_dir = tmp_path / "new"
     st.restart_run(
         runscript_path=runscript_path,
@@ -139,3 +139,4 @@ def test_restart_run_copy_inputs(tmp_path):
     )
     assert os.listdir(new_dir) == ["slope_x.pfb", "slope_y.pfb"]
     
+
