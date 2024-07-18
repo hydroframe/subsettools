@@ -100,36 +100,46 @@ def test_edit_runscript_filepaths(tmp_path):
     assert os.path.join(write_dir, os.listdir(write_dir)[0]) == new_runscript_path
 
 @pytest.mark.parametrize(
-    "runname, ij_bounds",
+    "runname, ij_bounds, forcing",
     [
-        pytest.param("new_runscript", (10,10,25,25)),
-        pytest.param(None, (10,10,25,23))
+        pytest.param("new_runscript", (10,10,25,25), False),
+        pytest.param(None, (10,10,25,23), True)
     ]
 )
-def test_edit_runscript_data(runname, ij_bounds, tmp_path):
+def test_edit_runscript_data(runname, ij_bounds, forcing, tmp_path):
     test_dir = tmp_path / "test"
     test_dir.mkdir()
     write_dir = tmp_path / "write"
     write_dir.mkdir()
-    forcing_dir = tmp_path / "forcing"
-    forcing_dir.mkdir()
+    if forcing:
+        forcing_dir = tmp_path / "forcing"
+        forcing_dir.mkdir()
+        forcing_dir = str(forcing_dir)
+    else:
+        forcing_dir = None
     old_runscript_path = st.get_template_runscript("conus1", "transient", "box", test_dir)
     new_runscript_path = st.edit_runscript_for_subset(
         ij_bounds=ij_bounds,
         runscript_path=old_runscript_path,
         write_dir=write_dir,
         runname=runname,
-        forcing_dir=str(forcing_dir),
+        forcing_dir=forcing_dir,
     )
     i_min, j_min, i_max, j_max = ij_bounds
     nx, ny = (i_max-i_min, j_max-j_min)
     new_run = Run.from_definition(new_runscript_path)
     old_run = Run.from_definition(old_runscript_path)
-
+    #  check runname
     if runname:
         assert new_run.get_name() == runname
     else:
         assert new_run.get_name() == old_run.get_name()
+    #  check forcing_dir
+    if forcing:
+        assert new_run.Solver.CLM.MetFilePath == str(forcing_dir)
+    else:
+        assert new_run.Solver.CLM.MetFilePath == old_run.Solver.CLM.MetFilePath
+    #  check ij_bounds
     assert new_run.ComputationalGrid.NX == nx
     assert new_run.ComputationalGrid.NY == ny
     assert new_run.Geom.domain.Upper.X == nx*1000
