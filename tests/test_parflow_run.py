@@ -71,9 +71,12 @@ def test_get_template_runscript_data(grid, mode, input_file_type, tmp_path):
     if input_file_type == "box":
         assert run.Geom.domain.Upper.X == run.ComputationalGrid.NX*1000.0
         assert run.Geom.domain.Upper.Y == run.ComputationalGrid.NY*1000.0
+        assert run.GeomInput.domaininput.InputType == "Box"
     else:
         assert run.Geom.domain.Upper.X == None
         assert run.Geom.domain.Upper.Y == None
+        assert run.GeomInput.domaininput.InputType == "SolidFile"
+
 
 
 def test_edit_runscript_filepaths(tmp_path):
@@ -146,15 +149,11 @@ def test_copy_single_file(tmp_path):
     read_dir.mkdir()
     write_dir = tmp_path / "write"
     write_dir.mkdir()
-    runscript_path = st.get_template_runscript(
-        grid="conus1",
-        mode="transient",
-        input_file_type="box",
-        write_dir=read_dir,
-    )
+    test_file = read_dir / "myfile"
+    test_file.write_text("file contents")
     st.copy_files(read_dir, write_dir)
-    f1 = runscript_path
-    f2 = f"{write_dir}/{os.path.basename(runscript_path)}"
+    f1 = test_file
+    f2 = f"{write_dir}/{os.path.basename(test_file)}"
     assert os.path.exists(f2)
     assert filecmp.cmp(f1, f2, shallow=False)
 
