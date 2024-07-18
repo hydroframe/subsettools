@@ -2,6 +2,7 @@ import os
 import pytest
 from parflow import Run
 import subsettools as st
+import filecmp
 
 
 @pytest.mark.parametrize(
@@ -27,8 +28,8 @@ def test_get_template_runscript_filepaths(grid, mode, input_file_type, tmp_path)
         input_file_type=input_file_type,
         write_dir=test_dir,
 )
-    assert runscript_path == os.path.join(test_dir, os.listdir(test_dir)[0])
     assert os.path.exists(runscript_path)
+    assert runscript_path == os.path.join(test_dir, os.listdir(test_dir)[0])
 
 
 @pytest.mark.parametrize(
@@ -133,6 +134,40 @@ def test_edit_runscript_data(runname, ij_bounds, tmp_path):
     assert new_run.ComputationalGrid.NY == ny
     assert new_run.Geom.domain.Upper.X == nx*1000
     assert new_run.Geom.domain.Upper.Y == ny*1000
+
+
+def test_copy_single_file(tmp_path):
+    read_dir = tmp_path / "read"
+    read_dir.mkdir()
+    write_dir = tmp_path / "write"
+    write_dir.mkdir()
+    runscript_path = st.get_template_runscript(
+        grid="conus1",
+        mode="transient",
+        input_file_type="box",
+        write_dir=read_dir,
+    )
+    st.copy_files(read_dir, write_dir)
+    f1 = runscript_path
+    f2 = f"{write_dir}/{os.path.basename(runscript_path)}"
+    assert os.path.exists(f2)
+    assert filecmp.cmp(f1, f2, shallow=False)
+
+
+def test_copy_multiple_files(tmp_path):
+    write_dir = tmp_path / "write"
+    write_dir.mkdir()
+    correct_output_dir = os.path.join(
+        os.getcwd(), "tests", "correct_output", "conus1_upper_verde"
+    )
+    st.copy_files(read_dir=correct_output_dir, write_dir=write_dir)
+    match, mismatch, errors = filecmp.cmpfiles(
+        write_dir, correct_output_dir, ["mask.pfb", "solidfile.pfsol", "drv_clmin.dat"], shallow=True
+    )
+    assert len(match) == 3
+    assert len(mismatch) == 0
+    assert len(errors) == 0
+    
 
 
 def test_get_ref_yaml_path(tmp_path):
