@@ -16,7 +16,6 @@ import filecmp
         pytest.param("conus2", "spinup", "solid"),
         pytest.param("conus1", "transient", "solid"),
         pytest.param("conus2", "transient", "solid"),
-
     ]
 )
 def test_get_template_runscript_filepaths(grid, mode, input_file_type, tmp_path):
@@ -56,7 +55,6 @@ def test_get_template_runscript_data(grid, mode, input_file_type, tmp_path):
         write_dir=test_dir
     )
     run = Run.from_definition(runscript_path)
-
     #check mode
     if mode == "transient":
         assert run.Solver.LSM == "CLM"
@@ -83,21 +81,18 @@ def test_edit_runscript_filepaths(tmp_path):
     test_dir.mkdir()
     write_dir = tmp_path / "write"
     write_dir.mkdir()
-    forcing_dir = tmp_path / "forcing"
-    forcing_dir.mkdir()
     runscript_path = st.get_template_runscript("conus1", "transient", "box",test_dir)
     ij_bounds = (10, 10, 25, 25)
     runname = "test-edit-runscript"
-
     new_runscript_path = st.edit_runscript_for_subset(
         ij_bounds=ij_bounds, 
         runscript_path=runscript_path, 
         write_dir=write_dir,
         runname=runname, 
-        forcing_dir=forcing_dir,
     )
     assert os.path.exists(new_runscript_path)
     assert os.path.join(write_dir, os.listdir(write_dir)[0]) == new_runscript_path
+
 
 @pytest.mark.parametrize(
     "runname, ij_bounds, forcing",
@@ -172,12 +167,11 @@ def test_copy_multiple_files(tmp_path):
     )
     st.copy_files(read_dir=correct_output_dir, write_dir=write_dir)
     match, mismatch, errors = filecmp.cmpfiles(
-        write_dir, correct_output_dir, ["mask.pfb", "solidfile.pfsol", "drv_clmin.dat"], shallow=True
+        write_dir, correct_output_dir, os.listdir(correct_output_dir), shallow=True
     )
-    assert len(match) == 3
+    assert len(match) == len(os.listdir(correct_output_dir))
     assert len(mismatch) == 0
     assert len(errors) == 0
-    
 
 
 def test_get_ref_yaml_path(tmp_path):
