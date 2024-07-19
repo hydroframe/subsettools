@@ -105,7 +105,7 @@ def test_change_filename_values_2(tmp_path):
 
 
 @pytest.fixture
-def setup_dummy_run(request, tmp_path):
+def setup_dummy_run(tmp_path):
     old_dir = tmp_path / "old"
     old_dir.mkdir()
     slope_x = old_dir / "slope_x.pfb"
@@ -122,21 +122,56 @@ def setup_dummy_run(request, tmp_path):
     return runscript_path
     
 
-def test_restart_run_directories(setup_dummy_run, tmp_path):
-    runscript_path = setup_dummy_run
+def test_restart_run_new_directory(setup_dummy_run, tmp_path):
+    old_runscript = setup_dummy_run
     new_dir = tmp_path / "new"
     assert not os.path.isdir(new_dir)
-    st.restart_run(runscript_path=runscript_path, new_dir=new_dir)
+    st.restart_run(runscript_path=old_runscript, new_dir=new_dir)
     assert os.path.isdir(new_dir)
+
+    
+def test_restart_run_valid_runscript(setup_dummy_run, tmp_path):
+    old_runscript = setup_dummy_run
+    new_dir = tmp_path / "new"
+    new_runscript = st.restart_run(
+        runscript_path=old_runscript,
+        new_dir=new_dir,
+    )
+    try:
+        run = Run.from_definition(new_runscript)
+    except Exception as e:
+        pytest.fail("Failed to load new run from returned runscript.")
+
+
+@pytest.mark.parametrize("dir_name", [None, "new"])
+def test_restart_run_runscript_path(dir_name, setup_dummy_run, tmp_path):
+    old_runscript = setup_dummy_run
+    new_dir = None if dir_name is None else tmp_path / dir_name
+    new_runscript = st.restart_run(
+        runscript_path=old_runscript,
+        new_dir=new_dir,
+    )
+    working_directory = os.path.dirname(old_runscript) if new_dir is None else str(new_dir)
+    assert os.path.dirname(new_runscript) == working_directory
+
+
+@pytest.mark.parametrize("new_runname", [None, "new_run"])
+def test_restart_run_same_name(new_runname, setup_dummy_run, tmp_path):
+    old_runscript = setup_dummy_run
+    new_runscript = st.restart_run(
+        runscript_path=old_runscript,
+        new_runname=new_runname,
+    )
+    filename = "dummy_run.yaml" if new_runname is None else "new_run.yaml"
+    assert os.path.basename(new_runscript) == filename
 
 
 def test_restart_run_copy_inputs(setup_dummy_run, tmp_path):
-    runscript_path = setup_dummy_run
+    old_runscript = setup_dummy_run
     new_dir = tmp_path / "new"
     st.restart_run(
-        runscript_path=runscript_path,
+        runscript_path=old_runscript,
         new_dir=new_dir
     )
-    assert os.listdir(new_dir) == ["slope_x.pfb", "slope_y.pfb"]
-    
-
+    assert "slope_x.pfb" in os.listdir(new_dir)
+    assert "slope_y.pfb" in os.listdir(new_dir)

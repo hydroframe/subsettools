@@ -384,13 +384,24 @@ def dist_run(topo_p, topo_q, runscript_path, working_dir=None, dist_clim_forcing
     return file_path
 
 
-def restart_run(runscript_path, new_dir=None):
-    if not os.path.isfile(runscript_path):
-        raise FileNotFoundError("runscript_path must be a valid file path")
+def restart_run(runscript_path, new_dir=None, new_runname=None):
+    run = Run.from_definition(runscript_path)
+    if new_runname is not None:
+        run.set_name(new_runname)
+        
     if new_dir is not None:
         os.mkdir(new_dir)
         _copy_static_inputs(runscript_path, new_dir)
-        
+        working_directory = new_dir
+    else:
+        working_directory = os.path.dirname(runscript_path)
+
+    runscript_path, _ = run.write(
+        file_format='yaml',
+        working_directory=working_directory,
+    )
+    return runscript_path
+
 
 def _copy_static_inputs(runscript_path, new_dir):
     filenames = _extract_filenames_from_runscript(runscript_path)
