@@ -155,14 +155,14 @@ def test_restart_run_runscript_path(dir_name, setup_dummy_run, tmp_path):
     assert os.path.dirname(new_runscript) == working_directory
 
 
-@pytest.mark.parametrize("new_runname", [None, "new_run"])
-def test_restart_run_same_name(new_runname, setup_dummy_run, tmp_path):
+@pytest.mark.parametrize("runname", [None, "new_run"])
+def test_restart_run_same_name(runname, setup_dummy_run, tmp_path):
     old_runscript = setup_dummy_run
     new_runscript = st.restart_run(
         runscript_path=old_runscript,
-        new_runname=new_runname,
+        runname=runname,
     )
-    filename = "dummy_run.yaml" if new_runname is None else "new_run.yaml"
+    filename = "dummy_run.yaml" if runname is None else "new_run.yaml"
     assert os.path.basename(new_runscript) == filename
 
 
@@ -175,3 +175,13 @@ def test_restart_run_copy_inputs(setup_dummy_run, tmp_path):
     )
     assert "slope_x.pfb" in os.listdir(new_dir)
     assert "slope_y.pfb" in os.listdir(new_dir)
+
+
+def test_restart_run_forcing_directory(setup_dummy_run):
+    old_runscript = setup_dummy_run
+    runscript_path = st.restart_run(
+        runscript_path=old_runscript,
+        forcing_dir="forcing",
+    )
+    run = Run.from_definition(runscript_path)
+    assert run.Solver.CLM.MetFilePath == "forcing"

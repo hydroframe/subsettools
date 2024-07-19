@@ -384,10 +384,12 @@ def dist_run(topo_p, topo_q, runscript_path, working_dir=None, dist_clim_forcing
     return file_path
 
 
-def restart_run(runscript_path, new_dir=None, new_runname=None):
+def restart_run(runscript_path, new_dir=None, runname=None, forcing_dir=None):
     run = Run.from_definition(runscript_path)
-    if new_runname is not None:
-        run.set_name(new_runname)
+    if runname is not None:
+        run.set_name(runname)
+    if forcing_dir is not None:
+        run.Solver.CLM.MetFilePath = forcing_dir
         
     if new_dir is not None:
         os.mkdir(new_dir)
