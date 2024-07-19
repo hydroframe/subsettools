@@ -161,14 +161,18 @@ def test_copy_single_file(tmp_path):
 def test_copy_multiple_files(tmp_path):
     write_dir = tmp_path / "write"
     write_dir.mkdir()
-    correct_output_dir = os.path.join(
-        os.getcwd(), "tests", "correct_output", "conus1_upper_verde"
-    )
-    st.copy_files(read_dir=correct_output_dir, write_dir=write_dir)
+    read_dir = tmp_path / "read"
+    read_dir.mkdir()
+    test_file1 = read_dir / "myfile1"
+    test_file1.write_text("this is the first file in this folder")    
+    test_file2 = read_dir / "myfile2"
+    test_file2.write_text("this is the second file in this folder")   
+
+    st.copy_files(read_dir, write_dir)
     match, mismatch, errors = filecmp.cmpfiles(
-        write_dir, correct_output_dir, os.listdir(correct_output_dir), shallow=True
+        write_dir, read_dir, os.listdir(read_dir), shallow=False
     )
-    assert len(match) == len(os.listdir(correct_output_dir))
+    assert len(match) == 2
     assert len(mismatch) == 0
     assert len(errors) == 0
 
