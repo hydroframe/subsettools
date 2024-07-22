@@ -177,6 +177,40 @@ def test_copy_multiple_files(tmp_path):
     assert len(errors) == 0
 
 
+def test_change_filename_values_filepaths1(tmp_path):
+#   saves new runscript in new dir with new runname
+    working_dir = tmp_path / "working"
+    working_dir.mkdir()
+    write_dir = tmp_path / "write"
+    write_dir.mkdir()
+    original_runscript_path = st.get_template_runscript(grid="conus1", mode="transient", input_file_type="box", write_dir=working_dir)
+    new_runscript_path = st.change_filename_values(runscript_path=original_runscript_path, write_dir=write_dir, runname="new_runscript")
+    assert original_runscript_path != new_runscript_path
+    assert os.path.dirname(new_runscript_path) != os.path.dirname(original_runscript_path)
+    assert os.path.basename(new_runscript_path) == "new_runscript.yaml"
+
+
+def test_change_filename_values_filepaths2(tmp_path):
+#   saves new runscript in same dir with new runname
+    working_dir = tmp_path / "working"
+    working_dir.mkdir()
+    original_runscript_path = st.get_template_runscript(grid="conus1", mode="transient", input_file_type="box", write_dir=working_dir)
+    new_runscript_path = st.change_filename_values(runscript_path=original_runscript_path, runname="new_runscript")
+    assert original_runscript_path != new_runscript_path
+    assert os.path.dirname(new_runscript_path) == os.path.dirname(original_runscript_path)
+    assert os.path.basename(new_runscript_path) == "new_runscript.yaml"
+
+
+def test_change_filename_values_filepaths3(tmp_path):
+#   overwrites existing runscript with new runscript
+    working_dir = tmp_path / "working"
+    working_dir.mkdir()
+    original_runscript_path = st.get_template_runscript(grid="conus1", mode="transient", input_file_type="box", write_dir=working_dir)
+    new_runscript_path = st.change_filename_values(runscript_path=original_runscript_path)
+    assert original_runscript_path == new_runscript_path
+
+   
+# ------ Previously written tests ------ #
 def test_get_ref_yaml_path(tmp_path):
     test_dir = tmp_path / "test"
     test_dir.mkdir()
@@ -242,7 +276,7 @@ def test_edit_runscript_for_subset_3(tmp_path):
 
 
 def test_change_filename_values_1(tmp_path):
-    """Check the edited fiedls of the runscript file."""
+    """Check the edited fields of the runscript file."""
     test_dir = tmp_path / "test"
     test_dir.mkdir()
     old_runscript = st.get_template_runscript("conus1", "transient", "box", test_dir)
