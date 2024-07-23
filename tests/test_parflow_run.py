@@ -1,6 +1,9 @@
 import os
 import pytest
+import numpy as np
 from parflow import Run
+from parflow.tools.io import write_pfb, read_pfb
+from parflow import ParflowBinaryReader
 import subsettools as st
 import filecmp
 
@@ -289,6 +292,102 @@ def test_change_filename_values_evap_trans(tmp_path):
     run = Run.from_definition(new_runscript)
     assert run.Solver.EvapTrans.FileName == test_file
     
+
+def test_dist_run_filepaths_1(tmp_path):
+#  no working directory provided
+    runscript_dir = tmp_path / "runscript"
+    runscript_dir.mkdir()
+    original_runscript_path = st.get_template_runscript(
+        grid="conus1", 
+        mode="transient", 
+        input_file_type="box", 
+        write_dir=runscript_dir
+    )
+    new_runscript_path = st.dist_run(topo_p=4,topo_q=4,runscript_path=original_runscript_path,dist_clim_forcing=False)
+    assert new_runscript_path == original_runscript_path
+    
+
+def test_dist_run_filepaths_2(tmp_path):
+#  no working directory provided
+    runscript_dir = tmp_path / "runscript"
+    runscript_dir.mkdir()
+    working_dir = tmp_path / "working"
+    working_dir.mkdir()
+    original_runscript_path = st.get_template_runscript(
+        grid="conus1", 
+        mode="transient", 
+        input_file_type="box", 
+        write_dir=runscript_dir
+    )
+    new_runscript_path = st.dist_run(topo_p=4,topo_q=4,runscript_path=original_runscript_path,dist_clim_forcing=False, working_dir=working_dir)
+    assert original_runscript_path != new_runscript_path
+    assert os.path.basename(new_runscript_path) == os.path.basename(original_runscript_path)
+    assert os.path.dirname(new_runscript_path) != os.path.dirname(original_runscript_path)
+
+
+def test_dist_run_runscript(tmp_path):
+    working_dir = tmp_path / "working"
+    working_dir.mkdir()
+    runscript_path = st.get_template_runscript(
+        grid="conus1", 
+        mode="transient", 
+        input_file_type="box", 
+        write_dir=working_dir
+    )
+    new_path = st.dist_run(
+        topo_p=3,
+        topo_q=2,
+        runscript_path=runscript_path,
+        dist_clim_forcing=False
+    )
+    run = Run.from_definition(new_path)
+    assert run.Process.Topology.P == 3
+    assert run.Process.Topology.Q == 2
+
+
+def test_dist_run_forcing_data(tmp_path):
+#   checks header of distributed forcing data
+    runscript_dir = tmp_path / "runscript"
+    runscript_dir.mkdir()
+    working_dir = tmp_path / "working"
+    working_dir.mkdir()
+    test_file = working_dir / "test_file.pfb"
+    data = np.ones((10,10))
+    write_pfb(str(test_file), data)
+    topo_p = 2
+    topo_q = 3
+    runscript_path = st.get_template_runscript("conus1", "transient", "box", runscript_dir)
+    temp_run = Run.from_definition(runscript_path)
+    temp_run.Solver.CLM.MetFilePath = str(working_dir)
+    temp_run.write(
+        working_directory=runscript_dir, file_format="yaml"
+    )
+    new_path = st.dist_run(topo_p, topo_q,runscript_path, dist_clim_forcing=True, working_dir=str(working_dir))
+    run = Run.from_definition(new_path)
+    with ParflowBinaryReader(test_file) as pfb:
+        data = pfb.read_header()
+    assert data['n_subgrids'] == topo_p*topo_q
+
+
+def test_dist_run_runfile_data(tmp_path):
+#   checks header of distributed forcing data
+    runscript_dir = tmp_path / "runscript"
+    runscript_dir.mkdir()
+    working_dir = tmp_path / "working"
+    working_dir.mkdir()
+    test_file = working_dir / "test_run_file.pfb"
+    data = np.ones((10,10))
+    write_pfb(str(test_file), data)
+    topo_p = 2
+    topo_q = 3
+    runscript_path = st.get_template_runscript("conus1", "transient", "box", runscript_dir)
+    new_path = st.dist_run(topo_p, topo_q,runscript_path, dist_clim_forcing=False, working_dir=str(working_dir))
+    run = Run.from_definition(new_path)
+    with ParflowBinaryReader(test_file) as pfb:
+        data = pfb.read_header()
+    assert data['n_subgrids'] == topo_p*topo_q
+
+
 
 # ------ Previously written tests ------ #
 def test_get_ref_yaml_path(tmp_path):
