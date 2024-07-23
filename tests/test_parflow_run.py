@@ -209,7 +209,87 @@ def test_change_filename_values_filepaths3(tmp_path):
     new_runscript_path = st.change_filename_values(runscript_path=original_runscript_path)
     assert original_runscript_path == new_runscript_path
 
-   
+
+def test_change_filename_values_slopex(tmp_path):
+    write_dir = tmp_path / "write"
+    write_dir.mkdir()
+    test_file = "dummy_test_file.pfb"
+    original_runscript = st.get_template_runscript(grid="conus1", mode="transient", input_file_type="box", write_dir=write_dir)
+    new_runscript = st.change_filename_values(original_runscript, write_dir, runname="new_runscript", slopex=test_file)
+    run = Run.from_definition(new_runscript)
+    assert run.TopoSlopesX.FileName == test_file
+
+
+def test_change_filename_values_slopey(tmp_path):
+    write_dir = tmp_path / "write"
+    write_dir.mkdir()
+    test_file = "dummy_test_file.pfb"
+    original_runscript = st.get_template_runscript(grid="conus1", mode="transient", input_file_type="box", write_dir=write_dir)
+    new_runscript = st.change_filename_values(original_runscript, write_dir, runname="new_runscript", slopey=test_file)
+    run = Run.from_definition(new_runscript)
+    assert run.TopoSlopesY.FileName == test_file
+
+
+def test_change_filename_values_solidfile(tmp_path):
+    write_dir = tmp_path / "write"
+    write_dir.mkdir()
+    test_file = "dummy_test_file.pfb"
+    original_runscript = st.get_template_runscript(grid="conus1", mode="transient", input_file_type="box", write_dir=write_dir)
+    new_runscript = st.change_filename_values(original_runscript, write_dir, runname="new_runscript", solidfile=test_file)
+    run = Run.from_definition(new_runscript)
+    assert run.GeomInput.domaininput.FileName == test_file
+
+
+def test_change_filename_values_init_press(tmp_path):
+    write_dir = tmp_path / "write"
+    write_dir.mkdir()
+    test_file = "dummy_test_file.pfb"
+    original_runscript = st.get_template_runscript(grid="conus1", mode="transient", input_file_type="box", write_dir=write_dir)
+    new_runscript = st.change_filename_values(original_runscript, write_dir, runname="new_runscript", init_press=test_file)
+    run = Run.from_definition(new_runscript)
+    assert  run.Geom.domain.ICPressure.FileName == test_file
+
+
+def test_change_filename_values_indicator(tmp_path):
+    write_dir = tmp_path / "write"
+    write_dir.mkdir()
+    test_file = "dummy_test_file.pfb"
+    original_runscript = st.get_template_runscript(grid="conus1", mode="transient", input_file_type="box", write_dir=write_dir)
+    new_runscript = st.change_filename_values(original_runscript, write_dir, runname="new_runscript", indicator=test_file)
+    run = Run.from_definition(new_runscript)
+    assert run.Geom.indi_input.FileName == test_file
+
+
+def test_change_filename_values_depth_to_bedrock(tmp_path):
+    write_dir = tmp_path / "write"
+    write_dir.mkdir()
+    test_file = "dummy_test_file.pfb"
+    original_runscript = st.get_template_runscript(grid="conus1", mode="transient", input_file_type="box", write_dir=write_dir)
+    new_runscript = st.change_filename_values(original_runscript, write_dir, runname="new_runscript", depth_to_bedrock=test_file)
+    run = Run.from_definition(new_runscript)
+    assert run.Geom.domain.FBz.FileName == test_file
+
+
+def test_change_filename_values_mannings(tmp_path):
+    write_dir = tmp_path / "write"
+    write_dir.mkdir()
+    test_file = "dummy_test_file.pfb"
+    original_runscript = st.get_template_runscript(grid="conus1", mode="transient", input_file_type="box", write_dir=write_dir)
+    new_runscript = st.change_filename_values(original_runscript, write_dir, runname="new_runscript", mannings=test_file)
+    run = Run.from_definition(new_runscript)
+    assert run.Mannings.FileName == test_file
+
+
+def test_change_filename_values_evap_trans(tmp_path):
+    write_dir = tmp_path / "write"
+    write_dir.mkdir()
+    test_file = "dummy_test_file.pfb"
+    original_runscript = st.get_template_runscript(grid="conus1", mode="transient", input_file_type="box", write_dir=write_dir)
+    new_runscript = st.change_filename_values(original_runscript, write_dir, runname="new_runscript", evap_trans=test_file)
+    run = Run.from_definition(new_runscript)
+    assert run.Solver.EvapTrans.FileName == test_file
+    
+
 # ------ Previously written tests ------ #
 def test_get_ref_yaml_path(tmp_path):
     test_dir = tmp_path / "test"
