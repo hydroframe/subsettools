@@ -156,7 +156,7 @@ def test_restart_run_runscript_path(dir_name, setup_dummy_run, tmp_path):
 
 
 @pytest.mark.parametrize("runname", [None, "new_run"])
-def test_restart_run_same_name(runname, setup_dummy_run, tmp_path):
+def test_restart_run_filename(runname, setup_dummy_run, tmp_path):
     old_runscript = setup_dummy_run
     new_runscript = st.restart_run(
         runscript_path=old_runscript,
