@@ -297,28 +297,18 @@ def test_dist_run_filepaths_1(tmp_path):
 #  no working directory provided
     runscript_dir = tmp_path / "runscript"
     runscript_dir.mkdir()
-    original_runscript_path = st.get_template_runscript(
-        grid="conus1", 
-        mode="transient", 
-        input_file_type="box", 
-        write_dir=runscript_dir
-    )
+    original_runscript_path = st.get_template_runscript("conus1", "transient", "box", runscript_dir)
     new_runscript_path = st.dist_run(topo_p=4,topo_q=4,runscript_path=original_runscript_path,dist_clim_forcing=False)
     assert new_runscript_path == original_runscript_path
     
 
 def test_dist_run_filepaths_2(tmp_path):
-#  no working directory provided
+#  working directory provided
     runscript_dir = tmp_path / "runscript"
     runscript_dir.mkdir()
     working_dir = tmp_path / "working"
     working_dir.mkdir()
-    original_runscript_path = st.get_template_runscript(
-        grid="conus1", 
-        mode="transient", 
-        input_file_type="box", 
-        write_dir=runscript_dir
-    )
+    original_runscript_path = st.get_template_runscript("conus1", "transient", "box", runscript_dir)
     new_runscript_path = st.dist_run(topo_p=4,topo_q=4,runscript_path=original_runscript_path,dist_clim_forcing=False, working_dir=working_dir)
     assert original_runscript_path != new_runscript_path
     assert os.path.basename(new_runscript_path) == os.path.basename(original_runscript_path)
@@ -326,20 +316,11 @@ def test_dist_run_filepaths_2(tmp_path):
 
 
 def test_dist_run_runscript(tmp_path):
+#   checks runscript object to ensure topo_p and q changes were made
     working_dir = tmp_path / "working"
     working_dir.mkdir()
-    runscript_path = st.get_template_runscript(
-        grid="conus1", 
-        mode="transient", 
-        input_file_type="box", 
-        write_dir=working_dir
-    )
-    new_path = st.dist_run(
-        topo_p=3,
-        topo_q=2,
-        runscript_path=runscript_path,
-        dist_clim_forcing=False
-    )
+    runscript_path = st.get_template_runscript("conus1", "transient", "box", working_dir)
+    new_path = st.dist_run(topo_p=3, topo_q=2, runscript_path=runscript_path, dist_clim_forcing=False)
     run = Run.from_definition(new_path)
     assert run.Process.Topology.P == 3
     assert run.Process.Topology.Q == 2
@@ -370,7 +351,7 @@ def test_dist_run_forcing_data(tmp_path):
 
 
 def test_dist_run_runfile_data(tmp_path):
-#   checks header of distributed forcing data
+#   checks header of distributed run data
     runscript_dir = tmp_path / "runscript"
     runscript_dir.mkdir()
     working_dir = tmp_path / "working"
