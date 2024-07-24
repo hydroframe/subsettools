@@ -410,8 +410,12 @@ def _copy_static_inputs(runscript_path, new_dir):
     old_dir = os.path.dirname(runscript_path)
     for filename in filenames:
         shutil.copy(os.path.join(old_dir, filename), new_dir)
+    # Remove old ic pressure file from new directory
+    run = Run.from_definition(runscript_path)
+    ic_pressure = run.Geom.domain.ICPressure.FileName
+    os.remove(os.path.join(new_dir, ic_pressure))
 
-    
+
 def _extract_filenames_from_runscript(runscript_path):
     filenames = []
     with open(runscript_path, 'r') as f:

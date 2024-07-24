@@ -112,9 +112,15 @@ def setup_dummy_run(tmp_path):
     slope_x.write_text("Dummy slope_x input file")
     slope_y = old_dir / "slope_y.pfb"
     slope_y.write_text("Dummy slope_y input file")
+    ic_pressure = old_dir / "old_ic_pressure.pfb"
+    ic_pressure.write_text("Dummy ic_pressure input file")
     run = Run("dummy_run")
-    run.TopoSlopesX.FileName = str(slope_x)
-    run.TopoSlopesY.FileName = str(slope_y)
+    run.TopoSlopesX.FileName = os.path.basename(slope_x)
+    run.TopoSlopesY.FileName = os.path.basename(slope_y)
+    run.GeomInput.Names = 'domain_input'
+    run.GeomInput.domain_input.InputType = 'Box'
+    run.GeomInput.domain_input.GeomName  = 'domain'
+    run.Geom.domain.ICPressure.FileName = os.path.basename(ic_pressure)
     runscript_path, _ = run.write(
         file_format="yaml",
         working_directory=old_dir
@@ -175,7 +181,7 @@ def test_restart_run_copy_inputs(setup_dummy_run, tmp_path):
     )
     assert "slope_x.pfb" in os.listdir(new_dir)
     assert "slope_y.pfb" in os.listdir(new_dir)
-
+    assert "old_ic_pressure.pfb" not in os.listdir(new_dir)
 
 def test_restart_run_forcing_directory(setup_dummy_run):
     old_runscript = setup_dummy_run
