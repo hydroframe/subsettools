@@ -1,6 +1,7 @@
 import os
 import pytest
 from parflow import Run
+from parflow.tools.io import read_pfb
 import subsettools as st
 
 
@@ -183,6 +184,7 @@ def test_restart_run_copy_inputs(setup_dummy_run, tmp_path):
     assert "slope_y.pfb" in os.listdir(new_dir)
     assert "old_ic_pressure.pfb" not in os.listdir(new_dir)
 
+    
 def test_restart_run_forcing_directory(setup_dummy_run):
     old_runscript = setup_dummy_run
     runscript_path = st.restart_run(
@@ -191,3 +193,16 @@ def test_restart_run_forcing_directory(setup_dummy_run):
     )
     run = Run.from_definition(runscript_path)
     assert run.Solver.CLM.MetFilePath == "forcing"
+
+
+#@pytest.mark.parametrize("output_type", ["netcdf", "pfb"])
+#def test_restart_run_initial_pressure(output_type, setup_dummy_run, tmp_path):
+#    old_runscript = setup_dummy_run
+#    new_dir = tmp_path / "new"
+#    runscript_path = st.restart_run(
+#        runscript_path = old_runscript,
+#        new_dir=new_dir,
+#        output_type=output_type,
+#    )
+#    ic_data = read_pfb(os.path.join(new_dir, "initial_pressure.pfb"))
+#    assert ic_data.shape == (1, 20, 10)

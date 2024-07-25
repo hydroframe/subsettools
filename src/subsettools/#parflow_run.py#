@@ -404,9 +404,9 @@ def restart_run(runscript_path, new_dir=None, runname=None, forcing_dir=None, ou
         os.path.join(working_directory, filename),
         data
     )
-    run.Geom.domain.ICPressure.FileName = filename
+    run.Geom.domain.ICPressure.FileName = runscript
     
-    runscript_path, _ = run.write(
+    filename_path, _ = run.write(
         file_format='yaml',
         working_directory=working_directory,
     )
