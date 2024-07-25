@@ -4,7 +4,7 @@ import os
 import shutil
 from importlib import resources
 from parflow import Run
-from parflow.tools.io import read_pfb
+from parflow.tools.io import read_pfb, write_pfb
 from ._dev_utils import replace_kwargs
 from ._error_checking import (
     _validate_grid,
@@ -435,7 +435,7 @@ def _extract_filenames_from_runscript(runscript_path):
 
 
 def _get_ic_pressure_from_old_run(runscript_path, output_type):
-    working_directory = os.dirname(runscript_path)
+    working_directory = os.path.dirname(runscript_path)
     if output_type == 'pfb':
         pattern = re.compile(r'^.+\.out\.press\.(\d{5})\.pfb$')
         files = [f for f in os.listdir(working_directory) if pattern.match(f)]
