@@ -330,20 +330,20 @@ def test_dist_run_forcing_data(tmp_path):
 #   checks header of distributed forcing data
     runscript_dir = tmp_path / "runscript"
     runscript_dir.mkdir()
-    working_dir = tmp_path / "working"
-    working_dir.mkdir()
-    test_file = working_dir / "test_file.pfb"
+    forcing_dir = tmp_path / "forcing"
+    forcing_dir.mkdir()
+    test_file = forcing_dir / "test_file.pfb"
     data = np.ones((10,10))
     write_pfb(str(test_file), data)
     topo_p = 2
     topo_q = 3
     runscript_path = st.get_template_runscript("conus1", "transient", "box", runscript_dir)
     temp_run = Run.from_definition(runscript_path)
-    temp_run.Solver.CLM.MetFilePath = str(working_dir)
+    temp_run.Solver.CLM.MetFilePath = str(forcing_dir)
     temp_run.write(
         working_directory=runscript_dir, file_format="yaml"
     )
-    new_path = st.dist_run(topo_p, topo_q,runscript_path, dist_clim_forcing=True, working_dir=str(working_dir))
+    new_path = st.dist_run(topo_p, topo_q,runscript_path, dist_clim_forcing=True)
     run = Run.from_definition(new_path)
     with ParflowBinaryReader(test_file) as pfb:
         data = pfb.read_header()
