@@ -444,6 +444,6 @@ def _get_ic_pressure_from_old_run(runscript_path, output_type):
         files.sort(key=lambda x: int(pattern.search(x).group(1)))
         return read_pfb(os.path.join(working_directory, files[-1]))
     elif output_type == 'netcdf':
-        
+        pass
     else:
         raise ValueError("Invalid output_type provided.")
