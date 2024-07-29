@@ -1,7 +1,9 @@
 import os
 import pytest
+import numpy as np
+from netCDF4 import Dataset
 from parflow import Run
-from parflow.tools.io import read_pfb
+from parflow.tools.io import read_pfb, write_pfb
 import subsettools as st
 
 
@@ -122,12 +124,34 @@ def setup_dummy_run(tmp_path):
     run.GeomInput.domain_input.InputType = 'Box'
     run.GeomInput.domain_input.GeomName  = 'domain'
     run.Geom.domain.ICPressure.FileName = os.path.basename(ic_pressure)
+    _create_nc_output(old_dir)
+    _create_pfb_output(old_dir)
     runscript_path, _ = run.write(
         file_format="yaml",
         working_directory=old_dir
     )
     return runscript_path
-    
+
+
+def _create_nc_output(working_directory):
+    for idx in range(3):
+        ncfile = Dataset(os.path.join(working_directory, f"dummy_run.out.{idx:05d}.nc"), 'w', format='NETCDF4')
+        ncfile.createDimension('time', None)
+        ncfile.createDimension('x', 5)
+        ncfile.createDimension('y', 3)
+        ncfile.createDimension('z', 1)
+        pressure = ncfile.createVariable('pressure', 'f8', ('time', 'z', 'y', 'x'))
+        for i in range(5):
+            pressure[i, :, :, :] = 5 * idx + i
+        ncfile.close()
+
+
+def _create_pfb_output(working_directory):
+    for idx in range(15):
+        data = np.ones((1, 3, 5)) * idx
+        file_path = os.path.join(working_directory, f"dummy_run.out.press.{idx:05d}.pfb")
+        write_pfb(file_path, data)
+
 
 def test_restart_run_new_directory(setup_dummy_run, tmp_path):
     old_runscript = setup_dummy_run
@@ -195,14 +219,15 @@ def test_restart_run_forcing_directory(setup_dummy_run):
     assert run.Solver.CLM.MetFilePath == "forcing"
 
 
-#@pytest.mark.parametrize("output_type", ["netcdf", "pfb"])
-#def test_restart_run_initial_pressure(output_type, setup_dummy_run, tmp_path):
-#    old_runscript = setup_dummy_run
-#    new_dir = tmp_path / "new"
-#    runscript_path = st.restart_run(
-#        runscript_path = old_runscript,
-#        new_dir=new_dir,
-#        output_type=output_type,
-#    )
-#    ic_data = read_pfb(os.path.join(new_dir, "initial_pressure.pfb"))
-#    assert ic_data.shape == (1, 20, 10)
+@pytest.mark.parametrize("output_type", ["netcdf", "pfb"])
+def test_restart_run_initial_pressure(output_type, setup_dummy_run, tmp_path):
+    old_runscript = setup_dummy_run
+    new_dir = tmp_path / "new"
+    runscript_path = st.restart_run(
+        runscript_path = old_runscript,
+        new_dir=new_dir,
+        output_type=output_type,
+    )
+    ic_data = read_pfb(os.path.join(new_dir, "initial_pressure.pfb"))
+    assert ic_data.shape == (1, 3, 5)
+    assert ic_data[0, 0, 0] == 14

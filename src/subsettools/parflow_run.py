@@ -1,8 +1,10 @@
 """Functions to get and customize a ParFlow runscript."""
 
 import os
+import re
 import shutil
 from importlib import resources
+import netCDF4 as nc
 from parflow import Run
 from parflow.tools.io import read_pfb, write_pfb
 from ._dev_utils import replace_kwargs
@@ -444,6 +446,16 @@ def _get_ic_pressure_from_old_run(runscript_path, output_type):
         files.sort(key=lambda x: int(pattern.search(x).group(1)))
         return read_pfb(os.path.join(working_directory, files[-1]))
     elif output_type == 'netcdf':
-        pass
+        pattern = re.compile(r'^.+\.out\.(\d{5})\.nc$')
+        files = [f for f in os.listdir(working_directory) if pattern.match(f)]
+        if not files:
+            raise ValueError(f"No output netcdf files found in {working_directory}.")
+        files.sort(key=lambda x: int(pattern.search(x).group(1)))
+        dataset = nc.Dataset(os.path.join(working_directory, files[-1]))
+        timesteps_in_file = len(dataset.dimensions['time'])
+        press_data = dataset.variables['pressure']
+        last_timestep_data = press_data[timesteps_in_file - 1, ...]
+        dataset.close()
+        return last_timestep_data
     else:
         raise ValueError("Invalid output_type provided.")
