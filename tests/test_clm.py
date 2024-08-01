@@ -39,7 +39,6 @@ def test_config_clm_filepaths(mock_hf_get_file, mock_hf_get_data, tmp_path):
     assert file_paths["pfb"] == f"{write_dir}/drv_vegm.dat"
     assert file_paths["drv_clm"] == f"{write_dir}/drv_clmin.dat"
 
-def test_config_clm_data
     
 
     
