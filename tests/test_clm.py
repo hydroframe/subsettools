@@ -4,6 +4,7 @@ import numpy as np
 import subsettools as st
 import hf_hydrodata
 import shutil
+from test_subsetting import mock_hf_data
 
 @pytest.fixture
 def mock_hf_get_file(monkeypatch):
@@ -19,13 +20,8 @@ def mock_hf_get_file(monkeypatch):
     monkeypatch.setattr(hf_hydrodata, "get_raw_file", mock_get_raw_file)
 
 
-@pytest.fixture
-def mock_hf_get_data(monkeypatch):
-    def mock_get_gridded_data(options):
-        return np.ones((10,10,10))
-    monkeypatch.setattr(hf_hydrodata, "get_gridded_data", mock_get_gridded_data)
 
-def test_config_clm_filepaths(mock_hf_get_file, mock_hf_get_data, tmp_path):
+def test_config_clm_filepaths(mock_hf_get_file, mock_hf_data, tmp_path):
     write_dir = tmp_path / "write"
     write_dir.mkdir()
     file_paths = st.config_clm(
