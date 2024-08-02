@@ -35,6 +35,19 @@ def test_config_clm_filepaths(mock_hf_get_file, mock_hf_data, tmp_path):
     assert file_paths["pfb"] == f"{write_dir}/drv_vegm.dat"
     assert file_paths["drv_clm"] == f"{write_dir}/drv_clmin.dat"
 
+def test_config_clm_data_vegm(mock_hf_get_file, mock_hf_data, tmp_path):
+    write_dir = tmp_path / "write"
+    write_dir.mkdir()
+    file_paths = st.config_clm(
+    ij_bounds=(0,0,10,10),
+    start="2005-10-01",
+    end="2006-10-01",
+    dataset="conus1_baseline_mod",
+    write_dir=write_dir
+    )
+    with open(f"{write_dir}/drv_vegm.dat") as my_file:
+        file_lines = my_file.readlines()
+    assert file_lines[2] == '1 1 1.000000 1.000000 1.00 1.00 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1\n'
     
 
     
