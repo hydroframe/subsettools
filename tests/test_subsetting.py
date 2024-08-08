@@ -31,7 +31,10 @@ def mock_hf_data(monkeypatch):
             else:
                 shape = (nt, nj, ni)
         elif resolution == "static":
-            shape = (_DUMMY_NZ, nj, ni)
+            if variable == "clm_run":
+                shape = (23, 1, 1)
+            else:
+                shape = (_DUMMY_NZ, nj, ni)
         return np.ones(shape)
 
     monkeypatch.setattr(hf_hydrodata, "get_gridded_data", mock_get_data)
