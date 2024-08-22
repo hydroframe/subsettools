@@ -123,16 +123,13 @@ def setup_dummy_run(tmp_path):
     run = Run("dummy_run")
     run.TopoSlopesX.FileName = os.path.basename(slope_x)
     run.TopoSlopesY.FileName = os.path.basename(slope_y)
-    run.GeomInput.Names = 'domain_input'
-    run.GeomInput.domain_input.InputType = 'Box'
-    run.GeomInput.domain_input.GeomName  = 'domain'
+    run.GeomInput.Names = "domain_input"
+    run.GeomInput.domain_input.InputType = "Box"
+    run.GeomInput.domain_input.GeomName = "domain"
     run.Geom.domain.ICPressure.FileName = os.path.basename(ic_pressure)
     _create_nc_output(old_dir)
     _create_pfb_output(old_dir)
-    runscript_path, _ = run.write(
-        file_format="yaml",
-        working_directory=old_dir
-    )
+    runscript_path, _ = run.write(file_format="yaml", working_directory=old_dir)
     return runscript_path
 
 
@@ -140,12 +137,16 @@ def _create_nc_output(working_directory):
     value = 0
     num_days = (_NUM_TIMESTEPS + 23) // 24
     for idx in range(num_days):
-        ncfile = Dataset(os.path.join(working_directory, f"dummy_run.out.{idx:05d}.nc"), 'w', format='NETCDF4')
-        ncfile.createDimension('time', None)
-        ncfile.createDimension('x', 5)
-        ncfile.createDimension('y', 3)
-        ncfile.createDimension('z', 1)
-        pressure = ncfile.createVariable('pressure', 'f8', ('time', 'z', 'y', 'x'))
+        ncfile = Dataset(
+            os.path.join(working_directory, f"dummy_run.out.{idx:05d}.nc"),
+            "w",
+            format="NETCDF4",
+        )
+        ncfile.createDimension("time", None)
+        ncfile.createDimension("x", 5)
+        ncfile.createDimension("y", 3)
+        ncfile.createDimension("z", 1)
+        pressure = ncfile.createVariable("pressure", "f8", ("time", "z", "y", "x"))
         for i in range(24):
             pressure[i, :, :, :] = value
             value = value + 1
@@ -157,7 +158,9 @@ def _create_nc_output(working_directory):
 def _create_pfb_output(working_directory):
     for idx in range(_NUM_TIMESTEPS):
         data = np.ones((1, 3, 5)) * idx
-        file_path = os.path.join(working_directory, f"dummy_run.out.press.{idx:05d}.pfb")
+        file_path = os.path.join(
+            working_directory, f"dummy_run.out.press.{idx:05d}.pfb"
+        )
         write_pfb(file_path, data)
 
 
@@ -168,7 +171,7 @@ def test_restart_run_new_directory(setup_dummy_run, tmp_path):
     st.restart_run(runscript_path=old_runscript, new_dir=new_dir)
     assert os.path.isdir(new_dir)
 
-    
+
 def test_restart_run_valid_runscript(setup_dummy_run, tmp_path):
     old_runscript = setup_dummy_run
     new_dir = tmp_path / "new"
@@ -190,7 +193,9 @@ def test_restart_run_runscript_path(dir_name, setup_dummy_run, tmp_path):
         runscript_path=old_runscript,
         new_dir=new_dir,
     )
-    working_directory = os.path.dirname(old_runscript) if new_dir is None else str(new_dir)
+    working_directory = (
+        os.path.dirname(old_runscript) if new_dir is None else str(new_dir)
+    )
     assert os.path.dirname(new_runscript) == working_directory
 
 
@@ -208,15 +213,12 @@ def test_restart_run_filename(runname, setup_dummy_run, tmp_path):
 def test_restart_run_copy_inputs(setup_dummy_run, tmp_path):
     old_runscript = setup_dummy_run
     new_dir = tmp_path / "new"
-    st.restart_run(
-        runscript_path=old_runscript,
-        new_dir=new_dir
-    )
+    st.restart_run(runscript_path=old_runscript, new_dir=new_dir)
     assert "slope_x.pfb" in os.listdir(new_dir)
     assert "slope_y.pfb" in os.listdir(new_dir)
     assert "old_ic_pressure.pfb" not in os.listdir(new_dir)
 
-    
+
 def test_restart_run_forcing_directory(setup_dummy_run):
     old_runscript = setup_dummy_run
     runscript_path = st.restart_run(
@@ -227,15 +229,24 @@ def test_restart_run_forcing_directory(setup_dummy_run):
     assert run.Solver.CLM.MetFilePath == "forcing"
 
 
-@pytest.mark.parametrize("output_type", ["netcdf", "pfb"])
-def test_restart_run_initial_pressure(output_type, setup_dummy_run, tmp_path):
+@pytest.mark.parametrize(
+    "output_type, clm_on",
+    [("netcdf", False), ("netcdf", True), ("pfb", False), ("pfb", True)],
+)
+def test_restart_run_initial_pressure(output_type, clm_on, setup_dummy_run, tmp_path):
     old_runscript = setup_dummy_run
+    run = Run.from_definition(old_runscript)
+    if clm_on:
+        run.Solver.LSM = "CLM"
+    runscript_path, _ = run.write(
+        file_format="yaml", working_directory=os.path.dirname(old_runscript)
+    )
     new_dir = tmp_path / "new"
-    runscript_path = st.restart_run(
-        runscript_path = old_runscript,
+    _ = st.restart_run(
+        runscript_path=runscript_path,
         new_dir=new_dir,
         output_type=output_type,
     )
     ic_data = read_pfb(os.path.join(new_dir, "initial_pressure.pfb"))
     assert ic_data.shape == (1, 3, 5)
-    assert ic_data[0, 0, 0] == _NUM_TIMESTEPS - 1
+    assert ic_data[0, 0, 0] == 24 if clm_on else _NUM_TIMESTEPS - 1
