@@ -7,6 +7,9 @@ from parflow.tools.io import read_pfb, write_pfb
 import subsettools as st
 
 
+_NUM_TIMESTEPS = 28
+
+
 def test_get_ref_yaml_path(tmp_path):
     test_dir = tmp_path / "test"
     test_dir.mkdir()
@@ -134,20 +137,25 @@ def setup_dummy_run(tmp_path):
 
 
 def _create_nc_output(working_directory):
-    for idx in range(3):
+    value = 0
+    num_days = (_NUM_TIMESTEPS + 23) // 24
+    for idx in range(num_days):
         ncfile = Dataset(os.path.join(working_directory, f"dummy_run.out.{idx:05d}.nc"), 'w', format='NETCDF4')
         ncfile.createDimension('time', None)
         ncfile.createDimension('x', 5)
         ncfile.createDimension('y', 3)
         ncfile.createDimension('z', 1)
         pressure = ncfile.createVariable('pressure', 'f8', ('time', 'z', 'y', 'x'))
-        for i in range(5):
-            pressure[i, :, :, :] = 5 * idx + i
+        for i in range(24):
+            pressure[i, :, :, :] = value
+            value = value + 1
+            if value >= _NUM_TIMESTEPS:
+                break
         ncfile.close()
 
 
 def _create_pfb_output(working_directory):
-    for idx in range(15):
+    for idx in range(_NUM_TIMESTEPS):
         data = np.ones((1, 3, 5)) * idx
         file_path = os.path.join(working_directory, f"dummy_run.out.press.{idx:05d}.pfb")
         write_pfb(file_path, data)
@@ -230,4 +238,4 @@ def test_restart_run_initial_pressure(output_type, setup_dummy_run, tmp_path):
     )
     ic_data = read_pfb(os.path.join(new_dir, "initial_pressure.pfb"))
     assert ic_data.shape == (1, 3, 5)
-    assert ic_data[0, 0, 0] == 14
+    assert ic_data[0, 0, 0] == _NUM_TIMESTEPS - 1
