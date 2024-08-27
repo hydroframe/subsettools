@@ -129,8 +129,16 @@ def setup_dummy_run(tmp_path):
     run.Geom.domain.ICPressure.FileName = os.path.basename(ic_pressure)
     _create_nc_output(old_dir)
     _create_pfb_output(old_dir)
+    _write_clm_restart_file(old_dir)
     runscript_path, _ = run.write(file_format="yaml", working_directory=old_dir)
     return runscript_path
+
+
+def _write_clm_restart_file(working_directory):
+    file_path = os.path.join(working_directory, "clm_restart.tcl")
+    restart_time = _NUM_TIMESTEPS - _NUM_TIMESTEPS % 24
+    with open(file_path, "w") as file:
+        file.write(f"set istep           {restart_time}")
 
 
 def _create_nc_output(working_directory):

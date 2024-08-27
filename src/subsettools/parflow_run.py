@@ -400,11 +400,13 @@ def restart_run(runscript_path, new_dir=None, runname=None, forcing_dir=None, ou
     else:
         working_directory = os.path.dirname(runscript_path)
 
-    data = _get_ic_pressure_from_old_run(runscript_path, output_type)
+    restart_timestep = _get_restart_timestep(runscript_path, output_type)
+    # TODO: set the restart timestep etc but only if starting in new directory!
+    init_press_data = _get_ic_pressure_from_old_run(runscript_path, output_type, restart_timestep)
     filename = 'initial_pressure.pfb'
     write_pfb(
         os.path.join(working_directory, filename),
-        data
+        init_press_data
     )
     run.Geom.domain.ICPressure.FileName = filename
     
@@ -436,26 +438,74 @@ def _extract_filenames_from_runscript(runscript_path):
     return filenames
 
 
-def _get_ic_pressure_from_old_run(runscript_path, output_type):
+def _get_restart_timestep(runscript_path, output_type):
+    run = Run.from_definition(runscript_path)
+    working_directory = os.path.dirname(runscript_path)
+    if run.Solver.LSM == 'CLM':
+        # Get restart timestep from clm_restart.tcl file. If no such file
+        # exists, set timestep to 0. (This is a bug with ParFlow, need to
+        # fix this.)
+        restart_file = os.path.join(working_directory, "clm_restart.tcl")
+        if os.path.exists(restart_file):
+            with open(restart_file) as f:
+                first_line = f.readline()
+            restart_timestep = int(first_line.split()[2])
+        else:
+            restart_timestep = 0
+    else:
+        if output_type == 'pfb':
+            files = _get_pfb_output_files(working_directory)
+            restart_timestep = len(files) - 1
+        elif output_type == 'netcdf':
+            files = _get_netcdf_output_files(working_directory)
+            restart_timestep = 0
+            for file in files:
+                dataset = nc.Dataset(os.path.join(working_directory, file))
+                timesteps_in_file = len(dataset.dimensions['time'])
+                restart_timestep += timesteps_in_file
+                dataset.close()
+            restart_timestep = restart_timestep - 1
+        else:
+            raise ValueError("Invalid output_type provided.")
+    return restart_timestep
+
+
+def _get_ic_pressure_from_old_run(runscript_path, output_type, restart_timestep):
     working_directory = os.path.dirname(runscript_path)
     if output_type == 'pfb':
-        pattern = re.compile(r'^.+\.out\.press\.(\d{5})\.pfb$')
-        files = [f for f in os.listdir(working_directory) if pattern.match(f)]
-        if not files:
-            raise ValueError(f"No output pfb pressure files found in {working_directory}.")
-        files.sort(key=lambda x: int(pattern.search(x).group(1)))
-        return read_pfb(os.path.join(working_directory, files[-1]))
+        files = _get_pfb_output_files(working_directory)
+        return read_pfb(os.path.join(working_directory, files[restart_timestep]))
     elif output_type == 'netcdf':
-        pattern = re.compile(r'^.+\.out\.(\d{5})\.nc$')
-        files = [f for f in os.listdir(working_directory) if pattern.match(f)]
-        if not files:
-            raise ValueError(f"No output netcdf files found in {working_directory}.")
-        files.sort(key=lambda x: int(pattern.search(x).group(1)))
-        dataset = nc.Dataset(os.path.join(working_directory, files[-1]))
-        timesteps_in_file = len(dataset.dimensions['time'])
-        press_data = dataset.variables['pressure']
-        last_timestep_data = press_data[timesteps_in_file - 1, ...]
-        dataset.close()
-        return last_timestep_data
+        files = _get_netcdf_output_files(working_directory)
+        timesteps = 0
+        for file in files:
+            dataset = nc.Dataset(os.path.join(working_directory, file))
+            timesteps_in_file = len(dataset.dimensions['time'])
+            timesteps = timesteps + timesteps_in_file
+            if timesteps > restart_timestep:
+                index = restart_timestep - (timesteps - timesteps_in_file)
+                press_data =  dataset.variables['pressure'][index, ...]
+                dataset.close()
+                return press_data
+            dataset.close()
+        raise ValueError("Invalid restart timestep.")
     else:
         raise ValueError("Invalid output_type provided.")
+
+    
+def _get_pfb_output_files(working_directory):
+    pattern = re.compile(r'^.+\.out\.press\.(\d{5})\.pfb$')
+    files = [f for f in os.listdir(working_directory) if pattern.match(f)]
+    if not files:
+        raise ValueError(f"No output pfb pressure files found in {working_directory}.")
+    files.sort(key=lambda x: int(pattern.search(x).group(1)))
+    return files
+
+
+def _get_netcdf_output_files(working_directory):
+    pattern = re.compile(r'^.+\.out\.(\d{5})\.nc$')
+    files = [f for f in os.listdir(working_directory) if pattern.match(f)]
+    if not files:
+        raise ValueError(f"No output netcdf files found in {working_directory}.")
+    files.sort(key=lambda x: int(pattern.search(x).group(1)))
+    return files
