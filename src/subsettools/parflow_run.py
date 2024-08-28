@@ -387,7 +387,12 @@ def dist_run(topo_p, topo_q, runscript_path, working_dir=None, dist_clim_forcing
 
 
 def restart_run(
-    runscript_path, new_dir=None, runname=None, forcing_dir=None, output_type="netcdf"
+    runscript_path,
+    new_dir=None,
+    runname=None,
+    forcing_dir=None,
+    output_type="netcdf",
+    stop_time=None,
 ):
     run = Run.from_definition(runscript_path)
     if runname is not None:
@@ -409,6 +414,10 @@ def restart_run(
     run.TimingInfo.StartTime = run.TimingInfo.StartCount
     if run.Solver.LSM == "CLM":
         run.Solver.CLM.IstepStart = run.TimingInfo.StartCount + 1
+    if stop_time is not None:
+        if stop_time < run.TimingInfo.StartTime:
+            raise ValueError("Simulation stop time is smaller than start time.")
+        run.TimingInfo.StopTime = stop_time
 
     init_press_data = _get_ic_pressure_from_old_run(
         runscript_path, output_type, restart_timestep

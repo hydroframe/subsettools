@@ -289,3 +289,18 @@ def test_restart_run_restart_timestep(
         run.TimingInfo.StartTime,
         run.Solver.CLM.IstepStart,
     ) == result
+
+
+def test_restart_run_stoptime(setup_dummy_run):
+    old_runscript = setup_dummy_run
+    stop_time = _NUM_TIMESTEPS + 24
+    new_runscript = st.restart_run(runscript_path=old_runscript, stop_time=stop_time)
+    run = Run.from_definition(new_runscript)
+    assert run.TimingInfo.StopTime == stop_time
+
+
+def test_restart_run_stoptime_errors(setup_dummy_run):
+    old_runscript = setup_dummy_run
+    stop_time = _NUM_TIMESTEPS - 2
+    with pytest.raises(ValueError):
+        st.restart_run(runscript_path=old_runscript, stop_time=stop_time)
