@@ -386,32 +386,39 @@ def dist_run(topo_p, topo_q, runscript_path, working_dir=None, dist_clim_forcing
     return file_path
 
 
-def restart_run(runscript_path, new_dir=None, runname=None, forcing_dir=None, output_type="netcdf"):
+def restart_run(
+    runscript_path, new_dir=None, runname=None, forcing_dir=None, output_type="netcdf"
+):
     run = Run.from_definition(runscript_path)
     if runname is not None:
         run.set_name(runname)
     if forcing_dir is not None:
         run.Solver.CLM.MetFilePath = forcing_dir
-        
+
+    restart_timestep = _get_restart_timestep(runscript_path, output_type)
+
     if new_dir is not None:
         os.mkdir(new_dir)
         _copy_static_inputs(runscript_path, new_dir)
+        run.TimingInfo.StartCount = 0
         working_directory = new_dir
     else:
+        run.TimingInfo.StartCount = restart_timestep
         working_directory = os.path.dirname(runscript_path)
 
-    restart_timestep = _get_restart_timestep(runscript_path, output_type)
-    # TODO: set the restart timestep etc but only if starting in new directory!
-    init_press_data = _get_ic_pressure_from_old_run(runscript_path, output_type, restart_timestep)
-    filename = 'initial_pressure.pfb'
-    write_pfb(
-        os.path.join(working_directory, filename),
-        init_press_data
+    run.TimingInfo.StartTime = run.TimingInfo.StartCount
+    if run.Solver.LSM == "CLM":
+        run.Solver.CLM.IstepStart = run.TimingInfo.StartCount + 1
+
+    init_press_data = _get_ic_pressure_from_old_run(
+        runscript_path, output_type, restart_timestep
     )
+    filename = "initial_pressure.pfb"
+    write_pfb(os.path.join(working_directory, filename), init_press_data)
     run.Geom.domain.ICPressure.FileName = filename
-    
+
     runscript_path, _ = run.write(
-        file_format='yaml',
+        file_format="yaml",
         working_directory=working_directory,
     )
     return runscript_path
@@ -430,18 +437,18 @@ def _copy_static_inputs(runscript_path, new_dir):
 
 def _extract_filenames_from_runscript(runscript_path):
     filenames = []
-    with open(runscript_path, 'r') as f:
+    with open(runscript_path, "r") as f:
         for line in f:
             line = line.strip()
             if line.startswith("FileName: "):
-                filenames.append(line[len("FileName: "):])
+                filenames.append(line[len("FileName: ") :])
     return filenames
 
 
 def _get_restart_timestep(runscript_path, output_type):
     run = Run.from_definition(runscript_path)
     working_directory = os.path.dirname(runscript_path)
-    if run.Solver.LSM == 'CLM':
+    if run.Solver.LSM == "CLM":
         # Get restart timestep from clm_restart.tcl file. If no such file
         # exists, set timestep to 0. (This is a bug with ParFlow, need to
         # fix this.)
@@ -453,15 +460,15 @@ def _get_restart_timestep(runscript_path, output_type):
         else:
             restart_timestep = 0
     else:
-        if output_type == 'pfb':
+        if output_type == "pfb":
             files = _get_pfb_output_files(working_directory)
             restart_timestep = len(files) - 1
-        elif output_type == 'netcdf':
+        elif output_type == "netcdf":
             files = _get_netcdf_output_files(working_directory)
             restart_timestep = 0
             for file in files:
                 dataset = nc.Dataset(os.path.join(working_directory, file))
-                timesteps_in_file = len(dataset.dimensions['time'])
+                timesteps_in_file = len(dataset.dimensions["time"])
                 restart_timestep += timesteps_in_file
                 dataset.close()
             restart_timestep = restart_timestep - 1
@@ -472,19 +479,19 @@ def _get_restart_timestep(runscript_path, output_type):
 
 def _get_ic_pressure_from_old_run(runscript_path, output_type, restart_timestep):
     working_directory = os.path.dirname(runscript_path)
-    if output_type == 'pfb':
+    if output_type == "pfb":
         files = _get_pfb_output_files(working_directory)
         return read_pfb(os.path.join(working_directory, files[restart_timestep]))
-    elif output_type == 'netcdf':
+    elif output_type == "netcdf":
         files = _get_netcdf_output_files(working_directory)
         timesteps = 0
         for file in files:
             dataset = nc.Dataset(os.path.join(working_directory, file))
-            timesteps_in_file = len(dataset.dimensions['time'])
+            timesteps_in_file = len(dataset.dimensions["time"])
             timesteps = timesteps + timesteps_in_file
             if timesteps > restart_timestep:
                 index = restart_timestep - (timesteps - timesteps_in_file)
-                press_data =  dataset.variables['pressure'][index, ...]
+                press_data = dataset.variables["pressure"][index, ...]
                 dataset.close()
                 return press_data
             dataset.close()
@@ -492,9 +499,9 @@ def _get_ic_pressure_from_old_run(runscript_path, output_type, restart_timestep)
     else:
         raise ValueError("Invalid output_type provided.")
 
-    
+
 def _get_pfb_output_files(working_directory):
-    pattern = re.compile(r'^.+\.out\.press\.(\d{5})\.pfb$')
+    pattern = re.compile(r"^.+\.out\.press\.(\d{5})\.pfb$")
     files = [f for f in os.listdir(working_directory) if pattern.match(f)]
     if not files:
         raise ValueError(f"No output pfb pressure files found in {working_directory}.")
@@ -503,7 +510,7 @@ def _get_pfb_output_files(working_directory):
 
 
 def _get_netcdf_output_files(working_directory):
-    pattern = re.compile(r'^.+\.out\.(\d{5})\.nc$')
+    pattern = re.compile(r"^.+\.out\.(\d{5})\.nc$")
     files = [f for f in os.listdir(working_directory) if pattern.match(f)]
     if not files:
         raise ValueError(f"No output netcdf files found in {working_directory}.")

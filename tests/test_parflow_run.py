@@ -258,3 +258,34 @@ def test_restart_run_initial_pressure(output_type, clm_on, setup_dummy_run, tmp_
     ic_data = read_pfb(os.path.join(new_dir, "initial_pressure.pfb"))
     assert ic_data.shape == (1, 3, 5)
     assert ic_data[0, 0, 0] == 24 if clm_on else _NUM_TIMESTEPS - 1
+
+
+@pytest.mark.parametrize(
+    "clm_on, create_new_dir, result",
+    [
+        (True, True, (0, 0, 1)),
+        (True, False, (24, 24, 25)),
+        (False, True, (0, 0, 1)),
+        (False, False, (27, 27, 1)),
+    ],
+)
+def test_restart_run_restart_timestep(
+    clm_on, create_new_dir, result, setup_dummy_run, tmp_path
+):
+    old_runscript = setup_dummy_run
+    run = Run.from_definition(old_runscript)
+    run.Solver.LSM = "CLM" if clm_on else None
+    new_dir = (tmp_path / "new") if create_new_dir else None
+    runscript_path, _ = run.write(
+        file_format="yaml", working_directory=os.path.dirname(old_runscript)
+    )
+    new_runscript = st.restart_run(
+        runscript_path=runscript_path,
+        new_dir=new_dir,
+    )
+    run = Run.from_definition(new_runscript)
+    assert (
+        run.TimingInfo.StartCount,
+        run.TimingInfo.StartTime,
+        run.Solver.CLM.IstepStart,
+    ) == result
