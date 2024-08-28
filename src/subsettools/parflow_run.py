@@ -400,25 +400,15 @@ def restart_run(
     if forcing_dir is not None:
         run.Solver.CLM.MetFilePath = forcing_dir
 
-    restart_timestep = _get_restart_timestep(runscript_path, output_type)
-
     if new_dir is not None:
         os.mkdir(new_dir)
         _copy_static_inputs(runscript_path, new_dir)
-        run.TimingInfo.StartCount = 0
         working_directory = new_dir
     else:
-        run.TimingInfo.StartCount = restart_timestep
         working_directory = os.path.dirname(runscript_path)
-
-    run.TimingInfo.StartTime = run.TimingInfo.StartCount
-    if run.Solver.LSM == "CLM":
-        run.Solver.CLM.IstepStart = run.TimingInfo.StartCount + 1
-    if stop_time is not None:
-        if stop_time < run.TimingInfo.StartTime:
-            raise ValueError("Simulation stop time is smaller than start time.")
-        run.TimingInfo.StopTime = stop_time
-
+        
+    restart_timestep = _get_restart_timestep(runscript_path, output_type)
+    _set_timing_parameters(run, new_dir, restart_timestep, stop_time)
     init_press_data = _get_ic_pressure_from_old_run(
         runscript_path, output_type, restart_timestep
     )
@@ -431,6 +421,20 @@ def restart_run(
         working_directory=working_directory,
     )
     return runscript_path
+
+
+def _set_timing_parameters(run, new_dir, restart_timestep, stop_time):
+    if new_dir is not None:
+        run.TimingInfo.StartCount = 0
+    else:
+        run.TimingInfo.StartCount = restart_timestep
+    run.TimingInfo.StartTime = run.TimingInfo.StartCount
+    if run.Solver.LSM == "CLM":
+        run.Solver.CLM.IstepStart = run.TimingInfo.StartCount + 1
+    if stop_time is not None:
+        if stop_time < run.TimingInfo.StartTime:
+            raise ValueError("Simulation stop time is smaller than start time.")
+        run.TimingInfo.StopTime = stop_time
 
 
 def _copy_static_inputs(runscript_path, new_dir):
