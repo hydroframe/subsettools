@@ -400,14 +400,17 @@ def restart_run(
     if forcing_dir is not None:
         run.Solver.CLM.MetFilePath = forcing_dir
 
+    restart_timestep = _get_restart_timestep(runscript_path, output_type)
+        
     if new_dir is not None:
         os.mkdir(new_dir)
         _copy_static_inputs(runscript_path, new_dir)
+        _copy_clm_restart_files(runscript_path, new_dir)
         working_directory = new_dir
     else:
+        _rename_clm_restart_files(runscript_path, restart_timestep)
         working_directory = os.path.dirname(runscript_path)
         
-    restart_timestep = _get_restart_timestep(runscript_path, output_type)
     _set_timing_parameters(run, new_dir, restart_timestep, stop_time)
     init_press_data = _get_ic_pressure_from_old_run(
         runscript_path, output_type, restart_timestep
@@ -448,6 +451,34 @@ def _copy_static_inputs(runscript_path, new_dir):
     os.remove(os.path.join(new_dir, ic_pressure))
 
 
+def _copy_clm_restart_files(runscript_path, new_dir):
+    run = Run.from_definition(runscript_path)
+    if run.Solver.LSM != "CLM":
+        return
+    old_dir = os.path.dirname(runscript_path)
+    pattern = re.compile(r"^clm\.rst\.00000\.\d+$")
+    restart_files = [f for f in os.listdir(old_dir) if pattern.match(f)]
+    if not restart_files:
+        raise ValueError(f"No clm restart files found in {old_dir}.")
+    for file in restart_files:
+        shutil.copy(os.path.join(old_dir, file), new_dir)
+    
+
+def _rename_clm_restart_files(runscript_path, restart_timestep):
+    run = Run.from_definition(runscript_path)
+    working_directory = os.path.dirname(runscript_path)
+    if run.Solver.LSM != "CLM":
+        return
+    num_procs = run.Process.Topology.P * run.Process.Topology.Q * run.Process.Topology.R
+    restart_timestep = str(restart_timestep).rjust(5, '0')
+    for i in range(num_procs):
+        old_file = os.path.join(working_directory, f"clm.rst.00000.{i}")
+        if not os.path.exists(old_file):
+            raise ValueError(f"Clm restart file {old_name} not found.")
+        new_file = os.path.join(working_directory, f"clm.rst.{restart_timestep}.{i}")
+        os.rename(old_file, new_file)
+
+    
 def _extract_filenames_from_runscript(runscript_path):
     filenames = []
     with open(runscript_path, "r") as f:

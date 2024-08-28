@@ -129,16 +129,19 @@ def setup_dummy_run(tmp_path):
     run.Geom.domain.ICPressure.FileName = os.path.basename(ic_pressure)
     _create_nc_output(old_dir)
     _create_pfb_output(old_dir)
-    _write_clm_restart_file(old_dir)
+    _write_clm_restart_files(old_dir)
     runscript_path, _ = run.write(file_format="yaml", working_directory=old_dir)
     return runscript_path
 
 
-def _write_clm_restart_file(working_directory):
+def _write_clm_restart_files(working_directory):
     file_path = os.path.join(working_directory, "clm_restart.tcl")
     restart_time = _NUM_TIMESTEPS - _NUM_TIMESTEPS % 24
     with open(file_path, "w") as file:
         file.write(f"set istep           {restart_time}")
+    file_path = os.path.join(working_directory, "clm.rst.00000.0")
+    with open(file_path, "w") as file:
+        file.write("This is a dummy CLM restart file.")
 
 
 def _create_nc_output(working_directory):
@@ -304,3 +307,29 @@ def test_restart_run_stoptime_errors(setup_dummy_run):
     stop_time = _NUM_TIMESTEPS - 2
     with pytest.raises(ValueError):
         st.restart_run(runscript_path=old_runscript, stop_time=stop_time)
+
+
+def test_restart_run_copy_restart_files(setup_dummy_run, tmp_path):
+    old_runscript = setup_dummy_run
+    run = Run.from_definition(old_runscript)
+    run.Solver.LSM = "CLM"
+    runscript_path, _ = run.write(
+        file_format="yaml", working_directory=os.path.dirname(old_runscript)
+    )
+    new_dir = tmp_path / "new"
+    new_runscript = st.restart_run(runscript_path=runscript_path, new_dir=new_dir)
+    assert os.path.exists(os.path.join(new_dir, "clm.rst.00000.0"))
+
+
+def test_restart_run_rename_clm_restart_files(setup_dummy_run):
+    old_runscript = setup_dummy_run
+    run = Run.from_definition(old_runscript)
+    run.Solver.LSM = "CLM"
+    working_directory = os.path.dirname(old_runscript)
+    runscript_path, _ = run.write(
+        file_format="yaml", working_directory=working_directory,
+    )
+    new_runscript = st.restart_run(runscript_path=runscript_path)
+    clm_restart = _NUM_TIMESTEPS - _NUM_TIMESTEPS % 24
+    clm_restart = str(clm_restart).rjust(5, '0')
+    assert os.path.exists(os.path.join(working_directory, f"clm.rst.{clm_restart}.0"))
