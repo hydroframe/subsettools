@@ -406,6 +406,7 @@ def restart_run(
         os.mkdir(new_dir)
         _copy_static_inputs(runscript_path, new_dir)
         _copy_clm_restart_files(runscript_path, new_dir)
+        _copy_clm_driver_files(runscript_path, new_dir)
         working_directory = new_dir
     else:
         _rename_clm_restart_files(runscript_path, restart_timestep)
@@ -462,7 +463,17 @@ def _copy_clm_restart_files(runscript_path, new_dir):
         raise ValueError(f"No clm restart files found in {old_dir}.")
     for file in restart_files:
         shutil.copy(os.path.join(old_dir, file), new_dir)
-    
+
+
+def _copy_clm_driver_files(runscript_path, new_dir):
+    run = Run.from_definition(runscript_path)
+    if run.Solver.LSM != "CLM":
+        return
+    filenames = ["drv_clmin.dat", "drv_vegm.dat", "drv_vegp.dat"]
+    old_dir = os.path.dirname(runscript_path)
+    for filename in filenames:
+        shutil.copy(os.path.join(old_dir, filename), new_dir)
+
 
 def _rename_clm_restart_files(runscript_path, restart_timestep):
     run = Run.from_definition(runscript_path)
@@ -474,7 +485,7 @@ def _rename_clm_restart_files(runscript_path, restart_timestep):
     for i in range(num_procs):
         old_file = os.path.join(working_directory, f"clm.rst.00000.{i}")
         if not os.path.exists(old_file):
-            raise ValueError(f"Clm restart file {old_name} not found.")
+            raise ValueError(f"Clm restart file {old_file} not found.")
         new_file = os.path.join(working_directory, f"clm.rst.{restart_timestep}.{i}")
         os.rename(old_file, new_file)
 
