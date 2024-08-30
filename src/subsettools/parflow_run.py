@@ -4,6 +4,7 @@ import os
 import re
 import shutil
 from importlib import resources
+from datetime import datetime, timedelta
 import netCDF4 as nc
 from parflow import Run
 from parflow.tools.io import read_pfb, write_pfb
@@ -420,6 +421,10 @@ def restart_run(
     write_pfb(os.path.join(working_directory, filename), init_press_data)
     run.Geom.domain.ICPressure.FileName = filename
 
+    if run.Solver.LSM == "CLM":
+        drvclm_path = os.path.join(working_directory, "drv_clmin.dat")
+        _update_drvclm_for_restart(drvclm_path, restart_timestep, stop_time)
+    
     runscript_path, _ = run.write(
         file_format="yaml",
         working_directory=working_directory,
@@ -571,3 +576,86 @@ def _get_netcdf_output_files(working_directory):
         raise ValueError(f"No output netcdf files found in {working_directory}.")
     files.sort(key=lambda x: int(pattern.search(x).group(1)))
     return files
+
+
+def _update_drvclm_for_restart(file_path, restart_timestep, stop_time):
+    _set_startcode(file_path, 1)
+    start_date = _read_drvclm_date(file_path, start=True)
+    new_start_date = start_date + timedelta(hours=restart_timestep)
+    new_end_date = start_date + timedelta(hours=stop_time)
+    _write_drvclm_date(file_path, new_start_date, start=True)
+    _write_drvclm_date(file_path, new_end_date, start=False)
+    return file_path
+
+
+def _set_startcode(file_path, startcode):
+    with open(file_path, 'r') as file:
+        content = file.read()
+    
+    startcode_pattern = r'(startcode\s+)(\d{1})'
+    ic_pattern = r'(clm_ic\s+)(\d{1})'
+    startcode_match = re.search(startcode_pattern, content)
+    ic_match = re.search(ic_pattern, content)
+
+    if not (startcode_match and ic_match):
+        raise ValueError("Failed to find startcode fields.")
+
+    content = re.sub(startcode_pattern, fr'\g<1>{startcode}', content)
+    content = re.sub(ic_pattern, fr'\g<1>{startcode}', content)
+    with open(file_path, 'w') as file:
+        file.write(content)
+
+
+def _read_drvclm_date(file_path, start):
+    with open(file_path, 'r') as file:
+        content = file.read()
+    
+    year_pattern, month_pattern, day_pattern, hour_pattern = _get_drvclm_patterns(start)
+    year_match = re.search(year_pattern, content)
+    month_match = re.search(month_pattern, content)
+    day_match = re.search(day_pattern, content)
+    hour_match = re.search(hour_pattern, content)
+    
+    if not (year_match and month_match and day_match and hour_match):
+        raise ValueError("Failed to find the date fields in the file.")
+    
+    year = int(year_match.group(2))
+    month = int(month_match.group(2))
+    day = int(day_match.group(2))
+    hour = int(hour_match.group(2))
+    
+    date = datetime(year, month, day, hour)
+    return date
+
+
+def _write_drvclm_date(file_path, date, start):
+    with open(file_path, 'r') as file:
+        content = file.read()
+    
+    year = date.year
+    month = date.month
+    day = date.day
+    hour = date.hour
+
+    year_pattern, month_pattern, day_pattern, hour_pattern = _get_drvclm_patterns(start)
+    content = re.sub(year_pattern, fr'\g<1>{year}', content)
+    content = re.sub(month_pattern, fr'\g<1>{month}', content)
+    content = re.sub(day_pattern, fr'\g<1>{day}', content)
+    content = re.sub(hour_pattern, fr'\g<1>{hour}', content)
+    
+    with open(file_path, 'w') as file:
+        file.write(content)
+
+        
+def _get_drvclm_patterns(start):
+    if start:
+        year_pattern = r'(syr\s+)(\d{4})'
+        month_pattern = r'(smo\s+)(\d{1,2})'
+        day_pattern = r'(sda\s+)(\d{1,2})'
+        hour_pattern = r'(shr\s+)(\d{1,2})'
+    else:
+        year_pattern = r'(eyr\s+)(\d{4})'
+        month_pattern = r'(emo\s+)(\d{1,2})'
+        day_pattern = r'(eda\s+)(\d{1,2})'
+        hour_pattern = r'(ehr\s+)(\d{1,2})'
+    return year_pattern, month_pattern, day_pattern, hour_pattern
