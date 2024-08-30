@@ -327,38 +327,37 @@ def test_restart_run_stoptime_errors(setup_dummy_run):
 def test_restart_run_copy_restart_files(setup_dummy_run, tmp_path):
     old_runscript = setup_dummy_run(clm_on=True)
     new_dir = tmp_path / "new"
-    new_runscript = st.restart_run(runscript_path=old_runscript, stop_time=10, new_dir=new_dir)
+    new_runscript = st.restart_run(
+        runscript_path=old_runscript, stop_time=10, new_dir=new_dir
+    )
     assert os.path.exists(os.path.join(new_dir, "clm.rst.00000.0"))
 
 
 def test_restart_run_rename_clm_restart_files(setup_dummy_run):
     old_runscript = setup_dummy_run(clm_on=True)
     working_directory = os.path.dirname(old_runscript)
-    new_runscript = st.restart_run(runscript_path=old_runscript, stop_time=2 * _NUM_TIMESTEPS)
+    new_runscript = st.restart_run(
+        runscript_path=old_runscript, stop_time=2 * _NUM_TIMESTEPS
+    )
     clm_restart = _NUM_TIMESTEPS - _NUM_TIMESTEPS % 24
-    clm_restart = str(clm_restart).rjust(5, '0')
+    clm_restart = str(clm_restart).rjust(5, "0")
     assert os.path.exists(os.path.join(working_directory, f"clm.rst.{clm_restart}.0"))
 
 
 @pytest.mark.parametrize(
     "stop_time, end_day, end_hour",
-    [
-        (24, 2, 0),
-        (28, 2, 4),
-        (48, 3, 0),
-        (50, 3, 2)
-    ],
+    [(24, 2, 0), (28, 2, 4), (48, 3, 0), (50, 3, 2)],
 )
 def test_restart_run_drvclm(setup_dummy_run, stop_time, end_day, end_hour):
     old_runscript = setup_dummy_run(clm_on=True)
     _ = st.restart_run(runscript_path=old_runscript, stop_time=stop_time)
     file_path = os.path.join(os.path.dirname(old_runscript), "drv_clmin.dat")
-    with open(file_path, 'r') as file:
+    with open(file_path, "r") as file:
         content = file.read()
-    startcode = int(re.search(r'(startcode\s+)(\d{1})', content).group(2))
-    start_hour = int(re.search(r'(shr\s+)(\d{1,2})', content).group(2))
-    eda = int(re.search(r'(eda\s+)(\d{1,2})', content).group(2))
-    ehr = int(re.search(r'(ehr\s+)(\d{1,2})', content).group(2))
+    startcode = int(re.search(r"(startcode\s+)(\d{1})", content).group(2))
+    start_hour = int(re.search(r"(shr\s+)(\d{1,2})", content).group(2))
+    eda = int(re.search(r"(eda\s+)(\d{1,2})", content).group(2))
+    ehr = int(re.search(r"(ehr\s+)(\d{1,2})", content).group(2))
     assert (startcode, start_hour, eda, ehr) == (1, 0, end_day, end_hour)
 
 
@@ -369,4 +368,3 @@ def test_restart_run_copy_clm_files(setup_dummy_run, tmp_path):
     assert os.path.exists(os.path.join(new_dir, "drv_clmin.dat"))
     assert os.path.exists(os.path.join(new_dir, "drv_vegm.dat"))
     assert os.path.exists(os.path.join(new_dir, "drv_vegp.dat"))
-    
