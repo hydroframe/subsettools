@@ -362,12 +362,9 @@ def test_restart_run_drvclm(setup_dummy_run, stop_time, end_day, end_hour):
 
 
 def test_restart_run_copy_clm_files(setup_dummy_run, tmp_path):
-    old_runscript = setup_dummy_run()
-    run = Run.from_definition(old_runscript)
-    run.Solver.LSM = "CLM"
-    runscript_path, _ = run.write(file_format="yaml", working_directory=os.path.dirname(old_runscript))
+    old_runscript = setup_dummy_run(clm_on=True)
     new_dir = tmp_path / "new"
-    _ = st.restart_run(runscript_path=runscript_path, new_dir=new_dir)
+    _ = st.restart_run(runscript_path=old_runscript, new_dir=new_dir)
     assert os.path.exists(os.path.join(new_dir, "drv_clmin.dat"))
     assert os.path.exists(os.path.join(new_dir, "drv_vegm.dat"))
     assert os.path.exists(os.path.join(new_dir, "drv_vegp.dat"))
