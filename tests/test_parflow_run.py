@@ -1,6 +1,8 @@
 import os
 import pytest
 import numpy as np
+import shutil
+import re
 from netCDF4 import Dataset
 from parflow import Run
 from parflow.tools.io import read_pfb, write_pfb
@@ -333,3 +335,30 @@ def test_restart_run_rename_clm_restart_files(setup_dummy_run):
     clm_restart = _NUM_TIMESTEPS - _NUM_TIMESTEPS % 24
     clm_restart = str(clm_restart).rjust(5, '0')
     assert os.path.exists(os.path.join(working_directory, f"clm.rst.{clm_restart}.0"))
+
+
+@pytest.mark.parametrize(
+    "stop_time, end_day, end_hour",
+    [
+        (24, 2, 0),
+        (28, 2, 4),
+        (48, 3, 0),
+        (50, 3, 2)
+    ],
+)
+def test_restart_run_drvclm(setup_dummy_run, stop_time, end_day, end_hour):
+    stop_time = _NUM_TIMESTEPS + 1
+    old_runscript = setup_dummy_run
+    working_directory = os.path.dirname(old_runscript)
+    file_path = os.path.join("tests", "correct_output", "drv_clmin.dat")
+    shutil.copy(file_path, working_directory)
+    _ = st.restart_run(runscript_path=old_runscript, stop_time=stop_time)
+    with open(file_path, 'r') as file:
+        content = file.read()
+    startcode = int(re.search(r'(startcode\s+)(\d{1})', content).group(2))
+    start_hour = int(re.search(r'(shr\s+)(\d{1,2})', content).group(2))
+    eda = int(re.search(r'(eda\s+)(\d{1,2})', content).group(2))
+    ehr = int(re.search(r'(ehr\s+)(\d{1,2})', content).group(2))
+    assert startcode == 1
+    assert start_hour == 0
+    assert (eda, ehr) == (end_day, end_hour)
