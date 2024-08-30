@@ -578,7 +578,7 @@ def _get_netcdf_output_files(working_directory):
 
 
 def _update_drvclm_for_restart(file_path, restart_timestep, stop_time):
-    _set_startcode(file_path, 1)
+    _set_drvclm_startcode(file_path, 1)
     start_date = _read_drvclm_date(file_path, start=True)
     new_start_date = start_date + timedelta(hours=restart_timestep)
     new_end_date = start_date + timedelta(hours=stop_time)
@@ -587,7 +587,7 @@ def _update_drvclm_for_restart(file_path, restart_timestep, stop_time):
     return file_path
 
 
-def _set_startcode(file_path, startcode):
+def _set_drvclm_startcode(file_path, startcode):
     with open(file_path, "r") as file:
         content = file.read()
 
