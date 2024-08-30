@@ -402,7 +402,8 @@ def restart_run(
         run.Solver.CLM.MetFilePath = forcing_dir
 
     restart_timestep = _get_restart_timestep(runscript_path, output_type)
-
+    _set_timing_parameters(run, new_dir, restart_timestep, stop_time)
+    
     if new_dir is not None:
         os.mkdir(new_dir)
         working_directory = new_dir
@@ -415,8 +416,6 @@ def restart_run(
         if run.Solver.LSM == 'CLM':
             _rename_clm_restart_files(runscript_path, restart_timestep)
 
-
-    _set_timing_parameters(run, new_dir, restart_timestep, stop_time)
     init_press_data = _get_ic_pressure_from_old_run(
         runscript_path, output_type, restart_timestep
     )
@@ -424,7 +423,7 @@ def restart_run(
     write_pfb(os.path.join(working_directory, filename), init_press_data)
     run.Geom.domain.ICPressure.FileName = filename
 
-    if run.Solver.LSM == "CLM":
+    if run.Solver.LSM == 'CLM':
         drvclm_path = os.path.join(working_directory, "drv_clmin.dat")
         _update_drvclm_for_restart(drvclm_path, restart_timestep, stop_time)
 
