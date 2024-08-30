@@ -199,7 +199,7 @@ def test_restart_run_new_directory(setup_dummy_run, tmp_path):
     old_runscript = setup_dummy_run()
     new_dir = tmp_path / "new"
     assert not os.path.isdir(new_dir)
-    st.restart_run(runscript_path=old_runscript, new_dir=new_dir)
+    st.restart_run(runscript_path=old_runscript, stop_time=10, new_dir=new_dir)
     assert os.path.isdir(new_dir)
 
 
@@ -208,6 +208,7 @@ def test_restart_run_valid_runscript(setup_dummy_run, tmp_path):
     new_dir = tmp_path / "new"
     new_runscript = st.restart_run(
         runscript_path=old_runscript,
+        stop_time=10,
         new_dir=new_dir,
     )
     try:
@@ -222,6 +223,7 @@ def test_restart_run_runscript_path(dir_name, setup_dummy_run, tmp_path):
     new_dir = None if dir_name is None else tmp_path / dir_name
     new_runscript = st.restart_run(
         runscript_path=old_runscript,
+        stop_time=2 * _NUM_TIMESTEPS,
         new_dir=new_dir,
     )
     working_directory = (
@@ -235,6 +237,7 @@ def test_restart_run_filename(runname, setup_dummy_run, tmp_path):
     old_runscript = setup_dummy_run()
     new_runscript = st.restart_run(
         runscript_path=old_runscript,
+        stop_time=2 * _NUM_TIMESTEPS,
         runname=runname,
     )
     filename = "dummy_run.yaml" if runname is None else "new_run.yaml"
@@ -244,7 +247,7 @@ def test_restart_run_filename(runname, setup_dummy_run, tmp_path):
 def test_restart_run_copy_inputs(setup_dummy_run, tmp_path):
     old_runscript = setup_dummy_run()
     new_dir = tmp_path / "new"
-    st.restart_run(runscript_path=old_runscript, new_dir=new_dir)
+    st.restart_run(runscript_path=old_runscript, stop_time=10, new_dir=new_dir)
     assert "slope_x.pfb" in os.listdir(new_dir)
     assert "slope_y.pfb" in os.listdir(new_dir)
     assert "old_ic_pressure.pfb" not in os.listdir(new_dir)
@@ -254,6 +257,7 @@ def test_restart_run_forcing_directory(setup_dummy_run):
     old_runscript = setup_dummy_run()
     runscript_path = st.restart_run(
         runscript_path=old_runscript,
+        stop_time=2 * _NUM_TIMESTEPS,
         forcing_dir="forcing",
     )
     run = Run.from_definition(runscript_path)
@@ -269,6 +273,7 @@ def test_restart_run_initial_pressure(output_type, clm_on, setup_dummy_run, tmp_
     new_dir = tmp_path / "new"
     _ = st.restart_run(
         runscript_path=old_runscript,
+        stop_time=10,
         new_dir=new_dir,
         output_type=output_type,
     )
@@ -293,6 +298,7 @@ def test_restart_run_restart_timestep(
     new_dir = (tmp_path / "new") if create_new_dir else None
     new_runscript = st.restart_run(
         runscript_path=old_runscript,
+        stop_time=2 * _NUM_TIMESTEPS,
         new_dir=new_dir,
     )
     run = Run.from_definition(new_runscript)
@@ -321,14 +327,14 @@ def test_restart_run_stoptime_errors(setup_dummy_run):
 def test_restart_run_copy_restart_files(setup_dummy_run, tmp_path):
     old_runscript = setup_dummy_run(clm_on=True)
     new_dir = tmp_path / "new"
-    new_runscript = st.restart_run(runscript_path=old_runscript, new_dir=new_dir)
+    new_runscript = st.restart_run(runscript_path=old_runscript, stop_time=10, new_dir=new_dir)
     assert os.path.exists(os.path.join(new_dir, "clm.rst.00000.0"))
 
 
 def test_restart_run_rename_clm_restart_files(setup_dummy_run):
     old_runscript = setup_dummy_run(clm_on=True)
     working_directory = os.path.dirname(old_runscript)
-    new_runscript = st.restart_run(runscript_path=old_runscript)
+    new_runscript = st.restart_run(runscript_path=old_runscript, stop_time=2 * _NUM_TIMESTEPS)
     clm_restart = _NUM_TIMESTEPS - _NUM_TIMESTEPS % 24
     clm_restart = str(clm_restart).rjust(5, '0')
     assert os.path.exists(os.path.join(working_directory, f"clm.rst.{clm_restart}.0"))
@@ -359,7 +365,7 @@ def test_restart_run_drvclm(setup_dummy_run, stop_time, end_day, end_hour):
 def test_restart_run_copy_clm_files(setup_dummy_run, tmp_path):
     old_runscript = setup_dummy_run(clm_on=True)
     new_dir = tmp_path / "new"
-    _ = st.restart_run(runscript_path=old_runscript, new_dir=new_dir)
+    _ = st.restart_run(runscript_path=old_runscript, stop_time=10, new_dir=new_dir)
     assert os.path.exists(os.path.join(new_dir, "drv_clmin.dat"))
     assert os.path.exists(os.path.join(new_dir, "drv_vegm.dat"))
     assert os.path.exists(os.path.join(new_dir, "drv_vegp.dat"))
