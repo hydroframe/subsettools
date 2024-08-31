@@ -368,3 +368,17 @@ def test_restart_run_copy_clm_files(setup_dummy_run, tmp_path):
     assert os.path.exists(os.path.join(new_dir, "drv_clmin.dat"))
     assert os.path.exists(os.path.join(new_dir, "drv_vegm.dat"))
     assert os.path.exists(os.path.join(new_dir, "drv_vegp.dat"))
+
+
+def test_restart_run_multiple_runnames(setup_dummy_run):
+    """Test that the function only looks at run-specific output files."""
+    old_runscript = setup_dummy_run()
+    working_directory = os.path.dirname(old_runscript)
+    # Write some pfb output of another run
+    data = np.ones((5, 5, 5))
+    file_path = os.path.join(working_directory, f"another_run.out.press.00001.pfb")
+    write_pfb(file_path, data)
+    new_runscript = st.restart_run(runscript_path=old_runscript, stop_time=2 * _NUM_TIMESTEPS, output_type="pfb")
+    run = Run.from_definition(new_runscript)
+    # The restart time should ignore the output from the other run
+    assert run.TimingInfo.StartTime == _NUM_TIMESTEPS - 1
