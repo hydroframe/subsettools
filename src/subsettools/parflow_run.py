@@ -514,10 +514,10 @@ def _get_restart_timestep(runscript_path, output_type):
             restart_timestep = 0
     else:
         if output_type == "pfb":
-            files = _get_pfb_output_files(working_directory)
+            files = _get_pfb_output_files(runscript_path)
             restart_timestep = len(files) - 1
         elif output_type == "netcdf":
-            files = _get_netcdf_output_files(working_directory)
+            files = _get_netcdf_output_files(runscript_path)
             restart_timestep = 0
             for file in files:
                 dataset = nc.Dataset(os.path.join(working_directory, file))
@@ -533,10 +533,10 @@ def _get_restart_timestep(runscript_path, output_type):
 def _get_ic_pressure_from_old_run(runscript_path, output_type, restart_timestep):
     working_directory = os.path.dirname(runscript_path)
     if output_type == "pfb":
-        files = _get_pfb_output_files(working_directory)
+        files = _get_pfb_output_files(runscript_path)
         return read_pfb(os.path.join(working_directory, files[restart_timestep]))
     elif output_type == "netcdf":
-        files = _get_netcdf_output_files(working_directory)
+        files = _get_netcdf_output_files(runscript_path)
         timesteps = 0
         for file in files:
             dataset = nc.Dataset(os.path.join(working_directory, file))
@@ -553,8 +553,11 @@ def _get_ic_pressure_from_old_run(runscript_path, output_type, restart_timestep)
         raise ValueError("Invalid output_type provided.")
 
 
-def _get_pfb_output_files(working_directory):
-    pattern = re.compile(r"^.+\.out\.press\.(\d{5})\.pfb$")
+def _get_pfb_output_files(runscript_path):
+    run = Run.from_definition(runscript_path)
+    runname = run.get_name()
+    pattern = re.compile(rf"^{runname}\.out\.press\.(\d{{5}})\.pfb$")
+    working_directory = os.path.dirname(runscript_path)
     files = [f for f in os.listdir(working_directory) if pattern.match(f)]
     if not files:
         raise ValueError(f"No output pfb pressure files found in {working_directory}.")
@@ -562,8 +565,11 @@ def _get_pfb_output_files(working_directory):
     return files
 
 
-def _get_netcdf_output_files(working_directory):
-    pattern = re.compile(r"^.+\.out\.(\d{5})\.nc$")
+def _get_netcdf_output_files(runscript_path):
+    run = Run.from_definition(runscript_path)
+    runname = run.get_name()
+    pattern = re.compile(rf"^{runname}\.out\.(\d{{5}})\.nc$")
+    working_directory = os.path.dirname(runscript_path)
     files = [f for f in os.listdir(working_directory) if pattern.match(f)]
     if not files:
         raise ValueError(f"No output netcdf files found in {working_directory}.")
