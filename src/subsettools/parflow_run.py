@@ -395,6 +395,69 @@ def restart_run(
     forcing_dir=None,
     output_type="netcdf",
 ):
+    """Create a restart runscript for a ParFlow run.
+
+    The function will start from an existing ParFlow runscript and create a new
+    runscript that restarts the ParFlow run at the timestep the previous run
+    ended. 
+
+    The function performs the following steps:
+    
+    1. Calculate the start time for the new run. This is based on the restart
+       timestep, and the timing parameters of the previous run. The restart 
+       timestep is either read-in from the clm restart file, or, for spinup 
+       runs, inferred based on the number of timesteps written to output files.
+    2. Set the initial pressure to the pressure field at the restart timestep.
+       The initial pressure will be obtained from the output pfb or netcdf
+       files of the previous run, so it's important to set that parameter 
+       correctly.
+    3. Set the forcing directory for the new run (optional).
+    4. If a new directory is chosen for the new run, create the directory and
+       copy all static inputs. If this is a coupled ParFlow-CLM run, CLM restart
+       and driver files will be copied as well. Otherwise, the CLM restart files
+       will be renamed to match the restart timestep. IMPORTANT NOTE: the 
+       function assumes that CLM restart files are overwritten at each timestep.
+       (The key Solver.CLM.WriteLastRST is set to True). 
+    5. If this is a coupled ParFlow-CLM run, the CLM driver file (drv_clmin.dat)
+       is going to be edited to match the new start time and end time for the
+       new run.
+
+    Args:
+        runscript_path (str): path to the runscript of the original ParFlow run
+        stop_time (int): stopping time of the new ParFlow run. An error will be
+            raised if stop_time is less that the start_time of the new run.
+        new_dir (str): path to the new ParFlow run directory (optional). If it
+            is None, the new directory will be used and outputs will be
+            numbered starting from the last timestep written. If a new 
+            directory is created, outputs in this directory will be numbered
+            starting from 0.
+        runname (str): name of the new ParFlow run (optional). If it is None, 
+            the name of the old run will be retained for the new run.
+        forcing_dir (str): path to the forcing directory for the new run. If it
+            is none, the path to the previous forcing directory is retained for
+            the new run. This argument only makes sense for coupled ParFlow-CLM
+            runs.
+        output_type (str): The file type for the output of the ParFlow run. This
+            is used to infer the restart timestep, based on how many timesteps
+            of pressure output have been written, and get the initial pressure
+            field for the new run, which is the last pressure timestep that was
+            written. Currently supported options: "pfb", "netcdf". See the 
+            ParFlow documentation for details about the different output 
+            options.
+
+    Returns:
+        str: Path to the restart runscript file that will be created.
+
+    Example:
+
+    .. code-block:: python
+
+        restart_runscript = restart_run(
+            runscript_path="/path/to/your/original/runscript",
+            stop_time=100,
+            output_type="pfb",
+        )
+    """    
     run = Run.from_definition(runscript_path)
     if runname is not None:
         run.set_name(runname)
@@ -435,6 +498,7 @@ def restart_run(
 
 
 def _set_timing_parameters(run, new_dir, restart_timestep, stop_time):
+    """Set the timing parameters for the new run."""
     if new_dir is not None:
         run.TimingInfo.StartCount = 0
     else:
@@ -448,6 +512,7 @@ def _set_timing_parameters(run, new_dir, restart_timestep, stop_time):
 
 
 def _copy_static_inputs(runscript_path, new_dir):
+    """Copy static inputs to the output directory of the new run."""
     filenames = _extract_filenames_from_runscript(runscript_path)
     old_dir = os.path.dirname(runscript_path)
     for filename in filenames:
@@ -459,6 +524,7 @@ def _copy_static_inputs(runscript_path, new_dir):
 
 
 def _copy_clm_restart_files(runscript_path, new_dir):
+    """Copy CLM restart files the the output directory of the new run."""
     old_dir = os.path.dirname(runscript_path)
     pattern = re.compile(r"^clm\.rst\.00000\.\d+$")
     restart_files = [f for f in os.listdir(old_dir) if pattern.match(f)]
@@ -469,6 +535,7 @@ def _copy_clm_restart_files(runscript_path, new_dir):
 
 
 def _copy_clm_driver_files(runscript_path, new_dir):
+    """Copy clm driver files to the output directory of the new run."""
     filenames = ["drv_clmin.dat", "drv_vegm.dat", "drv_vegp.dat"]
     old_dir = os.path.dirname(runscript_path)
     for filename in filenames:
@@ -476,6 +543,11 @@ def _copy_clm_driver_files(runscript_path, new_dir):
 
 
 def _rename_clm_restart_files(runscript_path, restart_timestep):
+    """Rename the CLM restart files with restart timestep of the new run.
+    
+    The function assumes that the CLM restart files are overwritten at every
+    timestep, i.e. the key Solver.CLM.WriteLastRST is set to True.)
+    """
     run = Run.from_definition(runscript_path)
     working_directory = os.path.dirname(runscript_path)
     num_procs = run.Process.Topology.P * run.Process.Topology.Q * run.Process.Topology.R
@@ -489,6 +561,7 @@ def _rename_clm_restart_files(runscript_path, restart_timestep):
 
 
 def _extract_filenames_from_runscript(runscript_path):
+    """Find the static input filenames for the previous run's runscript."""
     filenames = []
     with open(runscript_path, "r") as f:
         for line in f:
@@ -499,6 +572,14 @@ def _extract_filenames_from_runscript(runscript_path):
 
 
 def _get_restart_timestep(runscript_path, output_type):
+    """Get the restart timestep of the previous run.
+
+       If the run is a coupled ParFlow-CLM run, the restart timestep is read in
+       from the clm restart file (clm_restart.tcl). Otherwise, it is inferred
+       from the number of timesteps written to pressure output files (either
+       pfb or netcdf). This also allows to restart a run that has timed out
+       earlier that its stop_time.
+    """
     run = Run.from_definition(runscript_path)
     working_directory = os.path.dirname(runscript_path)
     if run.Solver.LSM == "CLM":
@@ -531,6 +612,10 @@ def _get_restart_timestep(runscript_path, output_type):
 
 
 def _get_ic_pressure_from_old_run(runscript_path, output_type, restart_timestep):
+    """Get the initial pressure field of the new run.
+
+    This is the pressure field of the old run at restart_timestep.
+    """
     working_directory = os.path.dirname(runscript_path)
     if output_type == "pfb":
         files = _get_pfb_output_files(runscript_path)
@@ -554,6 +639,10 @@ def _get_ic_pressure_from_old_run(runscript_path, output_type, restart_timestep)
 
 
 def _get_pfb_output_files(runscript_path):
+    """Get a list of pfb output files for the run defined by runscript_path.
+
+    The list is sorted according to the timestep index.
+    """
     run = Run.from_definition(runscript_path)
     runname = run.get_name()
     pattern = re.compile(rf"^{runname}\.out\.press\.(\d{{5}})\.pfb$")
@@ -566,6 +655,10 @@ def _get_pfb_output_files(runscript_path):
 
 
 def _get_netcdf_output_files(runscript_path):
+    """Get a list of netcdf output files for the run defined by runscript_path.
+
+    The list is sorted according to the timestep index.
+    """
     run = Run.from_definition(runscript_path)
     runname = run.get_name()
     pattern = re.compile(rf"^{runname}\.out\.(\d{{5}})\.nc$")
@@ -578,6 +671,7 @@ def _get_netcdf_output_files(runscript_path):
 
 
 def _update_drvclm_for_restart(file_path, restart_timestep, stop_time):
+    """Update the drv_clmin.dat file with the new run's start and stop times."""
     _set_drvclm_startcode(file_path, 1)
     start_date = _read_drvclm_date(file_path, start=True)
     new_start_date = start_date + timedelta(hours=restart_timestep)
@@ -588,6 +682,7 @@ def _update_drvclm_for_restart(file_path, restart_timestep, stop_time):
 
 
 def _set_drvclm_startcode(file_path, startcode):
+    """Set the drv_clmin.dat start code."""
     with open(file_path, "r") as file:
         content = file.read()
 
@@ -606,6 +701,7 @@ def _set_drvclm_startcode(file_path, startcode):
 
 
 def _read_drvclm_date(file_path, start):
+    """Read a start or end date from drv_clmin.dat."""
     with open(file_path, "r") as file:
         content = file.read()
 
@@ -628,6 +724,7 @@ def _read_drvclm_date(file_path, start):
 
 
 def _write_drvclm_date(file_path, date, start):
+    """Write a start or end date to the drv_clmin.dat file."""
     with open(file_path, "r") as file:
         content = file.read()
 
@@ -647,6 +744,7 @@ def _write_drvclm_date(file_path, date, start):
 
 
 def _get_drvclm_patterns(start):
+    """Get regex patterns for the start and end date for drv_clmin.dat."""
     if start:
         year_pattern = r"(syr\s+)(\d{4})"
         month_pattern = r"(smo\s+)(\d{1,2})"
