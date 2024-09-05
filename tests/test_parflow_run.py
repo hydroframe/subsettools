@@ -119,10 +119,16 @@ def setup_dummy_run(tmp_path):
         old_dir.mkdir()
         slope_x = old_dir / "slope_x.pfb"
         slope_x.write_text("Dummy slope_x input file")
+        slope_x_dist = old_dir / "slope_x.pfb.dist"
+        slope_x_dist.write_text("Dummy slope_x dist file")
         slope_y = old_dir / "slope_y.pfb"
         slope_y.write_text("Dummy slope_y input file")
+        slope_y_dist = old_dir / "slope_y.pfb.dist"
+        slope_y_dist.write_text("Dummy slope_y dist file")        
         ic_pressure = old_dir / "old_ic_pressure.pfb"
         ic_pressure.write_text("Dummy ic_pressure input file")
+        ic_pressure_dist = old_dir / "old_ic_pressure.pfb.dist"
+        ic_pressure_dist.write_text("Dummy ic_pressure dist file")
         run = Run("dummy_run")
         run.TopoSlopesX.FileName = os.path.basename(slope_x)
         run.TopoSlopesY.FileName = os.path.basename(slope_y)
@@ -249,8 +255,11 @@ def test_restart_run_copy_inputs(setup_dummy_run, tmp_path):
     new_dir = tmp_path / "new"
     st.restart_run(runscript_path=old_runscript, stop_time=10, new_dir=new_dir)
     assert "slope_x.pfb" in os.listdir(new_dir)
+    assert "slope_x.pfb.dist" in os.listdir(new_dir)
     assert "slope_y.pfb" in os.listdir(new_dir)
+    assert "slope_y.pfb.dist" in os.listdir(new_dir)
     assert "old_ic_pressure.pfb" not in os.listdir(new_dir)
+    assert "old_ic_pressure.pfb.dist" not in os.listdir(new_dir)
 
 
 def test_restart_run_forcing_directory(setup_dummy_run):
