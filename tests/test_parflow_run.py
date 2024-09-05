@@ -205,7 +205,7 @@ def test_restart_run_new_directory(setup_dummy_run, tmp_path):
     old_runscript = setup_dummy_run()
     new_dir = tmp_path / "new"
     assert not os.path.isdir(new_dir)
-    st.restart_run(runscript_path=old_runscript, stop_time=10, new_dir=new_dir)
+    st.restart_run(runscript_path=old_runscript, stop_time=100, new_dir=new_dir)
     assert os.path.isdir(new_dir)
 
 
@@ -214,7 +214,7 @@ def test_restart_run_valid_runscript(setup_dummy_run, tmp_path):
     new_dir = tmp_path / "new"
     new_runscript = st.restart_run(
         runscript_path=old_runscript,
-        stop_time=10,
+        stop_time=100,
         new_dir=new_dir,
     )
     try:
@@ -253,7 +253,7 @@ def test_restart_run_filename(runname, setup_dummy_run, tmp_path):
 def test_restart_run_copy_inputs(setup_dummy_run, tmp_path):
     old_runscript = setup_dummy_run()
     new_dir = tmp_path / "new"
-    st.restart_run(runscript_path=old_runscript, stop_time=10, new_dir=new_dir)
+    st.restart_run(runscript_path=old_runscript, stop_time=100, new_dir=new_dir)
     assert "slope_x.pfb" in os.listdir(new_dir)
     assert "slope_x.pfb.dist" in os.listdir(new_dir)
     assert "slope_y.pfb" in os.listdir(new_dir)
@@ -282,7 +282,7 @@ def test_restart_run_initial_pressure(output_type, clm_on, setup_dummy_run, tmp_
     new_dir = tmp_path / "new"
     _ = st.restart_run(
         runscript_path=old_runscript,
-        stop_time=10,
+        stop_time=100,
         new_dir=new_dir,
         output_type=output_type,
     )
@@ -294,9 +294,9 @@ def test_restart_run_initial_pressure(output_type, clm_on, setup_dummy_run, tmp_
 @pytest.mark.parametrize(
     "clm_on, create_new_dir, result",
     [
-        (True, True, (0, 0, 1)),
+        (True, True, (0, 24, 1)),
         (True, False, (24, 24, 25)),
-        (False, True, (0, 0, 1)),
+        (False, True, (0, 27, 1)),
         (False, False, (27, 27, 1)),
     ],
 )
@@ -337,7 +337,7 @@ def test_restart_run_copy_restart_files(setup_dummy_run, tmp_path):
     old_runscript = setup_dummy_run(clm_on=True)
     new_dir = tmp_path / "new"
     new_runscript = st.restart_run(
-        runscript_path=old_runscript, stop_time=10, new_dir=new_dir
+        runscript_path=old_runscript, stop_time=100, new_dir=new_dir
     )
     assert os.path.exists(os.path.join(new_dir, "clm.rst.00000.0"))
 
@@ -373,7 +373,7 @@ def test_restart_run_drvclm(setup_dummy_run, stop_time, end_day, end_hour):
 def test_restart_run_copy_clm_files(setup_dummy_run, tmp_path):
     old_runscript = setup_dummy_run(clm_on=True)
     new_dir = tmp_path / "new"
-    _ = st.restart_run(runscript_path=old_runscript, stop_time=10, new_dir=new_dir)
+    _ = st.restart_run(runscript_path=old_runscript, stop_time=100, new_dir=new_dir)
     assert os.path.exists(os.path.join(new_dir, "drv_clmin.dat"))
     assert os.path.exists(os.path.join(new_dir, "drv_vegm.dat"))
     assert os.path.exists(os.path.join(new_dir, "drv_vegp.dat"))

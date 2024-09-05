@@ -503,11 +503,12 @@ def _set_timing_parameters(run, new_dir, restart_timestep, stop_time):
         run.TimingInfo.StartCount = 0
     else:
         run.TimingInfo.StartCount = restart_timestep
-    run.TimingInfo.StartTime = run.TimingInfo.StartCount
+    run.TimingInfo.StartTime = restart_timestep
     if run.Solver.LSM == "CLM":
         run.Solver.CLM.IstepStart = run.TimingInfo.StartCount + 1
     if stop_time < run.TimingInfo.StartTime:
-        raise ValueError("Simulation stop time is smaller than start time.")
+        raise ValueError(f"Simulation stop time {stop_time} is smaller than "
+                         f"simulation start time {run.TimingInfo.StartTime}.")
     run.TimingInfo.StopTime = stop_time
 
 
