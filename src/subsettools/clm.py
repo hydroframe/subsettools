@@ -151,7 +151,7 @@ def _write_land_cover(land_cover_data, write_dir):
         str:
             path to output vegm file.
     """
-    land_cover_data=np.nan_to_number(land_cover_data, nan=16)
+    land_cover_data=np.nan_to_num(land_cover_data, nan=16)
     heading = (
         "x y lat lon sand clay color fractional coverage of grid, by "
         "vegetation class (Must/Should Add to 1.0) "
