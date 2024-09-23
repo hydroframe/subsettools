@@ -14,6 +14,8 @@ You can also install the latest development version by cloning the GitHub reposi
 $ pip install git+https://github.com/hydroframe/subsettools.git
 ```
 
+If you encounter issues with installation, check out our FAQ page. If you still can't find an answer to your problem, please open an issue at the [subsettools GitHUB page](https://github.com/hydroframe/subsettools).
+
 In order to use a small subset of the `subsettools` functions, you also need to have ParFlow installed. Please refer to the [HydroFrame](https://hydroframe.org/) for help getting started with ParFlow.
 
 In addition, we provide a reproducible computational environment using [Binder](https://mybinder.org/v2/gh/hydroframe/subsettools-binder/HEAD), where you can execute the example notebooks without the need to install the subsettools package or ParFlow. Please note that the Binder project has limited resources, so this is not an appropriate place to run large simulations - but it's a great environment to get started with the subsettools API. Note that Binder may take several minutes to launch.
