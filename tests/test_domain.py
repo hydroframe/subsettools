@@ -101,7 +101,7 @@ def test_define_latlon_domain_errors(latlon_bounds, grid):
             id="single point upstream area",
         ),
         pytest.param(
-            [[39.8522, -74.3786]],
+            [[39.85227324179805, -74.3786676880639]],
             "conus2",
             np.array([[0, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]),
             (4054, 1914, 4058, 1917),
