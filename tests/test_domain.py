@@ -174,7 +174,7 @@ def test_define_latlon_domain_errors(latlon_bounds, grid):
             id="two outlets, one upstream of the other",
         ),
         pytest.param(
-            [[39.8195, -75.3820]],
+            [[39.820145944247464, -75.3815714544093]],
             "conus2",
             np.load("tests/correct_output/upstream_mask_lower_delaware.npy"),
             (3874, 1883, 4054, 2180),
