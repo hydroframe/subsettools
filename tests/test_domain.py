@@ -9,15 +9,36 @@ from parflow.tools.io import read_pfb
 @pytest.mark.parametrize(
     "hucs, grid, result",
     [
-        pytest.param(["15060202"], "conus1", (375, 239, 487, 329),id="simple conus1 level 8 HUC domain"),
-        pytest.param(["140802"], "conus1", (572, 337, 797, 577), id="simple conus1 level 6 HUC domain"),
+        pytest.param(
+            ["15060202"],
+            "conus1",
+            (375, 239, 487, 329),
+            id="simple conus1 level 8 HUC domain",
+        ),
+        pytest.param(
+            ["140802"],
+            "conus1",
+            (572, 337, 797, 577),
+            id="simple conus1 level 6 HUC domain",
+        ),
         pytest.param(
             ["14080201", "14080202", "14080203", "14080204", "14080205"],
             "conus1",
-            (572, 337, 797, 577), id="list of HUCs in conus 1"
+            (572, 337, 797, 577),
+            id="list of HUCs in conus 1",
         ),
-        pytest.param(["02050304"], "conus2", (3744, 1853, 3854, 1952), id="level 8 conus2 HUC domain"),
-        pytest.param(["17100306"], "conus2", (73, 2295, 110, 2368), id="level 8 conus2 coastal HUC domain")
+        pytest.param(
+            ["02050304"],
+            "conus2",
+            (3744, 1853, 3854, 1952),
+            id="level 8 conus2 HUC domain",
+        ),
+        pytest.param(
+            ["17100306"],
+            "conus2",
+            (73, 2295, 110, 2368),
+            id="level 8 conus2 coastal HUC domain",
+        ),
     ],
 )
 def test_define_huc_domain(hucs, grid, result):
@@ -28,14 +49,27 @@ def test_define_huc_domain(hucs, grid, result):
 @pytest.mark.parametrize(
     "hucs, grid",
     [
-        pytest.param(["01010001"], "conus1", id="Level 8 HUC located outside of conus1 grid"),
-        pytest.param(["21010005"], "conus2", id="Level 8 HUC located outside of conus2 grid"),
-        pytest.param(["03130003"], "conus1", id="Level 8 HUC located outside of conus1 grid"),
-        pytest.param(["1710"], "conus1", id="Level 4 HUC located outside of conus1 grid"),
-        pytest.param(["01010002", "01010001"], "conus1", id="list of Level 8 HUCs located outside of conus1 grid"),
+        pytest.param(
+            ["01010001"], "conus1", id="Level 8 HUC located outside of conus1 grid"
+        ),
+        pytest.param(
+            ["21010005"], "conus2", id="Level 8 HUC located outside of conus2 grid"
+        ),
+        pytest.param(
+            ["03130003"], "conus1", id="Level 8 HUC located outside of conus1 grid"
+        ),
+        pytest.param(
+            ["1710"], "conus1", id="Level 4 HUC located outside of conus1 grid"
+        ),
+        pytest.param(
+            ["01010002", "01010001"],
+            "conus1",
+            id="list of Level 8 HUCs located outside of conus1 grid",
+        ),
         pytest.param(["220102"], "conus2", id="HUC number does not exist"),
-        pytest.param(["14080205", "140700"], "conus2", id="HUC IDs of different levels")
-
+        pytest.param(
+            ["14080205", "140700"], "conus2", id="HUC IDs of different levels"
+        ),
     ],
 )
 def test_define_huc_domain_errors(hucs, grid):
@@ -82,7 +116,11 @@ def test_define_latlon_domain(latlon_bounds, grid, correct_bounds, correct_mask)
             id="lat/lon points outside the grid",
         ),
         pytest.param([[57.44, -107.33]], "conus2", id="only one lat/lon point"),
-        pytest.param([[57.44, -107.33],[57.44, -107.33], [57.55, -108.00]], "conus2", id="more than two lat/lon points")
+        pytest.param(
+            [[57.44, -107.33], [57.44, -107.33], [57.55, -108.00]],
+            "conus2",
+            id="more than two lat/lon points",
+        ),
     ],
 )
 def test_define_latlon_domain_errors(latlon_bounds, grid):
@@ -108,14 +146,20 @@ def test_define_latlon_domain_errors(latlon_bounds, grid):
             id="small upstream area",
         ),
         pytest.param(
-            [[44.13538466649678, -95.50793718973576], [44.13521041397351, -95.4949657382491]],
+            [
+                [44.13538466649678, -95.50793718973576],
+                [44.13521041397351, -95.4949657382491],
+            ],
             "conus2",
             np.array([[1, 0, 0], [1, 1, 0], [1, 1, 1], [1, 1, 1], [1, 1, 1]]),
             (2322, 2111, 2325, 2116),
             id="two outlets with adjacent, non-overlapping upstream areas",
         ),
         pytest.param(
-            [[44.1348, -95.5084], [44.1074, -95.5086]],
+            [
+                [44.13538466649678, -95.50793718973576],
+                [44.10762872972563, -95.52162729883625],
+            ],
             "conus2",
             np.array(
                 [
@@ -193,7 +237,7 @@ def test_write_solid(set_parflow_dir, tmp_path):
     test_dir = tmp_path / "test"
     test_dir.mkdir()
     st.write_mask_solid(mask=mask, grid="conus2", write_dir=test_dir)
-    expected_solid = ['1\n', '0\n', '1\n', '0\n', '0\n']
+    expected_solid = ["1\n", "0\n", "1\n", "0\n", "0\n"]
     with open(f"{test_dir}/solidfile.pfsol") as f:
-        solid  = f.readlines()
+        solid = f.readlines()
     assert solid == expected_solid
