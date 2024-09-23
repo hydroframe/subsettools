@@ -2,7 +2,7 @@
 
 ## Installation
 
-`subsettools` can be installed using pip. This installs our latest stable release with fully-supported features. `subsettools` currently supports Python versions 3.9, 3.10 and 3.11.
+`subsettools` can be installed using pip. This installs our latest stable release with fully-supported features. `subsettools` currently supports Python versions 3.10, 3.11 and 3.12.
 
 ```bash
 $ pip install subsettools
