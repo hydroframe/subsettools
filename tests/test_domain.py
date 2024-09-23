@@ -94,7 +94,7 @@ def test_define_latlon_domain_errors(latlon_bounds, grid):
     "outlets, grid, correct_mask, correct_bounds",
     [
         pytest.param(
-            [[39.8344, -74.3853]],
+            [[39.83447238411436, -74.38539661569031]],
             "conus2",
             np.array([[1]]),
             (4057, 1914, 4058, 1915),
