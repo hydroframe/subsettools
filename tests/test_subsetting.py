@@ -166,7 +166,7 @@ def test_subset_forcing_data(time_zone, tmp_path, mock_hf_data, mock_hf_paths):
         np.array_equal(read_pfb(path), np.ones((24, 20, 10))) for path in all_paths
     )
 
-
+    
 #####################
 # Integration tests #
 #####################
@@ -227,3 +227,36 @@ def test_subset_press_init(tmp_path):
     assert filename == os.path.join(
         test_dir, "conus1_baseline_mod_2002.10.01:00.00.00_UTC0_press.pfb"
     )
+
+
+def test_subset_forcing_dataset_version(tmp_path):
+    test_dir_8 = tmp_path / "0.8"
+    test_dir_8.mkdir()
+    test_dir_latest = tmp_path / "latest"
+    test_dir_latest.mkdir()
+
+    paths = {}
+    paths["0.8"] = st.subset_forcing(
+        ij_bounds=(1225, 1738, 1347, 1811),
+        grid="conus2",
+        start="2005-10-02",
+        end="2005-10-03",
+        dataset="CW3E",
+        forcing_vars=("air_temp",),
+        write_dir=test_dir_8,
+        dataset_version="0.8",
+    )
+    paths["latest"] = st.subset_forcing(
+        ij_bounds=(1225, 1738, 1347, 1811),
+        grid="conus2",
+        start="2005-10-02",
+        end="2005-10-03",
+        dataset="CW3E",
+        forcing_vars=("air_temp",),
+        write_dir=test_dir_latest,
+        dataset_version=None,
+    )
+
+    file_8 = paths["0.8"]["air_temp"][0]
+    file_latest = paths["latest"]["air_temp"][0]
+    assert not np.array_equal(read_pfb(file_8), read_pfb(file_latest))
