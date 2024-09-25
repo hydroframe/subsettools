@@ -26,7 +26,7 @@ def get_utc_time(date_string, time_zone):
 
     Args:
         date_string (str): date in the form 'yyyy-mm-dd'
-        time_zone (str): a pytz-supported time zone
+        time_zone (str): a zoneinfo-supported time zone
 
     Returns:
         A timezone-unaware datetime object representing the time in UTC.

@@ -156,7 +156,8 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
             in the form 'yyyy-mm-dd'
         write_dir (str): directory where the subset file will be written
         time_zone (str): timezone information for subset date. Data will be
-            subset at midnight in the specified timezone. Defaults to "UTC".
+            subset at midnight in the specified timezone. This should be a 
+            zoneinfo-supported time zone. Defaults to "UTC".
 
     Returns:
         The filepath of the subset file, which includes datetime information, so
@@ -245,8 +246,8 @@ def subset_forcing(
             forcing files will be subset from e.g. "NLDAS2".
         write_dir (str): directory where the subset files will be written
         time_zone (str): timezone information for start and end dates. Data will
-            be subset starting at midnight in the specified timezone. Defaults to
-            "UTC".
+            be subset starting at midnight in the specified timezone. This
+            should be a zoneinfo-supported time zone. Defaults to "UTC".
         forcing_vars (tuple[str]): tuple of forcing variables to subset. By
             default all 8 variables needed to run ParFlow-CLM will be subset.
 
