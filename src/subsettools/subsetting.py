@@ -219,6 +219,7 @@ def subset_forcing(
         "east_windspeed",
         "north_windspeed",
     ),
+    dataset_version=None,
 ):
     """Subset forcing files from national datasets in HydroData.
 
@@ -249,6 +250,8 @@ def subset_forcing(
             "UTC".
         forcing_vars (tuple[str]): tuple of forcing variables to subset. By
             default all 8 variables needed to run ParFlow-CLM will be subset.
+        dataset_version (str): version of the forcing dataset. By default the
+            latest version of a dataset will be returned.
 
     Returns:
         A dictionary mapping the forcing variable names to the corresponding file
@@ -265,7 +268,8 @@ def subset_forcing(
             end="2005-12-01",
             dataset="CW3E",
             write_dir="/path/to/your/chosen/directory",
-            forcing_vars=("precipitation", "air_temp")
+            forcing_vars=("precipitation", "air_temp"),
+            dataset_version="0.9",
         )
     """
     _validate_grid_bounds(ij_bounds)
@@ -297,6 +301,7 @@ def subset_forcing(
                 dataset,
                 write_dir,
                 time_zone,
+                dataset_version,
                 outputs,
                 exit_event,
                 lock,
@@ -332,6 +337,7 @@ def _subset_forcing_variable(
     dataset,
     write_dir,
     time_zone,
+    dataset_version,
     outputs,
     exit_event,
     lock,
@@ -350,6 +356,7 @@ def _subset_forcing_variable(
         "file_type": "pfb",
         "temporal_resolution": "hourly",
         "grid_bounds": ij_bounds,
+        "dataset_version": dataset_version,
     }
 
     while date < end_date and not exit_event.is_set():
