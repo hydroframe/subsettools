@@ -164,11 +164,6 @@ def test_subset_forcing_timezones(time_zone, tmp_path, mock_hf_data, mock_hf_pat
     path = paths["var1"][0]
     assert read_pfb(path).shape == (24, 20, 10)
 
-#    all_paths = paths["var1"] + paths["var2"]
-#    assert all(
-#        np.array_equal(read_pfb(path), np.ones((24, 20, 10))) for path in all_paths
-#    )
-
 
 #####################
 # Integration tests #
