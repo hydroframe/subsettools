@@ -230,21 +230,21 @@ def test_subset_press_init(tmp_path):
 
 
 def test_subset_forcing_dataset_version(tmp_path):
-    test_dir_8 = tmp_path / "0.8"
-    test_dir_8.mkdir()
+    test_dir_9 = tmp_path / "0.9"
+    test_dir_9.mkdir()
     test_dir_latest = tmp_path / "latest"
     test_dir_latest.mkdir()
 
     paths = {}
-    paths["0.8"] = st.subset_forcing(
+    paths["0.9"] = st.subset_forcing(
         ij_bounds=(1225, 1738, 1347, 1811),
         grid="conus2",
         start="2005-10-02",
         end="2005-10-03",
         dataset="CW3E",
         forcing_vars=("air_temp",),
-        write_dir=test_dir_8,
-        dataset_version="0.8",
+        write_dir=test_dir_9,
+        dataset_version="0.9",
     )
     paths["latest"] = st.subset_forcing(
         ij_bounds=(1225, 1738, 1347, 1811),
@@ -257,6 +257,6 @@ def test_subset_forcing_dataset_version(tmp_path):
         dataset_version=None,
     )
 
-    file_8 = paths["0.8"]["air_temp"][0]
+    file_9 = paths["0.9"]["air_temp"][0]
     file_latest = paths["latest"]["air_temp"][0]
-    assert not np.array_equal(read_pfb(file_8), read_pfb(file_latest))
+    assert np.array_equal(read_pfb(file_9), read_pfb(file_latest))
