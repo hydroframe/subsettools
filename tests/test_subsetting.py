@@ -190,7 +190,7 @@ def test_forcing_timezones(tmp_path, time_zone, utc_offset):
     start = "2006-01-03"
     end = "2006-01-04"
     dataset = "NLDAS2"
-    st.subset_forcing(
+    paths_utc = st.subset_forcing(
         ij_bounds=ij_bounds,
         grid=grid,
         start=start,
@@ -200,7 +200,7 @@ def test_forcing_timezones(tmp_path, time_zone, utc_offset):
         time_zone="UTC",
         forcing_vars=("air_temp",),
     )
-    st.subset_forcing(
+    paths_tz = st.subset_forcing(
         ij_bounds=ij_bounds,
         grid=grid,
         start=start,
@@ -210,8 +210,8 @@ def test_forcing_timezones(tmp_path, time_zone, utc_offset):
         time_zone=time_zone,
         forcing_vars=("air_temp",),        
     )
-    utc_temp = read_pfb(os.path.join(utc, "NLDAS.Temp.000001_to_000024.pfb"))
-    tz_temp = read_pfb(os.path.join(tz, "NLDAS.Temp.000001_to_000024.pfb"))
+    utc_temp = read_pfb(paths_utc["air_temp"][0])
+    tz_temp = read_pfb(paths_tz["air_temp"][0])
     assert np.array_equal(tz_temp[0], utc_temp[utc_offset])
 
     
