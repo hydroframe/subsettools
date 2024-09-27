@@ -214,6 +214,28 @@ def test_forcing_timezones(tmp_path, time_zone, utc_offset):
     tz_temp = read_pfb(os.path.join(tz, "NLDAS.Temp.000001_to_000024.pfb"))
     assert np.array_equal(tz_temp[0], utc_temp[utc_offset])
 
+    
+def test_forcing_timezone_time_change(tmp_path):
+    """Check for when start and end dates cross the time change (EDT->EST)."""
+    write_dir = tmp_path
+    ij_bounds = (375, 239, 487, 329)
+    grid = "conus1"
+    start = "2006-04-02" # Time change on 02-04-2006 at 2:00am.
+    end = "2006-04-03"
+    dataset = "NLDAS2"
+    paths = st.subset_forcing(
+        ij_bounds=ij_bounds,
+        grid=grid,
+        start=start,
+        end=end,
+        dataset=dataset,
+        write_dir=write_dir,
+        time_zone="US/Eastern",
+        forcing_vars=("air_temp",),
+    )
+    data = read_pfb(paths["air_temp"][0])
+    assert data.shape == (24, 90, 112)
+    
 
 def test_subset_press_init(tmp_path):
     """Check that the call succeeds when it fetches data for the beginning of WY 2003.
