@@ -1,7 +1,7 @@
 """Helper functions for the subsettools package."""
 
 from datetime import datetime
-import pytz
+from zoneinfo import ZoneInfo
 import hf_hydrodata as hf
 
 
@@ -26,7 +26,7 @@ def get_utc_time(date_string, time_zone):
 
     Args:
         date_string (str): date in the form 'yyyy-mm-dd'
-        time_zone (str): a pytz-supported time zone
+        time_zone (str): a zoneinfo-supported time zone
 
     Returns:
         A timezone-unaware datetime object representing the time in UTC.
@@ -34,8 +34,8 @@ def get_utc_time(date_string, time_zone):
     date = datetime.strptime(date_string, "%Y-%m-%d")
     if time_zone != "UTC":
         date = (
-            date.replace(tzinfo=pytz.timezone(time_zone))
-            .astimezone(pytz.UTC)
+            date.replace(tzinfo=ZoneInfo(time_zone))
+            .astimezone(ZoneInfo('UTC'))
             .replace(tzinfo=None)
         )
     return date

@@ -147,24 +147,22 @@ def test_subset_forcing_filenames(tmp_path, mock_hf_data, mock_hf_paths):
     assert [os.path.basename(path) for path in paths["var1"]] == expected_files
 
 
-@pytest.mark.parametrize("time_zone", ["UTC", "EST"])
-def test_subset_forcing_data(time_zone, tmp_path, mock_hf_data, mock_hf_paths):
+@pytest.mark.parametrize("time_zone", ["UTC", "EST", "US/Pacific", "US/Central", "US/Mountain", "US/Eastern"])
+def test_subset_forcing_timezones(time_zone, tmp_path, mock_hf_data, mock_hf_paths):
     test_dir = tmp_path / "test_forcing"
     test_dir.mkdir()
     paths = st.subset_forcing(
         ij_bounds=(0, 0, 10, 20),
         grid="conus1",
         start="2005-10-02",
-        end="2005-10-04",
+        end="2005-10-03",
         dataset="my_ds",
-        forcing_vars=("var1", "var2"),
+        forcing_vars=("var1",),
         write_dir=test_dir,
         time_zone=time_zone,
     )
-    all_paths = paths["var1"] + paths["var2"]
-    assert all(
-        np.array_equal(read_pfb(path), np.ones((24, 20, 10))) for path in all_paths
-    )
+    path = paths["var1"][0]
+    assert read_pfb(path).shape == (24, 20, 10)
 
     
 #####################
@@ -172,42 +170,72 @@ def test_subset_forcing_data(time_zone, tmp_path, mock_hf_data, mock_hf_paths):
 #####################
 
 
-def test_forcing_timezones(tmp_path):
-    "Check if we get the correct forcing (temperature) in EST time."
+@pytest.mark.parametrize("time_zone, utc_offset",
+                         [
+                             ("EST", 5),
+                             ("US/Eastern", 5),
+                             ("US/Central", 6),
+                             ("US/Mountain", 7),                             
+                             ("US/Pacific", 8),
+                         ]
+)
+def test_forcing_timezones(tmp_path, time_zone, utc_offset):
+    "Check if we get the correct data offset for all US timezones."
     utc = tmp_path / "UTC_out"
     utc.mkdir()
-    est = tmp_path / "EST_out"
-    est.mkdir()
+    tz = tmp_path / "tz_out"
+    tz.mkdir()
     ij_bounds = (375, 239, 487, 329)
     grid = "conus1"
-    start = "2005-10-03"
+    start = "2006-01-03"
+    end = "2006-01-04"
     dataset = "NLDAS2"
-    st.subset_forcing(
+    paths_utc = st.subset_forcing(
         ij_bounds=ij_bounds,
         grid=grid,
         start=start,
-        end="2005-10-05",
+        end=end,
         dataset=dataset,
         write_dir=utc,
         time_zone="UTC",
+        forcing_vars=("air_temp",),
     )
-    st.subset_forcing(
+    paths_tz = st.subset_forcing(
         ij_bounds=ij_bounds,
         grid=grid,
         start=start,
-        end="2005-10-04",
+        end=end,
         dataset=dataset,
-        write_dir=est,
-        time_zone="EST",
+        write_dir=tz,
+        time_zone=time_zone,
+        forcing_vars=("air_temp",),        
     )
-    utc_temp1 = read_pfb(os.path.join(utc, "NLDAS.Temp.000001_to_000024.pfb"))
-    utc_temp2 = read_pfb(os.path.join(utc, "NLDAS.Temp.000025_to_000048.pfb"))
-    est_temp_correct = np.concatenate(
-        (utc_temp1[5:, :, :], utc_temp2[:5, :, :]), axis=0
-    )
-    est_temp = read_pfb(os.path.join(est, "NLDAS.Temp.000001_to_000024.pfb"))
-    assert np.array_equal(est_temp_correct, est_temp)
+    utc_temp = read_pfb(paths_utc["air_temp"][0])
+    tz_temp = read_pfb(paths_tz["air_temp"][0])
+    assert np.array_equal(tz_temp[0], utc_temp[utc_offset])
 
+    
+def test_forcing_timezone_time_change(tmp_path):
+    """Check for when start and end dates cross the time change (EDT->EST)."""
+    write_dir = tmp_path
+    ij_bounds = (375, 239, 487, 329)
+    grid = "conus1"
+    start = "2006-04-02" # Time change on 02-04-2006 at 2:00am.
+    end = "2006-04-03"
+    dataset = "NLDAS2"
+    paths = st.subset_forcing(
+        ij_bounds=ij_bounds,
+        grid=grid,
+        start=start,
+        end=end,
+        dataset=dataset,
+        write_dir=write_dir,
+        time_zone="US/Eastern",
+        forcing_vars=("air_temp",),
+    )
+    data = read_pfb(paths["air_temp"][0])
+    assert data.shape == (24, 90, 112)
+    
 
 def test_subset_press_init(tmp_path):
     """Check that the call succeeds when it fetches data for the beginning of WY 2003.

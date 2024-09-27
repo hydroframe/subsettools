@@ -38,8 +38,8 @@ def config_clm(ij_bounds, start, end, dataset, write_dir, time_zone="UTC"):
         dataset (str): the dataset that the files should be obtained from name
             e.g. "conus1_baseline_mod"
         write_dir (str): directory where the subset files will be written
-        timezone (str): timezone information for start and end dates.
-            Defaults to "UTC".
+        time_zone (str): timezone information for start and end dates. This
+            should be a zoneinfo-supported time zone. Defaults to "UTC".
 
     Returns:
         A dictionary mapping the CLM file types ("vegp", "vegm", "drv_clm") to
