@@ -14,14 +14,14 @@ pip install subsettools
 
 You may see the following error when setting up your environment:
 
-&nbsp;*A module that was compiled using NumPy 1.x cannot be run in*
-&nbsp;*NumPy 2.0.0 as it may crash. To support both 1.x and 2.x*
-&nbsp;*versions of NumPy, modules must be compiled with NumPy 2.0.*
-&nbsp;*Some module may need to rebuild instead e.g. with 'pybind11>=2.12'.*
+&nbsp; *A module that was compiled using NumPy 1.x cannot be run in*
+&nbsp; *NumPy 2.0.0 as it may crash. To support both 1.x and 2.x*
+&nbsp; *versions of NumPy, modules must be compiled with NumPy 2.0.*
+&nbsp; *Some module may need to rebuild instead e.g. with 'pybind11>=2.12'.*
 
-&nbsp;*If you are a user of the module, the easiest solution will be to*
-&nbsp;*downgrade to 'numpy<2' or try to upgrade the affected module.*
-&nbsp;*We expect that some modules will need time to support NumPy 2.*
+&nbsp; *If you are a user of the module, the easiest solution will be to*
+&nbsp; *downgrade to 'numpy<2' or try to upgrade the affected module.*
+&nbsp; *We expect that some modules will need time to support NumPy 2.*
 
 NumPy is currently in transition from 1.x to 2.x. There are breaking changes between
 the two versions, and they affect packages that are downstream from NumPy. There are
