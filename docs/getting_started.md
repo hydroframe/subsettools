@@ -2,7 +2,7 @@
 
 ## Installation
 
-`subsettools` can be installed using pip. This installs our latest stable release with fully-supported features. `subsettools` currently supports Python versions 3.9, 3.10 and 3.11.
+`subsettools` can be installed using pip. This installs our latest stable release with fully-supported features. `subsettools` currently supports Python versions 3.10, 3.11 and 3.12.
 
 ```bash
 $ pip install subsettools
@@ -13,6 +13,8 @@ You can also install the latest development version by cloning the GitHub reposi
 ```bash
 $ pip install git+https://github.com/hydroframe/subsettools.git
 ```
+
+If you encounter issues with installation, check out our FAQ page. If you still can't find an answer to your problem, please open an issue at the [subsettools GitHUB page](https://github.com/hydroframe/subsettools).
 
 In order to use a small subset of the `subsettools` functions, you also need to have ParFlow installed. Please refer to the [HydroFrame](https://hydroframe.org/) for help getting started with ParFlow.
 
