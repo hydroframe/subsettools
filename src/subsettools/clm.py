@@ -3,6 +3,7 @@
 import os
 from datetime import timedelta
 import numpy as np
+import pandas as pd
 import hf_hydrodata
 from ._common import (
     get_utc_time,
@@ -263,3 +264,46 @@ def _edit_drvclmin(
 
     with open(file_path, "w", encoding="utf-8") as f:
         f.writelines(lines)
+
+
+def vegm_to_land_cover(vegm_name):
+    """
+    Convert a vegm.dat file in CLM format into a land cover array.
+
+    Args:
+        vegm_name (str): vegm filename
+
+    Returns:
+        NumPy array containing the calculated land cover type for 
+        each domain grid cell.
+
+    Example:
+
+    .. code-block:: python
+
+        land_cover_array = vegm_to_land_cover("/path/to/vegm/vegm.dat")
+    """
+
+    # Read in .dat file
+    df = pd.read_csv(vegm_name, sep=r'\s+', skiprows=2, header=None)
+    df.columns = [f"c{i}" for i in range(df.shape[1])]
+
+    # Number of columns and rows determined by last line of file
+    nx = int(df.iloc[-1]["c0"])
+    ny = int(df.iloc[-1]["c1"])
+
+    # Remove first seven columns: x,y,lat,lon,sand,clay,color index
+    feature_cols = df.columns[7:]
+
+    # Stack everything into (ny, nx, n_features)
+    data = np.stack([df[c].values.reshape((ny, nx)) for c in feature_cols], axis=-1)
+
+    # Reshape data into z, y, x where z is the vegm type
+    data = np.transpose(data, (2, 0, 1))
+
+    # Reduce array of land cover indicators to a single land cover type
+    # Add 1 to account for land cover indexing starting from 1 instead of 0
+    # The array land_cover will be of shape (y, x)
+    land_cover = (np.argmax(data[:, :, :], axis=0)+1).astype(np.float64)
+
+    return land_cover
