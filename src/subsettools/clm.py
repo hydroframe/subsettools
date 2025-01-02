@@ -266,12 +266,12 @@ def _edit_drvclmin(
         f.writelines(lines)
 
 
-def vegm_to_land_cover(vegm_name):
+def vegm_to_land_cover(vegm_path):
     """
     Convert a vegm.dat file in CLM format into a land cover array.
 
     Args:
-        vegm_name (str): vegm filename
+        vegm_path (str): path to vegm file
 
     Returns:
         NumPy array containing the calculated land cover type for 
@@ -285,7 +285,7 @@ def vegm_to_land_cover(vegm_name):
     """
 
     # Read in .dat file
-    df = pd.read_csv(vegm_name, sep=r'\s+', skiprows=2, header=None)
+    df = pd.read_csv(vegm_path, sep=r'\s+', skiprows=2, header=None)
     df.columns = [f"c{i}" for i in range(df.shape[1])]
 
     # Number of columns and rows determined by last line of file
