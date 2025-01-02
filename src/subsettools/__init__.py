@@ -19,6 +19,7 @@ from subsettools.subsetting import (
 )
 from subsettools.clm import (
     config_clm,
+    vegm_to_land_cover,
 )
 from subsettools.parflow_run import (
     get_template_runscript,
