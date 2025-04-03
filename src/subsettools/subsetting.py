@@ -358,8 +358,11 @@ def _subset_forcing_variable(
         "temporal_resolution": "hourly",
         "grid_bounds": ij_bounds,
         "dataset_version": dataset_version,
+        "start_time": date,
+        "end_time": date + delta,
     }
-
+    path = hf_hydrodata.get_paths(options)[0]
+    
     while date < end_date and not exit_event.is_set():
         start_time = date
         end_time = date + delta
@@ -385,9 +388,8 @@ def _subset_forcing_variable(
         except Exception:
             exit_event.set()
             raise
-        paths = hf_hydrodata.get_paths(options)
         write_path = os.path.join(
-            write_dir, _adjust_filename_hours(os.path.basename(paths[0]), day)
+            write_dir, _adjust_filename_hours(os.path.basename(path), day)
         )
         write_paths.append(write_path)
         write_pfb(write_path, subset_data[:, :, :], dist=False)

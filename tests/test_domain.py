@@ -30,13 +30,13 @@ from parflow.tools.io import read_pfb
         pytest.param(
             ["02050304"],
             "conus2",
-            (3744, 1853, 3854, 1952),
+            (3745, 1848, 3832, 1952),
             id="level 8 conus2 HUC domain",
         ),
         pytest.param(
             ["17100306"],
             "conus2",
-            (73, 2295, 110, 2368),
+            (74, 2300, 110, 2368),
             id="level 8 conus2 coastal HUC domain",
         ),
     ],
