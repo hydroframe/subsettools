@@ -1,11 +1,11 @@
 import os
-from parflow.tools.io import read_pfb
+from parflow.tools.io import read_pfb, read_pfb_sequence
 import numpy as np
 import subsettools as st
 import hf_hydrodata
 import pytest
 import glob
-
+import time
 
 _SECONDS_PER_HOUR = 3600
 _DUMMY_NZ = 5
@@ -288,3 +288,118 @@ def test_subset_forcing_dataset_version(tmp_path):
     file_1 = paths["1.0"]["air_temp"][0]
     file_latest = paths["latest"]["air_temp"][0]
     assert np.array_equal(read_pfb(file_1), read_pfb(file_latest))
+
+def test_forcing_conus2_est(tmp_path):
+    """Test read_subset_forcing using conus2 for multiple days with a EST timezone."""
+
+    tz = tmp_path / "tz_out"
+    tz.mkdir()
+    start = "2009-03-01"
+    end = "2009-03-04"
+    time_zone = "US/Eastern"
+    ij_bounds = (813, 1200, 925, 1290)
+    grid = "conus2"
+    dataset = "CW3E"
+
+    paths_tz = st.subset_forcing(
+        ij_bounds=ij_bounds,
+        grid=grid,
+        start=start,
+        end=end,
+        dataset=dataset,
+        write_dir=tz,
+        time_zone=time_zone,
+        forcing_vars=("air_temp",)
+    )
+    result_np = read_pfb_sequence(paths_tz.get("air_temp"))
+    assert len(paths_tz.get("air_temp")) == 3
+    assert result_np.shape == (3, 24, 90, 112)
+    assert np.nansum(result_np) == pytest.approx(206304706.1352234)
+
+def test_forcing_conus2_utc(tmp_path):
+    """Test read_subset_forcing using conus2 for multiple days with a UTC timezone."""
+
+    tz = tmp_path / "tz_out"
+    tz.mkdir()
+    start = "2009-03-01"
+    end = "2009-03-04"
+    ij_bounds = (813, 1200, 925, 1290)
+    grid = "conus2"
+    dataset = "CW3E"
+
+    paths_tz = st.subset_forcing(
+        ij_bounds=ij_bounds,
+        grid=grid,
+        start=start,
+        end=end,
+        dataset=dataset,
+        write_dir=tz,
+        forcing_vars=("air_temp",)
+    )
+    result_np = read_pfb_sequence(paths_tz.get("air_temp"))
+    assert len(paths_tz.get("air_temp")) == 3
+    assert result_np.shape == (3, 24, 90, 112)
+    assert np.nansum(result_np) == pytest.approx(206204619.5949707)
+
+def test_forcing_all_variables_timezone(tmp_path):
+    """Test read_subset_forcing using conus2 for all variables with a timezone."""
+
+    tz = tmp_path / "tz_out"
+    tz.mkdir()
+    start = "2009-03-01"
+    end = "2009-03-04"
+    time_zone = "US/Eastern"
+    ij_bounds = (813, 1200, 925, 1290)
+    grid = "conus2"
+    dataset = "CW3E"
+
+    paths_tz = st.subset_forcing(
+        ij_bounds=ij_bounds,
+        grid=grid,
+        start=start,
+        end=end,
+        dataset=dataset,
+        write_dir=tz,
+        time_zone=time_zone)
+
+    assert len(paths_tz) == 8
+    result_np = read_pfb_sequence(paths_tz.get("air_temp"))
+    assert len(paths_tz.get("air_temp")) == 3
+    assert len(paths_tz.get("downward_shortwave")) == 3
+    assert result_np.shape == (3, 24, 90, 112)
+    assert np.nansum(result_np) == pytest.approx(206304706.1352234)
+
+def test_forcing_full_conus2(tmp_path):
+    """
+        Test ability to subset tools to download a forcing file file
+        with a full conus2 grid.
+        This test can only be executed on a machine with access to /hydrodata files
+        to be able to compare the result with the raw data files. This would not
+        work remotely for older version of subset tools because files were too big.
+     """
+
+    raw_file = "/hydrodata/forcing/processed_data/CONUS2/CW3E_v1.0/hourly/WY2009/CW3E.Temp.003625_to_003648.pfb"
+    if os.path.exists(raw_file):    
+
+        tz = tmp_path / "tz_out"
+        tz.mkdir()
+        start = "2009-03-01"
+        end = "2009-03-02"
+        ij_bounds = (0, 0, 4442, 3256)
+        grid = "conus2"
+        dataset = "CW3E"
+
+        paths_tz = st.subset_forcing(
+            ij_bounds=ij_bounds,
+            grid=grid,
+            start=start,
+            end=end,
+            dataset=dataset,
+            write_dir=tz,
+            forcing_vars=("air_temp",)
+        )
+        result_np = read_pfb_sequence(paths_tz.get("air_temp"))
+        raw_np = read_pfb_sequence([raw_file])
+        assert len(paths_tz.get("air_temp")) == 1
+        assert result_np.shape == (1, 24, 3256, 4442)
+        assert np.array_equal(result_np, raw_np)

@@ -1,10 +1,22 @@
 import os
 from pathlib import Path
 import pytest
+import shutil
 from parflow.tools.fs import mkdir, rm
 # import hf_hydrodata as hf
 
 # hf.register_api_pin("email", "hf_pin")
+
+
+@pytest.fixture
+def tmp_path(tmp_path_factory):
+    """Create and cleanup a tempdirectory used by unit tests with tmp_path argument."""
+
+    temp_dir = tmp_path_factory.mktemp("unittest_folder")
+    yield temp_dir
+    # Cleanup after tests
+    shutil.rmtree(temp_dir)
+
 
 @pytest.fixture(scope="session")
 def set_parflow_dir():
