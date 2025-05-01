@@ -5,12 +5,13 @@ from zoneinfo import ZoneInfo
 import importlib
 import hf_hydrodata as hf
 
+SUBSETTOOLS_VERSION = importlib.metadata.version("subsettools")
 
 def get_hf_gridded_data(options):
     "Wrapper around hf_hydrodata.get_gridded_data to handle various exceptions."
 
     try:
-        _add_subsettool_version(options)
+        options["subsettools"] = SUBSETTOOLS_VERSION
         data = hf.get_gridded_data(options)
     except ValueError as err:
         raise ValueError(
@@ -41,12 +42,3 @@ def get_utc_time(date_string, time_zone):
             .replace(tzinfo=None)
         )
     return date
-
-SUBSETTOOLS_VERSION = None
-def _add_subsettool_version(options):
-    """Add subsettools version to options"""
-    
-    global SUBSETTOOLS_VERSION
-    if SUBSETTOOLS_VERSION is None:
-        SUBSETTOOLS_VERSION = importlib.metadata.version("subsettools")
-    options["subsettools"] = SUBSETTOOLS_VERSION
