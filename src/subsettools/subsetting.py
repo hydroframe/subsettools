@@ -7,7 +7,7 @@ ParFlow simulation.
     - subset initial pressure data
     - subset gridded CLM inputs (vegm)
 """
-#pylint: disable=C0301,R0913,R0914
+#pylint: disable=C0301,R0913,R0914,R0917
 import os
 from datetime import datetime, timedelta
 import threading
@@ -573,6 +573,10 @@ def _get_read_block_size(ij_bounds):
     block_days_per_read = int(
         max_chunking_memory_bytes / (subgrid_byte_size * _HOURS_PER_FORCING_FILE)
     )
+    # Limit number of days per read to 1 year
+    block_days_per_read = min(block_days_per_read, 366)
+
+    # Get number of hours to read per block
     block_hours_per_read = block_days_per_read * _HOURS_PER_FORCING_FILE
 
     if block_days_per_read == 0:
