@@ -1,5 +1,5 @@
 """"
-    Unit tests for subset_forcing function.
+    Unit tests for subset tool static functions and subset_forcing function.
 """
 
 # pylint: disable=R0917,C0301,W0621,W0613
