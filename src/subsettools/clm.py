@@ -3,7 +3,9 @@
 import os
 from datetime import timedelta
 import numpy as np
+import pandas as pd
 import hf_hydrodata
+from parflow import write_pfb
 from ._common import (
     get_utc_time,
     get_hf_gridded_data,
@@ -263,3 +265,73 @@ def _edit_drvclmin(
 
     with open(file_path, "w", encoding="utf-8") as f:
         f.writelines(lines)
+
+
+def vegm_to_land_cover(vegm_path, write_pfb_path=None):
+    """
+    Convert a vegm.dat file in CLM format into a land cover array.
+
+    This function assumes the vegm.dat file is in the standard format. 
+    That is, the file has 1 row per grid cell and each row contains 25 columns 
+    The columns are ordered as: x, y, lat, lon, sand, clay, color, then 18 
+    columns representing the fractional coverage of the grid cell by vegetation 
+    class (these final 18 columns add to 1.0 for each row). The rows are in 
+    ascending order by grid cell index with y as the outer loop and x as the 
+    inner loop.
+
+    In cases in which the fractional vegetation coverage results in a tie
+    between multiple vegetation classes, the final land cover array will 
+    use the first (lowest) land cover designation to break the tie
+    (ie. the land cover array will contain designation 1 for a grid cell 
+    in which the vegetation distribution is 0.5 class 1 and 0.5 class 5).
+
+    Args:
+        vegm_path (str): path to vegm file
+        write_pfb_path (str; optional): path to write output .pfb file to disk
+
+    Returns:
+        NumPy array containing the calculated land cover type for 
+        each domain grid cell.
+
+        If `pfb_path` is provided, .pfb file is written to disk at the
+        specified path.
+
+    Example:
+
+    .. code-block:: python
+
+        land_cover_array = vegm_to_land_cover("/path/to/vegm/vegm.dat")
+    """
+
+    # Read in .dat file
+    df = pd.read_csv(vegm_path, sep=r'\s+', skiprows=2, header=None)
+    df.columns = [f"c{i}" for i in range(df.shape[1])]
+
+    # Number of columns and rows determined by last line of file
+    nx = int(df.iloc[-1]["c0"])
+    ny = int(df.iloc[-1]["c1"])
+
+    # Remove first seven columns: x,y,lat,lon,sand,clay,color index
+    feature_cols = df.columns[7:]
+
+    # Stack everything into (ny, nx, n_features)
+    data = np.stack([df[c].values.reshape((ny, nx)) for c in feature_cols], axis=-1)
+
+    # Reshape data into z, y, x where z is the vegm type
+    data = np.transpose(data, (2, 0, 1))
+
+    # Reduce array of land cover indicators to a single land cover type
+    # Add 1 to account for land cover indexing starting from 1 instead of 0
+    # The array land_cover will be of shape (y, x)
+    # Note: np.argmax breaks ties by returning the index of the first
+    # occurrence of the maximum value
+    land_cover = (np.argmax(data[:, :, :], axis=0)+1).astype(np.float64)
+
+    # Write to disk as .pfb if requested
+    if write_pfb_path:
+        try:
+            write_pfb(write_pfb_path, land_cover, dist=False)
+        except ValueError as err:
+            print(f"Failed to write .pfb to {write_pfb_path}:", err)
+
+    return land_cover

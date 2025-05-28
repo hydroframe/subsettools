@@ -2,13 +2,16 @@
 
 from datetime import datetime
 from zoneinfo import ZoneInfo
+import importlib
 import hf_hydrodata as hf
 
+SUBSETTOOLS_VERSION = importlib.metadata.version("subsettools")
 
 def get_hf_gridded_data(options):
     "Wrapper around hf_hydrodata.get_gridded_data to handle various exceptions."
 
     try:
+        options["subsettools"] = SUBSETTOOLS_VERSION
         data = hf.get_gridded_data(options)
     except ValueError as err:
         raise ValueError(
