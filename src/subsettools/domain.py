@@ -266,6 +266,65 @@ def latlon_to_ij(latlon_bounds, grid):
     return (imin, jmin, imax, jmax)
 
 
+def subset_all_masks(ij_bounds, dataset, write_dir, var_list=("mask-top", "mask-bottom", "mask-left", "mask-right", "mask-front", "mask-back")):
+    """Subset masks for all directions for a given domain.
+    
+    Given ij bounds and a list of variables, this function will create a mask
+    file per variable in write_dir.
+
+    Args:
+        ij_bounds (tuple[int]): bounding box for subset. This should be given as
+            i,j index values where 0,0 is the lower left hand corner of a domain.
+            ij_bounds are given relative to whatever grid is being used for the
+            subset.
+        dataset (str): static inputs dataset name from the HydroData catalog. Currently,
+            this function should be used for CONUS2 subsets only, so dataset should be set to
+            "conus2_domain"
+        write_dir (str): directory where the subset files will be written
+        var_list (tuple[str]): tuple of variables to subset from the dataset.
+            By default all variables above will be subset. These variables
+            ("top", "bottom", "left", "right", "front", "back") represent
+            the 6 sides of the domain. A separate mask file will be created for each
+            side.
+    
+    Returns:
+        A dictionary mapping the variable names to the corresponding file
+        paths where the subset data were written.
+
+    Example:
+
+    .. code-block:: python
+
+        filepaths = subset_all_masks(
+            ij_bounds=(375, 239, 487, 329),
+            dataset="conus2_domain",
+            write_dir="/path/to/your/chosen/directory",
+        )
+    """
+    _validate_grid_bounds(ij_bounds)
+    if not isinstance(dataset, str):
+        raise TypeError("dataset name must be a string.")
+    _validate_dir(write_dir)
+    if not all(isinstance(var, str) for var in var_list):
+        raise TypeError("All variable names should be strings.")
+    file_paths = {}
+    options = {
+        "dataset": dataset,
+        "file_type": "pfb",
+        "temporal_resolution": "static",
+        "grid_bounds": ij_bounds,
+    }
+    for var in var_list:
+        options["variable"] = var
+        subset_data = get_hf_gridded_data(options)
+        file_path = os.path.join(write_dir, f"{var}.pfb")
+        write_pfb(file_path, subset_data, dist=False)
+        file_paths[var] = file_path
+        print(f"Wrote {var}.pfb in specified directory.")
+
+    return file_paths
+    
+
 def write_mask_solid(mask, grid, write_dir):
     """Create ParFlow mask and solid files from a mask array.
 
