@@ -267,7 +267,7 @@ def latlon_to_ij(latlon_bounds, grid):
     return (imin, jmin, imax, jmax)
 
 
-def subset_all_masks(ij_bounds, dataset, write_dir, var_list=("mask-top", "mask-bottom", "mask-left", "mask-right", "mask-front", "mask-back")):
+def subset_all_masks(ij_bounds, dataset, write_dir, var_list=("mask_top", "mask_bottom", "mask_left", "mask_right", "mask_front", "mask_back")):
     """Subset masks for all directions for a given domain.
     
     Given ij bounds and a list of variables, this function will create a mask
@@ -431,17 +431,17 @@ def write_mask_solid(mask, grid, write_dir):
                 [
                     script_path,
                     "--mask-top",
-                    mask["mask-top"],
+                    mask["mask_top"],
                     "--mask-bottom",
-                    mask["mask-bottom"],
+                    mask["mask_bottom"],
                     "--mask-left",
-                    mask["mask-left"],
+                    mask["mask_left"],
                     "--mask-right",
-                    mask["mask-right"],
+                    mask["mask_right"],
                     "--mask-front",
-                    mask["mask-front"],
+                    mask["mask_front"],
                     "--mask-back",
-                    mask["mask-back"],
+                    mask["mask_back"],
                     "--pfsol",
                     solid_path,
                     "--vtk",
