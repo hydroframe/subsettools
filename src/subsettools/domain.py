@@ -29,6 +29,7 @@ from ._error_checking import (
     _validate_latlon_list,
     _validate_dir,
     _validate_mask,
+    _validate_grid_bounds,
 )
 from ._common import (
     get_hf_gridded_data,
@@ -270,7 +271,8 @@ def subset_all_masks(ij_bounds, dataset, write_dir, var_list=("mask-top", "mask-
     """Subset masks for all directions for a given domain.
     
     Given ij bounds and a list of variables, this function will create a mask
-    file per variable in write_dir.
+    file per variable in write_dir. Currently, this function should only be
+    used for CONUS2 domains only.
 
     Args:
         ij_bounds (tuple[int]): bounding box for subset. This should be given as
@@ -310,8 +312,6 @@ def subset_all_masks(ij_bounds, dataset, write_dir, var_list=("mask-top", "mask-
     file_paths = {}
     options = {
         "dataset": dataset,
-        "file_type": "pfb",
-        "temporal_resolution": "static",
         "grid_bounds": ij_bounds,
     }
     for var in var_list:
@@ -328,8 +328,8 @@ def subset_all_masks(ij_bounds, dataset, write_dir, var_list=("mask-top", "mask-
 def write_mask_solid(mask, grid, write_dir):
     """Create ParFlow mask and solid files from a mask array.
 
-    Given an integer mask array consisting of 0s and 1s, this function will
-    create three files in write_dir.
+    Given an integer mask array (or a dictionary of mask files representing all
+    sides of the domain), this function will create three files in write_dir.
         - a 2D mask file that indicates which cells inside the box domain are
           part of the selected HUCS.
         - a solid file that defines a 3D domain extending to the depth of
@@ -338,9 +338,13 @@ def write_mask_solid(mask, grid, write_dir):
         - a vtk file, which can be used to visualize the solid file in ParaView.
 
     Args:
-        mask (numpy.ndarray): an integer array such that mask[i, j] == 1 if the
-            cell (i, j) is part of the domain, and mask[i, j] == 0 otherwise.
-        grid (str): The spatial grid that the ij indices are calculated relative
+        mask (numpy.ndarray or dict[str, str]): 
+            an integer array such that mask[i, j] is the patch index for the
+            corresponding grid point (often, this is just a 1/0 mask representing
+            in/out of domain). Alternatively, mask can be a dict with
+            keys patch names ("mask-top", "mask-bottom", etc) and values paths
+            to the corresponding pfb files.
+        grid (str): the spatial grid that the ij indices are calculated relative
             to and that the subset data will be returned on. Possible values:
             “conus1” or “conus2”
         write_dir (str): directory path where the mask and solid files will be
@@ -348,7 +352,8 @@ def write_mask_solid(mask, grid, write_dir):
 
     Returns:
         dict: A dictionary mapping the keys ("mask", "mask_vtk", "solid") to the
-            corresponding filepaths of the created files.
+            corresponding filepaths of the created files. If mask is a dict of
+            mask files, only the "mask_vtk" and "solid" keys will be returned.
 
     Example:
 
@@ -360,23 +365,6 @@ def write_mask_solid(mask, grid, write_dir):
             write_dir="/path/to/your/chosen/directory"
         )
     """
-    _validate_mask(mask)
-    _validate_grid(grid)
-    _validate_dir(write_dir)
-    grid = grid.lower()
-
-    if grid == "conus1":
-        dz = CONUS1_DZ
-        z_top = CONUS1_Z_TOP
-    elif grid == "conus2":
-        dz = CONUS2_DZ
-        z_top = CONUS2_Z_TOP
-
-    nj, ni = mask.shape
-    new_mask = mask.reshape((1, nj, ni)).astype(float)
-    mask_path = os.path.join(write_dir, "mask.pfb")
-    write_pfb(mask_path, new_mask, dx=CONUS_DX, dy=CONUS_DY, dz=dz, dist=False)
-    print("Wrote mask.pfb")
     mask_vtk_path = os.path.join(write_dir, "mask_vtk.vtk")
     solid_path = os.path.join(write_dir, "solidfile.pfsol")
 
@@ -395,31 +383,86 @@ def write_mask_solid(mask, grid, write_dir):
             'installed and os.environ["PARFLOW_DIR"] points to that '
             "installation."
         )
-    try:
-        subprocess.run(
-            [
-                script_path,
-                "--mask",
-                mask_path,
-                "--pfsol",
-                solid_path,
-                "--vtk",
-                mask_vtk_path,
-                "--z-bottom",
-                str(CONUS_Z_BOTTOM),
-                "--z-top",
-                str(z_top),
-            ],
-            check=True,
-            capture_output=True,
-        )
-    except subprocess.CalledProcessError as e:
-        raise subprocess.CalledProcessError("pfmask-to-pfsol error:", e.stderr)
+    
+    if grid == "conus1":
+        dz = CONUS1_DZ
+        z_top = CONUS1_Z_TOP
+    elif grid == "conus2":
+        dz = CONUS2_DZ
+        z_top = CONUS2_Z_TOP
 
+    if isinstance(mask, np.ndarray):
+        _validate_mask(mask)
+        _validate_grid(grid)
+        _validate_dir(write_dir)
+        grid = grid.lower()
+            
+        nj, ni = mask.shape
+        new_mask = mask.reshape((1, nj, ni)).astype(float)
+        mask_path = os.path.join(write_dir, "mask.pfb")
+        write_pfb(mask_path, new_mask, dx=CONUS_DX, dy=CONUS_DY, dz=dz, dist=False)
+        print("Wrote mask.pfb")
+    
+        try:
+            subprocess.run(
+                [
+                    script_path,
+                    "--mask",
+                    mask_path,
+                    "--pfsol",
+                    solid_path,
+                    "--vtk",
+                    mask_vtk_path,
+                    "--z-bottom",
+                    str(CONUS_Z_BOTTOM),
+                    "--z-top",
+                    str(z_top),
+                ],
+                check=True,
+                capture_output=True,
+            )
+        except subprocess.CalledProcessError as e:
+            raise subprocess.CalledProcessError("pfmask-to-pfsol error:", e.stderr)
+
+        file_paths = {"mask": mask_path, "mask_vtk": mask_vtk_path, "solid": solid_path}
+    elif isinstance(mask, dict) and all(isinstance(k, str) and isinstance(v, str) for k, v in mask.items()):
+        try:
+            subprocess.run(
+                [
+                    script_path,
+                    "--mask-top",
+                    mask["mask-top"],
+                    "--mask-bottom",
+                    mask["mask-bottom"],
+                    "--mask-left",
+                    mask["mask-left"],
+                    "--mask-right",
+                    mask["mask-right"],
+                    "--mask-front",
+                    mask["mask-front"],
+                    "--mask-back",
+                    mask["mask-back"],
+                    "--pfsol",
+                    solid_path,
+                    "--vtk",
+                    mask_vtk_path,
+                    "--z-bottom",
+                    str(CONUS_Z_BOTTOM),
+                    "--z-top",
+                    str(z_top),
+                ],
+                check=True,
+                capture_output=True,
+            )
+        except subprocess.CalledProcessError as e:
+            raise subprocess.CalledProcessError("pfmask-to-pfsol error:", e.stderr)
+        file_paths = {"mask_vtk": mask_vtk_path, "solid": solid_path}
+    else:
+        raise TypeError("mask must be a numpy.ndarray or a dict of mask files.")
+    
     print(f"Wrote solidfile and mask_vtk with total z of {z_top} meters")
-    file_paths = {"mask": mask_path, "mask_vtk": mask_vtk_path, "solid": solid_path}
     return file_paths
-
+    
 
 def create_mask_solid(huc_list, grid, write_dir):
     """This function is deprecated.
