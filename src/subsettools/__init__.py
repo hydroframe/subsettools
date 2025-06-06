@@ -7,6 +7,7 @@ from subsettools.domain import (
     define_huc_domain,
     define_latlon_domain,
     define_upstream_domain,
+    subset_all_masks,
     write_mask_solid,
     huc_to_ij,
     latlon_to_ij,
