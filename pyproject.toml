@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "subsettools"
-version = "2.0.7"
+version = "2.0.8"
 description = "Subsetting tools and utilities for ParFlow"
 authors = ["George Artavanis, Amanda Triplett"]
 license = "MIT"
