@@ -5,6 +5,7 @@ This section contains a set of example workflows that demonstrate different capa
 ```{toctree}
 :maxdepth: 1
 definte_subset.ipynb
+creating_solid_files.ipynb
 subset_static_inputs.ipynb
 subset_forcing_data.ipynb
 configure_clm_from_template.ipynb
