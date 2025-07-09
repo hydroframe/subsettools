@@ -1,6 +1,6 @@
 """Functions to define a domain on the CONUS grids.
 
-A domain is defined by the grid ij bounds and a mask array. 
+A domain is defined by the grid ij bounds and a mask array.
 
 The grid bounds is a tuple (imin, jmin, imax, jmax) that defines a bounding box
 on the CONUS grid that encompases the domain. Note that the origin (0, 0) of the
@@ -266,7 +266,7 @@ def latlon_to_ij(latlon_bounds, grid):
     return (imin, jmin, imax, jmax)
 
 
-def write_mask_solid(mask, grid, write_dir, mode='single-mask', ij_bounds=None):
+def write_mask_solid(mask, grid, write_dir, mode="single-mask", ij_bounds=None):
     """Create ParFlow mask and solid files from a mask array.
 
     Given an integer mask array consisting of 0s and 1s, this function will
@@ -316,9 +316,9 @@ def write_mask_solid(mask, grid, write_dir, mode='single-mask', ij_bounds=None):
     _validate_grid(grid)
     _validate_dir(write_dir)
     grid = grid.lower()
-    if mode == 'multi-mask' and grid != 'conus2':
+    if mode == "multi-mask" and grid != "conus2":
         raise ValueError("multi-mask mode is only available for the CONUS2 grid!")
-    
+
     if grid == "conus1":
         dz = CONUS1_DZ
         z_top = CONUS1_Z_TOP
@@ -334,7 +334,7 @@ def write_mask_solid(mask, grid, write_dir, mode='single-mask', ij_bounds=None):
     mask_vtk_path = os.path.join(write_dir, "mask_vtk.vtk")
     solid_path = os.path.join(write_dir, "solidfile.pfsol")
     file_paths = {"mask": mask_path, "mask_vtk": mask_vtk_path, "solid": solid_path}
-    
+
     try:
         parflow_dir = os.environ["PARFLOW_DIR"]
     except KeyError:
@@ -350,7 +350,7 @@ def write_mask_solid(mask, grid, write_dir, mode='single-mask', ij_bounds=None):
             'installed and os.environ["PARFLOW_DIR"] points to that '
             "installation."
         )
-    if mode == 'single-mask':
+    if mode == "single-mask":
         try:
             subprocess.run(
                 [
@@ -371,7 +371,7 @@ def write_mask_solid(mask, grid, write_dir, mode='single-mask', ij_bounds=None):
             )
         except subprocess.CalledProcessError as e:
             raise subprocess.CalledProcessError("pfmask-to-pfsol error:", e.stderr)
-    elif mode == 'multi-mask':
+    elif mode == "multi-mask":
         mask_paths = _subset_all_masks(ij_bounds, mask, write_dir)
         try:
             subprocess.run(
@@ -414,9 +414,9 @@ def write_mask_solid(mask, grid, write_dir, mode='single-mask', ij_bounds=None):
 def _subset_all_masks(ij_bounds, mask, write_dir):
     """Create masks for all sides of the domain defined by mask and ij_bounds.
 
-    This function currently only works for the CONUS2 grid. Top and bottom 
+    This function currently only works for the CONUS2 grid. Top and bottom
     masks are subset from Hydrodata as a rectangle with ij_bounds and then
-    masked with the domain mask. Left, right, front and back masks are 
+    masked with the domain mask. Left, right, front and back masks are
     calculated explicitly from mask and the global border type mask for
     CONUS2. The resulting masks are written as PFBs in write_dir.
 
@@ -432,22 +432,22 @@ def _subset_all_masks(ij_bounds, mask, write_dir):
     Returns:
         dict: A dictionary mapping the keys ("mask_top", "mask_bottom", etc.) to the
             corresponding filepaths of the created files.
-    """    
+    """
     land_border_type = 2
     all_masks = {}
     options = {
         "dataset": "conus2_domain",
         "grid_bounds": ij_bounds,
-    }    
+    }
     for variable in ("mask_top", "mask_bottom"):
         options["variable"] = variable
         subset_data = get_hf_gridded_data(options)
         subset_data = subset_data * mask
         all_masks[variable] = subset_data
 
-    options["variable"] =  "border_type"
+    options["variable"] = "border_type"
     border = get_hf_gridded_data(options)
-    
+
     # back mask
     mask_back = np.zeros_like(mask, dtype=int)
     mask_back[1:, :] = mask[:-1, :] - mask[1:, :]
@@ -472,19 +472,19 @@ def _subset_all_masks(ij_bounds, mask, write_dir):
 
     # left mask
     mask_left = np.zeros_like(mask, dtype=int)
-    mask_left[:,1:] = mask[:, :-1] - mask[:,1:]
-    mask_left[:,0] = -mask[:,0]
+    mask_left[:, 1:] = mask[:, :-1] - mask[:, 1:]
+    mask_left[:, 0] = -mask[:, 0]
     mask_left[mask_left > 0] = 0
     is_external_border = (mask_left < 0) & (border > 0)
     mask_left[is_external_border] = border[is_external_border]
     is_internal_border = (mask_left < 0) & (border == 0)
     mask_left[is_internal_border] = land_border_type
     all_masks["mask_left"] = mask_left.astype(float)
-    
+
     # right mask
     mask_right = np.zeros_like(mask, dtype=int)
-    mask_right[:,:-1] = mask[:,1:] - mask[:,:-1]
-    mask_right[:,-1] = -mask[:,-1]
+    mask_right[:, :-1] = mask[:, 1:] - mask[:, :-1]
+    mask_right[:, -1] = -mask[:, -1]
     mask_right[mask_right > 0] = 0
     is_external_border = (mask_right < 0) & (border > 0)
     mask_right[is_external_border] = border[is_external_border]
