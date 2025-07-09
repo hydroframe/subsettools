@@ -316,7 +316,9 @@ def write_mask_solid(mask, grid, write_dir, mode='single-mask', ij_bounds=None):
     _validate_grid(grid)
     _validate_dir(write_dir)
     grid = grid.lower()
-
+    if mode == 'multi-mask' and grid != 'conus2':
+        raise ValueError("multi-mask mode is only available for the CONUS2 grid!")
+    
     if grid == "conus1":
         dz = CONUS1_DZ
         z_top = CONUS1_Z_TOP
@@ -410,8 +412,27 @@ def write_mask_solid(mask, grid, write_dir, mode='single-mask', ij_bounds=None):
 
 
 def _subset_all_masks(ij_bounds, mask, write_dir):
-    #TODO: docstring
-    
+    """Create masks for all sides of the domain defined by mask and ij_bounds.
+
+    This function currently only works for the CONUS2 grid. Top and bottom 
+    masks are subset from Hydrodata as a rectangle with ij_bounds and then
+    masked with the domain mask. Left, right, front and back masks are 
+    calculated explicitly from mask and the global border type mask for
+    CONUS2. The resulting masks are written as PFBs in write_dir.
+
+    Args:
+        ij_bounds (tuple[int]): bounding box for subset. This should be given as
+            i,j index values where 0,0 is the lower left hand corner of a domain.
+            ij_bounds are given relative to whatever grid is being used for the
+            subset.
+        mask (numpy.ndarray): an integer array such that mask[i, j] == 1 if the
+            cell (i, j) is part of the domain, and mask[i, j] == 0 otherwise.
+        write_dir (str): directory path where the mask files will be written
+
+    Returns:
+        dict: A dictionary mapping the keys ("mask_top", "mask_bottom", etc.) to the
+            corresponding filepaths of the created files.
+    """    
     land_border_type = 2
     all_masks = {}
     options = {
