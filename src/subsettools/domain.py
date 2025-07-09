@@ -442,6 +442,7 @@ def _subset_all_masks(ij_bounds, mask, write_dir):
     for variable in ("mask_top", "mask_bottom"):
         options["variable"] = variable
         subset_data = get_hf_gridded_data(options)
+        np.nan_to_num(subset_data, copy=False)
         subset_data = subset_data * mask
         all_masks[variable] = subset_data
 
