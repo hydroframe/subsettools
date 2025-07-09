@@ -369,9 +369,6 @@ def write_mask_solid(mask, grid, write_dir, mode='single-mask', ij_bounds=None):
             )
         except subprocess.CalledProcessError as e:
             raise subprocess.CalledProcessError("pfmask-to-pfsol error:", e.stderr)
-        
-        print(f"Wrote solidfile and mask_vtk with total z of {z_top} meters")
-
     elif mode == 'multi-mask':
         mask_paths = _subset_all_masks(ij_bounds, mask, write_dir)
         try:
@@ -405,9 +402,10 @@ def write_mask_solid(mask, grid, write_dir, mode='single-mask', ij_bounds=None):
         except subprocess.CalledProcessError as e:
             raise subprocess.CalledProcessError("pfmask-to-pfsol error:", e.stderr)
         file_paths.update(mask_paths)
-    }
     else:
         raise ValueError("Valid mode options are 'single-mask' or 'multi-mask'.")
+
+    print(f"Wrote solidfile and mask_vtk with total z of {z_top} meters")
     return file_paths
 
 
@@ -417,12 +415,13 @@ def _subset_all_masks(ij_bounds, mask, write_dir):
     land_border_type = 2
     all_masks = {}
     options = {
-        "dataset": dataset,
+        "dataset": "conus2_domain",
         "grid_bounds": ij_bounds,
     }    
     for variable in ("mask_top", "mask_bottom"):
         options["variable"] = variable
-        subset_data = get_hf_gridded_data(options)[mask == 1]        
+        subset_data = get_hf_gridded_data(options)
+        subset_data = subset_data * mask
         all_masks[variable] = subset_data
 
     options["variable"] =  "border_type"
@@ -437,7 +436,7 @@ def _subset_all_masks(ij_bounds, mask, write_dir):
     mask_back[is_external_border] = border[is_external_border]
     is_internal_border = (mask_back < 0) & (border == 0)
     mask_back[is_internal_border] = land_border_type
-    all_masks["mask_back"] = mask_back
+    all_masks["mask_back"] = mask_back.astype(float)
 
     # front mask
     mask_front = np.zeros_like(mask, dtype=int)
@@ -448,7 +447,7 @@ def _subset_all_masks(ij_bounds, mask, write_dir):
     mask_front[is_external_border] = border[is_external_border]
     is_internal_border = (mask_front < 0) & (border == 0)
     mask_front[is_internal_border] = land_border_type
-    all_masks["mask_front"] = mask_front
+    all_masks["mask_front"] = mask_front.astype(float)
 
     # left mask
     mask_left = np.zeros_like(mask, dtype=int)
@@ -459,7 +458,7 @@ def _subset_all_masks(ij_bounds, mask, write_dir):
     mask_left[is_external_border] = border[is_external_border]
     is_internal_border = (mask_left < 0) & (border == 0)
     mask_left[is_internal_border] = land_border_type
-    all_masks["mask_left"] = mask_left
+    all_masks["mask_left"] = mask_left.astype(float)
     
     # right mask
     mask_right = np.zeros_like(mask, dtype=int)
@@ -470,7 +469,7 @@ def _subset_all_masks(ij_bounds, mask, write_dir):
     mask_right[is_external_border] = border[is_external_border]
     is_internal_border = (mask_right < 0) & (border == 0)
     mask_right[is_internal_border] = land_border_type
-    all_masks["mask_right"] = mask_right
+    all_masks["mask_right"] = mask_right.astype(float)
 
     mask_paths = {}
     for var, data in all_masks.items():
