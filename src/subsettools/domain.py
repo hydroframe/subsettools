@@ -278,7 +278,7 @@ def write_mask_solid(mask, grid, write_dir, mode="single-mask", ij_bounds=None):
           selected HUCS.
         - a vtk file, which can be used to visualize the solid file in ParaView.
     If the mode is 'multi-mask', another six masks will be written for the top,
-    bottom, left, right, front and back masks of the domain.
+    bottom, left, right, front and back masks for each cell in the domain.
 
     Args:
         mask (numpy.ndarray): an integer array such that mask[i, j] == 1 if the
@@ -299,8 +299,8 @@ def write_mask_solid(mask, grid, write_dir, mode="single-mask", ij_bounds=None):
     Returns:
         dict: A dictionary mapping the keys ("mask", "mask_vtk", "solid") to the
             corresponding filepaths of the created files. If the mode is 'multi-mask'
-            the dictionary will contain additional keys for the side masks of the
-            domain.
+            the dictionary will contain additional keys for the side masks for each
+            cell in the domain.
 
     Example:
 
@@ -412,7 +412,7 @@ def write_mask_solid(mask, grid, write_dir, mode="single-mask", ij_bounds=None):
 
 
 def _subset_all_masks(ij_bounds, mask, write_dir):
-    """Create masks for all sides of the domain defined by mask and ij_bounds.
+    """Create masks for all sides for each cell in the domain defined by mask and ij_bounds.
 
     This function currently only works for the CONUS2 grid. Top and bottom
     masks are subset from Hydrodata as a rectangle with ij_bounds and then
