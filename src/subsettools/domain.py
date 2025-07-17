@@ -449,27 +449,31 @@ def _subset_all_masks(ij_bounds, mask, write_dir):
     options["variable"] = "border_type"
     border = get_hf_gridded_data(options)
 
-    # back mask
-    mask_back = np.zeros_like(mask, dtype=int)
-    mask_back[1:, :] = mask[:-1, :] - mask[1:, :]
-    mask_back[0, :] = -mask[0, :]
-    mask_back[mask_back > 0] = 0
-    is_external_border = (mask_back < 0) & (border > 0)
-    mask_back[is_external_border] = border[is_external_border]
-    is_internal_border = (mask_back < 0) & (border == 0)
-    mask_back[is_internal_border] = land_border_type
-    all_masks["mask_back"] = mask_back.astype(float)
-
+    # Note: front and back mask are switched compared to the R script
+    # for the CONUS2 side masks as it's created from TIFFs without
+    # flipping.
+    
     # front mask
     mask_front = np.zeros_like(mask, dtype=int)
-    mask_front[:-1, :] = mask[1:, :] - mask[:-1, :]
-    mask_front[-1, :] = -mask[-1, :]
+    mask_front[1:, :] = mask[:-1, :] - mask[1:, :]
+    mask_front[0, :] = -mask[0, :]
     mask_front[mask_front > 0] = 0
     is_external_border = (mask_front < 0) & (border > 0)
     mask_front[is_external_border] = border[is_external_border]
     is_internal_border = (mask_front < 0) & (border == 0)
     mask_front[is_internal_border] = land_border_type
     all_masks["mask_front"] = mask_front.astype(float)
+
+    # back mask
+    mask_back = np.zeros_like(mask, dtype=int)
+    mask_back[:-1, :] = mask[1:, :] - mask[:-1, :]
+    mask_back[-1, :] = -mask[-1, :]
+    mask_back[mask_back > 0] = 0
+    is_external_border = (mask_back < 0) & (border > 0)
+    mask_back[is_external_border] = border[is_external_border]
+    is_internal_border = (mask_back < 0) & (border == 0)
+    mask_back[is_internal_border] = land_border_type
+    all_masks["mask_back"] = mask_back.astype(float)
 
     # left mask
     mask_left = np.zeros_like(mask, dtype=int)
@@ -496,7 +500,7 @@ def _subset_all_masks(ij_bounds, mask, write_dir):
     mask_paths = {}
     for var, data in all_masks.items():
         file_path = os.path.join(write_dir, f"{var}.pfb")
-        write_pfb(file_path, data, dist=False)
+        write_pfb(file_path, data, dx=CONUS_DX, dy=CONUS_DY, dz=CONUS2_DZ, dist=False)
         mask_paths[var] = file_path
 
     return mask_paths
