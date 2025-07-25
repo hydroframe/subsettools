@@ -1,6 +1,6 @@
 """Functions to define a domain on the CONUS grids.
 
-A domain is defined by the grid ij bounds and a mask array. 
+A domain is defined by the grid ij bounds and a mask array.
 
 The grid bounds is a tuple (imin, jmin, imax, jmax) that defines a bounding box
 on the CONUS grid that encompases the domain. Note that the origin (0, 0) of the
@@ -29,7 +29,6 @@ from ._error_checking import (
     _validate_latlon_list,
     _validate_dir,
     _validate_mask,
-    _validate_grid_bounds,
 )
 from ._common import (
     get_hf_gridded_data,
@@ -267,93 +266,41 @@ def latlon_to_ij(latlon_bounds, grid):
     return (imin, jmin, imax, jmax)
 
 
-def subset_all_masks(ij_bounds, dataset, write_dir, var_list=("mask_top", "mask_bottom", "mask_left", "mask_right", "mask_front", "mask_back")):
-    """Subset masks for all directions for a given domain.
-    
-    Given ij bounds and a list of variables, this function will create a mask
-    file per variable in write_dir. Currently, this function should only be
-    used for CONUS2 domains only.
-
-    Args:
-        ij_bounds (tuple[int]): bounding box for subset. This should be given as
-            i,j index values where 0,0 is the lower left hand corner of a domain.
-            ij_bounds are given relative to whatever grid is being used for the
-            subset.
-        dataset (str): static inputs dataset name from the HydroData catalog. Currently,
-            this function should be used for CONUS2 subsets only, so dataset should be set to
-            "conus2_domain"
-        write_dir (str): directory where the subset files will be written
-        var_list (tuple[str]): tuple of variables to subset from the dataset.
-            By default all variables above will be subset. These variables
-            ("top", "bottom", "left", "right", "front", "back") represent
-            the 6 sides of the domain. A separate mask file will be created for each
-            side.
-    
-    Returns:
-        A dictionary mapping the variable names to the corresponding file
-        paths where the subset data were written.
-
-    Example:
-
-    .. code-block:: python
-
-        filepaths = subset_all_masks(
-            ij_bounds=(375, 239, 487, 329),
-            dataset="conus2_domain",
-            write_dir="/path/to/your/chosen/directory",
-        )
-    """
-    _validate_grid_bounds(ij_bounds)
-    if not isinstance(dataset, str):
-        raise TypeError("dataset name must be a string.")
-    _validate_dir(write_dir)
-    if not all(isinstance(var, str) for var in var_list):
-        raise TypeError("All variable names should be strings.")
-    file_paths = {}
-    options = {
-        "dataset": dataset,
-        "grid_bounds": ij_bounds,
-    }
-    for var in var_list:
-        options["variable"] = var
-        subset_data = get_hf_gridded_data(options)
-        file_path = os.path.join(write_dir, f"{var}.pfb")
-        write_pfb(file_path, subset_data, dist=False)
-        file_paths[var] = file_path
-        print(f"Wrote {var}.pfb in specified directory.")
-
-    return file_paths
-    
-
-def write_mask_solid(mask, grid, write_dir):
+def write_mask_solid(mask, grid, write_dir, mode="single-mask", ij_bounds=None):
     """Create ParFlow mask and solid files from a mask array.
 
-    Given an integer mask array (or a dictionary of mask files representing all
-    sides of the domain), this function will create three files in write_dir.
+    Given an integer mask array consisting of 0s and 1s, this function will
+    create three files in write_dir.
         - a 2D mask file that indicates which cells inside the box domain are
           part of the selected HUCS.
         - a solid file that defines a 3D domain extending to the depth of
           whichever grid has been selected and tracing the boundaries of the
           selected HUCS.
         - a vtk file, which can be used to visualize the solid file in ParaView.
+    If the mode is 'multi-mask', another six masks will be written for the top,
+    bottom, left, right, front and back masks for each cell in the domain.
 
     Args:
-        mask (numpy.ndarray or dict[str, str]): 
-            an integer array such that mask[i, j] is the patch index for the
-            corresponding grid point (often, this is just a 1/0 mask representing
-            in/out of domain). Alternatively, mask can be a dict with
-            keys patch names ("mask-top", "mask-bottom", etc) and values paths
-            to the corresponding pfb files.
-        grid (str): the spatial grid that the ij indices are calculated relative
+        mask (numpy.ndarray): an integer array such that mask[i, j] == 1 if the
+            cell (i, j) is part of the domain, and mask[i, j] == 0 otherwise.
+        grid (str): The spatial grid that the ij indices are calculated relative
             to and that the subset data will be returned on. Possible values:
             “conus1” or “conus2”
         write_dir (str): directory path where the mask and solid files will be
             written
+        mode (str): This is the mode that the pfmask-to-pfsol script will be run.
+            It can be either 'single-mask' or 'multi-mask'. Currently, 'multi-mask'
+            mode is only supported for the CONUS2 grid.
+        ij_bounds (tuple[int]): bounding box for subset. This should be given as
+            i,j index values where 0,0 is the lower left hand corner of a domain.
+            ij_bounds are given relative to whatever grid is being used for the
+            subset. This is only necessary if mode is 'multi-mask'.
 
     Returns:
         dict: A dictionary mapping the keys ("mask", "mask_vtk", "solid") to the
-            corresponding filepaths of the created files. If mask is a dict of
-            mask files, only the "mask_vtk" and "solid" keys will be returned.
+            corresponding filepaths of the created files. If the mode is 'multi-mask'
+            the dictionary will contain additional keys for the side masks for each
+            cell in the domain.
 
     Example:
 
@@ -365,8 +312,28 @@ def write_mask_solid(mask, grid, write_dir):
             write_dir="/path/to/your/chosen/directory"
         )
     """
+    _validate_mask(mask)
+    _validate_grid(grid)
+    _validate_dir(write_dir)
+    grid = grid.lower()
+    if mode == "multi-mask" and grid != "conus2":
+        raise ValueError("multi-mask mode is only available for the CONUS2 grid!")
+
+    if grid == "conus1":
+        dz = CONUS1_DZ
+        z_top = CONUS1_Z_TOP
+    elif grid == "conus2":
+        dz = CONUS2_DZ
+        z_top = CONUS2_Z_TOP
+
+    nj, ni = mask.shape
+    new_mask = mask.reshape((1, nj, ni)).astype(float)
+    mask_path = os.path.join(write_dir, "mask.pfb")
+    write_pfb(mask_path, new_mask, dx=CONUS_DX, dy=CONUS_DY, dz=dz, dist=False)
+    print("Wrote mask.pfb")
     mask_vtk_path = os.path.join(write_dir, "mask_vtk.vtk")
     solid_path = os.path.join(write_dir, "solidfile.pfsol")
+    file_paths = {"mask": mask_path, "mask_vtk": mask_vtk_path, "solid": solid_path}
 
     try:
         parflow_dir = os.environ["PARFLOW_DIR"]
@@ -383,26 +350,7 @@ def write_mask_solid(mask, grid, write_dir):
             'installed and os.environ["PARFLOW_DIR"] points to that '
             "installation."
         )
-    
-    if grid == "conus1":
-        dz = CONUS1_DZ
-        z_top = CONUS1_Z_TOP
-    elif grid == "conus2":
-        dz = CONUS2_DZ
-        z_top = CONUS2_Z_TOP
-
-    if isinstance(mask, np.ndarray):
-        _validate_mask(mask)
-        _validate_grid(grid)
-        _validate_dir(write_dir)
-        grid = grid.lower()
-            
-        nj, ni = mask.shape
-        new_mask = mask.reshape((1, nj, ni)).astype(float)
-        mask_path = os.path.join(write_dir, "mask.pfb")
-        write_pfb(mask_path, new_mask, dx=CONUS_DX, dy=CONUS_DY, dz=dz, dist=False)
-        print("Wrote mask.pfb")
-    
+    if mode == "single-mask":
         try:
             subprocess.run(
                 [
@@ -423,25 +371,24 @@ def write_mask_solid(mask, grid, write_dir):
             )
         except subprocess.CalledProcessError as e:
             raise subprocess.CalledProcessError("pfmask-to-pfsol error:", e.stderr)
-
-        file_paths = {"mask": mask_path, "mask_vtk": mask_vtk_path, "solid": solid_path}
-    elif isinstance(mask, dict) and all(isinstance(k, str) and isinstance(v, str) for k, v in mask.items()):
+    elif mode == "multi-mask":
+        mask_paths = _subset_all_masks(ij_bounds, mask, write_dir)
         try:
             subprocess.run(
                 [
                     script_path,
                     "--mask-top",
-                    mask["mask_top"],
+                    mask_paths["mask_top"],
                     "--mask-bottom",
-                    mask["mask_bottom"],
+                    mask_paths["mask_bottom"],
                     "--mask-left",
-                    mask["mask_left"],
+                    mask_paths["mask_left"],
                     "--mask-right",
-                    mask["mask_right"],
+                    mask_paths["mask_right"],
                     "--mask-front",
-                    mask["mask_front"],
+                    mask_paths["mask_front"],
                     "--mask-back",
-                    mask["mask_back"],
+                    mask_paths["mask_back"],
                     "--pfsol",
                     solid_path,
                     "--vtk",
@@ -456,13 +403,108 @@ def write_mask_solid(mask, grid, write_dir):
             )
         except subprocess.CalledProcessError as e:
             raise subprocess.CalledProcessError("pfmask-to-pfsol error:", e.stderr)
-        file_paths = {"mask_vtk": mask_vtk_path, "solid": solid_path}
+        file_paths.update(mask_paths)
     else:
-        raise TypeError("mask must be a numpy.ndarray or a dict of mask files.")
-    
+        raise ValueError("Valid mode options are 'single-mask' or 'multi-mask'.")
+
     print(f"Wrote solidfile and mask_vtk with total z of {z_top} meters")
     return file_paths
-    
+
+
+def _subset_all_masks(ij_bounds, mask, write_dir):
+    """Create masks for all sides for each cell in the domain defined by mask and ij_bounds.
+
+    This function currently only works for the CONUS2 grid. Top and bottom
+    masks are subset from Hydrodata as a rectangle with ij_bounds and then
+    masked with the domain mask. Left, right, front and back masks are
+    calculated explicitly from mask and the global border type mask for
+    CONUS2. The resulting masks are written as PFBs in write_dir.
+
+    Args:
+        ij_bounds (tuple[int]): bounding box for subset. This should be given as
+            i,j index values where 0,0 is the lower left hand corner of a domain.
+            ij_bounds are given relative to whatever grid is being used for the
+            subset.
+        mask (numpy.ndarray): an integer array such that mask[i, j] == 1 if the
+            cell (i, j) is part of the domain, and mask[i, j] == 0 otherwise.
+        write_dir (str): directory path where the mask files will be written
+
+    Returns:
+        dict: A dictionary mapping the keys ("mask_top", "mask_bottom", etc.) to the
+            corresponding filepaths of the created files.
+    """
+    land_border_type = 2
+    all_masks = {}
+    options = {
+        "dataset": "conus2_domain",
+        "grid_bounds": ij_bounds,
+    }
+    for variable in ("mask_top", "mask_bottom"):
+        options["variable"] = variable
+        subset_data = get_hf_gridded_data(options)
+        np.nan_to_num(subset_data, copy=False)
+        subset_data = subset_data * mask
+        all_masks[variable] = subset_data
+
+    options["variable"] = "border_type"
+    border = get_hf_gridded_data(options)
+
+    # Note: front and back mask are switched compared to the R script
+    # for the CONUS2 side masks as it's created from TIFFs without
+    # flipping.
+
+    # front mask
+    mask_front = np.zeros_like(mask, dtype=int)
+    mask_front[1:, :] = mask[:-1, :] - mask[1:, :]
+    mask_front[0, :] = -mask[0, :]
+    mask_front[mask_front > 0] = 0
+    is_external_border = (mask_front < 0) & (border > 0)
+    mask_front[is_external_border] = border[is_external_border]
+    is_internal_border = (mask_front < 0) & (border == 0)
+    mask_front[is_internal_border] = land_border_type
+    all_masks["mask_front"] = mask_front.astype(float)
+
+    # back mask
+    mask_back = np.zeros_like(mask, dtype=int)
+    mask_back[:-1, :] = mask[1:, :] - mask[:-1, :]
+    mask_back[-1, :] = -mask[-1, :]
+    mask_back[mask_back > 0] = 0
+    is_external_border = (mask_back < 0) & (border > 0)
+    mask_back[is_external_border] = border[is_external_border]
+    is_internal_border = (mask_back < 0) & (border == 0)
+    mask_back[is_internal_border] = land_border_type
+    all_masks["mask_back"] = mask_back.astype(float)
+
+    # left mask
+    mask_left = np.zeros_like(mask, dtype=int)
+    mask_left[:, 1:] = mask[:, :-1] - mask[:, 1:]
+    mask_left[:, 0] = -mask[:, 0]
+    mask_left[mask_left > 0] = 0
+    is_external_border = (mask_left < 0) & (border > 0)
+    mask_left[is_external_border] = border[is_external_border]
+    is_internal_border = (mask_left < 0) & (border == 0)
+    mask_left[is_internal_border] = land_border_type
+    all_masks["mask_left"] = mask_left.astype(float)
+
+    # right mask
+    mask_right = np.zeros_like(mask, dtype=int)
+    mask_right[:, :-1] = mask[:, 1:] - mask[:, :-1]
+    mask_right[:, -1] = -mask[:, -1]
+    mask_right[mask_right > 0] = 0
+    is_external_border = (mask_right < 0) & (border > 0)
+    mask_right[is_external_border] = border[is_external_border]
+    is_internal_border = (mask_right < 0) & (border == 0)
+    mask_right[is_internal_border] = land_border_type
+    all_masks["mask_right"] = mask_right.astype(float)
+
+    mask_paths = {}
+    for var, data in all_masks.items():
+        file_path = os.path.join(write_dir, f"{var}.pfb")
+        write_pfb(file_path, data, dx=CONUS_DX, dy=CONUS_DY, dz=CONUS2_DZ, dist=False)
+        mask_paths[var] = file_path
+
+    return mask_paths
+
 
 def create_mask_solid(huc_list, grid, write_dir):
     """This function is deprecated.
