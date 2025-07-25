@@ -242,6 +242,7 @@ def test_write_solid(set_parflow_dir, tmp_path):
         solid = f.readlines()
     assert solid == expected_solid
 
+
 @pytest.mark.parametrize(
     "hucs",
     [
@@ -263,13 +264,22 @@ def test_write_mask_solid_6_masks(set_parflow_dir, tmp_path, hucs):
     test_dir = tmp_path / "test_solid_6_masks"
     test_dir.mkdir()
     ij_huc_bounds, mask = st.define_huc_domain(hucs=hucs, grid="conus2")
-    file_paths = st.write_mask_solid(mask, grid="conus2", write_dir=test_dir,
-                                     mode='multi-mask', ij_bounds=ij_huc_bounds)
+    file_paths = st.write_mask_solid(
+        mask,
+        grid="conus2",
+        write_dir=test_dir,
+        mode="multi-mask",
+        ij_bounds=ij_huc_bounds,
+    )
     solid_path = file_paths["solid"]
     correct_solid_path = f"tests/correct_output/solidfile_{hucs[0]}.pfsol"
 
-    with open(solid_path, "r") as test_file, open(correct_solid_path, "r") as correct_file:
+    with open(solid_path, "r") as test_file, open(
+        correct_solid_path, "r"
+    ) as correct_file:
         test_content = test_file.read()
         correct_content = correct_file.read()
-    
-    assert test_content == correct_content, f"Mismatch found in solidfile for HUC {hucs[0]}"    
+
+    assert (
+        test_content == correct_content
+    ), f"Mismatch found in solidfile for HUC {hucs[0]}"

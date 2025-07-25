@@ -452,7 +452,7 @@ def _subset_all_masks(ij_bounds, mask, write_dir):
     # Note: front and back mask are switched compared to the R script
     # for the CONUS2 side masks as it's created from TIFFs without
     # flipping.
-    
+
     # front mask
     mask_front = np.zeros_like(mask, dtype=int)
     mask_front[1:, :] = mask[:-1, :] - mask[1:, :]
