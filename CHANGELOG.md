@@ -2,7 +2,10 @@
 
 <!--next-version-placeholder-->
 
-## 2.0.2 (
+## 2.0.9 (07/25/2025)
+- Added multi-mask solid file creation option in write_mask_solid()
+
+## 2.0.2
 - Removed upper bounds for python version and removed supported for python 3.9
 - Replaced pytz with the native zoneinfo module for timezone handling
 - Added an option to subset_forcing for users to request specific versions of the forcing datasets
