@@ -30,13 +30,13 @@ from parflow.tools.io import read_pfb
         pytest.param(
             ["02050304"],
             "conus2",
-            (3745, 1848, 3832, 1952),
+            (3746, 1852, 3833, 1951),
             id="level 8 conus2 HUC domain",
         ),
         pytest.param(
             ["17100306"],
             "conus2",
-            (74, 2300, 110, 2368),
+            (73, 2298, 111, 2368),
             id="level 8 conus2 coastal HUC domain",
         ),
     ],
@@ -241,3 +241,45 @@ def test_write_solid(set_parflow_dir, tmp_path):
     with open(f"{test_dir}/solidfile.pfsol") as f:
         solid = f.readlines()
     assert solid == expected_solid
+
+
+@pytest.mark.parametrize(
+    "hucs",
+    [
+        pytest.param(
+            ["01090001"],
+            id="coastal huc",
+        ),
+        pytest.param(
+            ["16020201"],
+            id="huc with a lake",
+        ),
+        pytest.param(
+            ["16020306"],
+            id="huc with a sink",
+        ),
+    ],
+)
+def test_write_mask_solid_6_masks(set_parflow_dir, tmp_path, hucs):
+    test_dir = tmp_path / "test_solid_6_masks"
+    test_dir.mkdir()
+    ij_huc_bounds, mask = st.define_huc_domain(hucs=hucs, grid="conus2")
+    file_paths = st.write_mask_solid(
+        mask,
+        grid="conus2",
+        write_dir=test_dir,
+        mode="multi-mask",
+        ij_bounds=ij_huc_bounds,
+    )
+    solid_path = file_paths["solid"]
+    correct_solid_path = f"tests/correct_output/solidfile_{hucs[0]}.pfsol"
+
+    with open(solid_path, "r") as test_file, open(
+        correct_solid_path, "r"
+    ) as correct_file:
+        test_content = test_file.read()
+        correct_content = correct_file.read()
+
+    assert (
+        test_content == correct_content
+    ), f"Mismatch found in solidfile for HUC {hucs[0]}"

@@ -7,7 +7,8 @@ ParFlow simulation.
     - subset initial pressure data
     - subset gridded CLM inputs (vegm)
 """
-#pylint: disable=C0301,R0913,R0914,R0917
+
+# pylint: disable=C0301,R0913,R0914,R0917
 import os
 from datetime import datetime, timedelta
 import threading
@@ -156,7 +157,7 @@ def subset_press_init(ij_bounds, dataset, date, write_dir, time_zone="UTC"):
             in the form 'yyyy-mm-dd'
         write_dir (str): directory where the subset file will be written
         time_zone (str): timezone information for subset date. Data will be
-            subset at midnight in the specified timezone. This should be a 
+            subset at midnight in the specified timezone. This should be a
             zoneinfo-supported time zone. Defaults to "UTC".
 
     Returns:
@@ -342,11 +343,12 @@ def _subset_forcing_variable(
     lock,
 ):
     """
-        Helper to read forcing data of one variable and write it daily files in write_dir folder.
+    Helper to read forcing data of one variable and write it daily files in write_dir folder.
     """
 
     (base_file_path, hf_filter_options) = _get_forcing_file_basename(
-        dataset, variable, grid, dataset_version, ij_bounds)
+        dataset, variable, grid, dataset_version, ij_bounds
+    )
 
     # Allocate a numpy array to buffer 24 hours (1 day) of data to be written to each file
     block_day_np = np.full(
@@ -369,10 +371,21 @@ def _subset_forcing_variable(
 
     while start_block_date < end_date and not exit_event.is_set():
         (subset_data, end_block_date) = _read_hf_hydrodata_block(
-            hf_filter_options, start_block_date, end_date, block_hours_per_read)
+            hf_filter_options, start_block_date, end_date, block_hours_per_read
+        )
 
         (block_day_np, hour, day, skipped_offset_in_day_1) = _write_block_to_files(
-            subset_data, block_day_np, hour, day, skipped_offset_in_day_1, ij_bounds, timezone_offset, base_file_path, write_dir, write_paths)
+            subset_data,
+            block_day_np,
+            hour,
+            day,
+            skipped_offset_in_day_1,
+            ij_bounds,
+            timezone_offset,
+            base_file_path,
+            write_dir,
+            write_paths,
+        )
 
         # increment start_block_date (in hours) for next hf_hydrodata block read
         start_block_date = end_block_date
@@ -382,24 +395,27 @@ def _subset_forcing_variable(
             outputs[variable] = write_paths
         print(f"Finished writing {variable} to folder")
 
-def _read_hf_hydrodata_block(hf_filter_options, start_block_date, end_date, block_hours_per_read):
+
+def _read_hf_hydrodata_block(
+    hf_filter_options, start_block_date, end_date, block_hours_per_read
+):
     """
-        Read a block of data from hydrodata to support subset_forcing function.
+    Read a block of data from hydrodata to support subset_forcing function.
 
-        Parameters:
-            hf_filter_options:      The hf_hydrodata filter options to be used for the read.
-            start_block_date:       The value to put put in start_time options of hf_filter options.
-            end_date:               The final end date for the subset_forcing function.
-            block_hours_per_read:   The number of hours to read to be used to set end_time option in read.
+    Parameters:
+        hf_filter_options:      The hf_hydrodata filter options to be used for the read.
+        start_block_date:       The value to put put in start_time options of hf_filter options.
+        end_date:               The final end date for the subset_forcing function.
+        block_hours_per_read:   The number of hours to read to be used to set end_time option in read.
 
-        Returns:
-            A tuple (subset_data, end_block_date)
+    Returns:
+        A tuple (subset_data, end_block_date)
 
-        The subset data is numpy array containing dimensions (z, y, x) where z is the hours of read data.
-        The end_block_date is the start date of the next call to this function.
+    The subset data is numpy array containing dimensions (z, y, x) where z is the hours of read data.
+    The end_block_date is the start date of the next call to this function.
 
-        The date range read may be a range of 24 hour UTC periods or
-        may be range of hours less than 24 hours. This depends on the ij_bound size.
+    The date range read may be a range of 24 hour UTC periods or
+    may be range of hours less than 24 hours. This depends on the ij_bound size.
     """
 
     block_delta_per_read = timedelta(hours=block_hours_per_read)
@@ -427,34 +443,45 @@ def _read_hf_hydrodata_block(hf_filter_options, start_block_date, end_date, bloc
     return (subset_data, end_block_date)
 
 
-def _write_block_to_files(subset_data, block_day_np, hour, day, skipped_offset, ij_bounds, timezone_offset, base_filename, write_dir, write_paths):
+def _write_block_to_files(
+    subset_data,
+    block_day_np,
+    hour,
+    day,
+    skipped_offset,
+    ij_bounds,
+    timezone_offset,
+    base_filename,
+    write_dir,
+    write_paths,
+):
     """
-        Process the subset_data of one block and write the data to daily forcing files.
+    Process the subset_data of one block and write the data to daily forcing files.
 
-        Parameters:
-            subset_data:    The numpy array of a block returned by get_gridded_data.
-            block_day_np:   A numpy buffer the size of 24 hours if ij_bounds to be written to file.
-            hour:           The next hour to be added to the block_day_np buffer (number from 0-23).
-            day:            The next day to be used to for the next daily file to be written.
-            skipped_offset: True if we already skipped the first hours of the block for timezone reads.
-            ij_bounds:      The grid bounds of the requested data [min_x, min_y, max_x, max_y].
-            timezone_offset:The number of hours of the timezone from UTC time (is 0 for UTC).
-            base_filename:  The base file name of the daily forcing files to be written.
-            write_dir:      The directory to write the daily forcing files.
-            write_paths:    An array of full file paths of files written to write_dir.
+    Parameters:
+        subset_data:    The numpy array of a block returned by get_gridded_data.
+        block_day_np:   A numpy buffer the size of 24 hours if ij_bounds to be written to file.
+        hour:           The next hour to be added to the block_day_np buffer (number from 0-23).
+        day:            The next day to be used to for the next daily file to be written.
+        skipped_offset: True if we already skipped the first hours of the block for timezone reads.
+        ij_bounds:      The grid bounds of the requested data [min_x, min_y, max_x, max_y].
+        timezone_offset:The number of hours of the timezone from UTC time (is 0 for UTC).
+        base_filename:  The base file name of the daily forcing files to be written.
+        write_dir:      The directory to write the daily forcing files.
+        write_paths:    An array of full file paths of files written to write_dir.
 
-        Returns: block_day_np, hour, day, skipped_offset)
+    Returns: block_day_np, hour, day, skipped_offset)
 
-        The returned block_day_np may the the same as the one passed in and filled with new hours
-        or it may be a newly allocated buffer if the buffer was just written to a file.
+    The returned block_day_np may the the same as the one passed in and filled with new hours
+    or it may be a newly allocated buffer if the buffer was just written to a file.
 
-        If the block_day_np buffer is filled to 24 hours then the buffer is written to a daily
-        forcing file and the hours set back to 0 to be filled by the next hours from subset_data.
-        The subset_data block may contain many days of files so this may write many daily files
-        or if the bounds is large this function may write no files, but only partiall fill the buffer.
+    If the block_day_np buffer is filled to 24 hours then the buffer is written to a daily
+    forcing file and the hours set back to 0 to be filled by the next hours from subset_data.
+    The subset_data block may contain many days of files so this may write many daily files
+    or if the bounds is large this function may write no files, but only partiall fill the buffer.
 
-        The hour, day and skipped offset are returned as updated values after processing the
-        hours data in the subset_data and updating the block_day_np.
+    The hour, day and skipped offset are returned as updated values after processing the
+    hours data in the subset_data and updating the block_day_np.
 
     """
     if timezone_offset == 0:
@@ -514,20 +541,20 @@ def _write_block_to_files(subset_data, block_day_np, hour, day, skipped_offset, 
 
 def _get_forcing_file_basename(dataset, variable, grid, dataset_version, ij_bounds):
     """
-        Get the base file name to be used to write daily forcing files by subset_forcing function.
+    Get the base file name to be used to write daily forcing files by subset_forcing function.
 
-        Parameters:
-            dataset:        The hf_hydrodata dataset version of the forcing file.
-            variable:       The hf_hydrodata variable name of the focing file.
-            grid:           The grid of the requested forcing data
-            dataset_version:The hf_hydrodata version of the dataset of the forcing file.
-            ij_bounds:      The grid_bounds of the request to put into the return hf_filter_options.
-        Returns: A tuple (base_filename, hf_filter_options).
+    Parameters:
+        dataset:        The hf_hydrodata dataset version of the forcing file.
+        variable:       The hf_hydrodata variable name of the focing file.
+        grid:           The grid of the requested forcing data
+        dataset_version:The hf_hydrodata version of the dataset of the forcing file.
+        ij_bounds:      The grid_bounds of the request to put into the return hf_filter_options.
+    Returns: A tuple (base_filename, hf_filter_options).
 
-        The base_filename is the base file name of the forcing file stored in /hydrodata.
-        The hf_filter_options are the options to be passed to get_gridded_data to get forcing data.
+    The base_filename is the base file name of the forcing file stored in /hydrodata.
+    The hf_filter_options are the options to be passed to get_gridded_data to get forcing data.
     """
-        # Get base path name of output forcing file using hf_hydrodata path
+    # Get base path name of output forcing file using hf_hydrodata path
     hf_filter_options = {
         "dataset": dataset,
         "variable": variable,
@@ -536,7 +563,7 @@ def _get_forcing_file_basename(dataset, variable, grid, dataset_version, ij_boun
         "grid_bounds": ij_bounds,
         "mask": "false",
         "temporal_resolution": "hourly",
-        "dataset_version": dataset_version
+        "dataset_version": dataset_version,
     }
 
     path = hf_hydrodata.get_paths(hf_filter_options)[0]
@@ -546,17 +573,17 @@ def _get_forcing_file_basename(dataset, variable, grid, dataset_version, ij_boun
 
 def _get_read_block_size(ij_bounds):
     """
-        Get the number of hours of data to be read by the blocking reads to hf_hydrodata to
-        optimize the performance of reads for the subset_forcing function.
+    Get the number of hours of data to be read by the blocking reads to hf_hydrodata to
+    optimize the performance of reads for the subset_forcing function.
 
-        Parameters:
-            ij_bounds:      This is the grid bounds of the request [min_x, min_y, max_x, max_y].
+    Parameters:
+        ij_bounds:      This is the grid bounds of the request [min_x, min_y, max_x, max_y].
 
-        Returns:
-            The number of hours of data to return each each block call for subset_forcing function.
+    Returns:
+        The number of hours of data to return each each block call for subset_forcing function.
 
-        This may return many days of data for a small subgrid or only a few hours of data
-        for a large subgrid that is too large to return 24 hours of data in a single hf_hydrodata call.
+    This may return many days of data for a small subgrid or only a few hours of data
+    for a large subgrid that is too large to return 24 hours of data in a single hf_hydrodata call.
     """
     float64_byte_size = 8
     max_chunking_memory_bytes = 1500000000
@@ -589,13 +616,13 @@ def _get_read_block_size(ij_bounds):
 
 def _write_day_to_file(data_np, base_filename, day, write_dir, write_paths):
     """
-        Write a file containing 1 day of hourly data to a file.
+    Write a file containing 1 day of hourly data to a file.
 
-        Parameters:
-            data_np:        A number array of dimension (z, y, x) where z is 24 hours.
-            base_filename:  The base name of the daily file to be written.
-            write_dir:      The directory to write the daily file.
-            write_paths:    An array of full file paths written. The path is appended to this.
+    Parameters:
+        data_np:        A number array of dimension (z, y, x) where z is 24 hours.
+        base_filename:  The base name of the daily file to be written.
+        write_dir:      The directory to write the daily file.
+        write_paths:    An array of full file paths written. The path is appended to this.
     """
     write_path = os.path.join(write_dir, _adjust_filename_hours(base_filename, day))
     write_paths.append(write_path)

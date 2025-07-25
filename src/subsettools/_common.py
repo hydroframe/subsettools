@@ -7,6 +7,7 @@ import hf_hydrodata as hf
 
 SUBSETTOOLS_VERSION = importlib.metadata.version("subsettools")
 
+
 def get_hf_gridded_data(options):
     "Wrapper around hf_hydrodata.get_gridded_data to handle various exceptions."
 
@@ -38,7 +39,7 @@ def get_utc_time(date_string, time_zone):
     if time_zone != "UTC":
         date = (
             date.replace(tzinfo=ZoneInfo(time_zone))
-            .astimezone(ZoneInfo('UTC'))
+            .astimezone(ZoneInfo("UTC"))
             .replace(tzinfo=None)
         )
     return date
