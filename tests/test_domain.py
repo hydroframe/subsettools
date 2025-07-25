@@ -253,6 +253,10 @@ def test_write_solid(set_parflow_dir, tmp_path):
             ["16020201"],
             id="huc with a lake",
         ),
+        pytest.param(
+            ["16020306"],
+            id="huc with a sink",
+        ),
     ],
 )
 def test_write_mask_solid_6_masks(set_parflow_dir, tmp_path, hucs):
