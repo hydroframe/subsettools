@@ -44,7 +44,7 @@ from ._constants import (
 )
 
 
-def define_huc_domain(hucs, grid):
+def define_huc_domain(hucs, grid, huc_version=None):
     """Define a domain by a collection of HUCs.
 
     The domain is defined by the grid ij bounds of a bounding box that
@@ -60,6 +60,7 @@ def define_huc_domain(hucs, grid):
         grid (str): The spatial grid that the ij indices are calculated relative
             to and that the subset data will be returned on. Possible values:
             “conus1” or “conus2”
+        huc_version (str): The dataset_version of the huc_mapping dataset to use to lookup HUC ids.
 
     Returns:
         A tuple (bounds, mask).
@@ -95,6 +96,7 @@ def define_huc_domain(hucs, grid):
         "grid": grid,
         "file_type": "tiff",
         "level": str(huc_len),
+        "dataset_version": huc_version
     }
     conus_hucs = get_hf_gridded_data(options)
     huc_mask = np.isin(conus_hucs, hucs).squeeze()
@@ -109,7 +111,7 @@ def define_huc_domain(hucs, grid):
     return bounds, huc_mask[jmin:jmax, imin:imax].astype(int)
 
 
-def huc_to_ij(huc_list, grid):
+def huc_to_ij(huc_list, grid, huc_version=None):
     """This function is deprecated.
 
     Use define_huc_domain() instead.
@@ -121,7 +123,7 @@ def huc_to_ij(huc_list, grid):
     )
     _validate_huc_list(huc_list)
     _validate_grid(grid)
-    _, _, indices_j, indices_i = _get_conus_hucs_indices(huc_list, grid.lower())
+    _, _, indices_j, indices_i = _get_conus_hucs_indices(huc_list, grid.lower(), huc_version)
     if indices_i.size == 0 or indices_j.size == 0:
         raise ValueError(
             f"The area defined by the provided HUCs is not part of the {grid} grid."
@@ -129,13 +131,14 @@ def huc_to_ij(huc_list, grid):
     return _indices_to_ij(indices_j, indices_i)
 
 
-def _get_conus_hucs_indices(huc_list, grid):
+def _get_conus_hucs_indices(huc_list, grid, huc_version=None):
     """Get the huc datafile as an ndarray and three mask arrays representing the selected hucs.
 
     Args:
         huc_list (list[str]): a list of huc IDs
         grid (str): The spatial grid that the ij indices are calculated relative to and that the subset
             data will be returned on. Possible values: “conus1” or “conus2”
+        huc_version (str): The dataset_version of the huc_mapping dataset to use to lookup HUC ids.
 
     Returns:
         A tuple (conus_hucs, sel_hucs, indices_j, indices_i) where
@@ -146,7 +149,7 @@ def _get_conus_hucs_indices(huc_list, grid):
     huc_len = len(huc_list[0])
     huc_list = [int(huc) for huc in huc_list]
     entry = hf_hydrodata.get_catalog_entry(
-        dataset="huc_mapping", grid=grid, file_type="tiff"
+        dataset="huc_mapping", grid=grid, file_type="tiff", dataset_version=huc_version
     )
     if entry is None:
         raise ValueError(f"There is no HUC mapping entry for grid {grid}.")
@@ -228,7 +231,7 @@ def define_latlon_domain(latlon_bounds, grid):
         "dataset": "huc_mapping",
         "grid": grid,
         "level": "2",
-        "grid_bounds": grid_bounds,
+        "grid_bounds": grid_bounds
     }
     mask = get_hf_gridded_data(options)
     mask[mask > 0] = 1
@@ -506,7 +509,7 @@ def _subset_all_masks(ij_bounds, mask, write_dir):
     return mask_paths
 
 
-def create_mask_solid(huc_list, grid, write_dir):
+def create_mask_solid(huc_list, grid, write_dir, huc_version=None):
     """This function is deprecated.
 
     Use write_mask_solid() instead.
@@ -520,7 +523,7 @@ def create_mask_solid(huc_list, grid, write_dir):
     _validate_grid(grid)
     _validate_dir(write_dir)
     grid = grid.lower()
-    _, sel_hucs, indices_j, indices_i = _get_conus_hucs_indices(huc_list, grid)
+    _, sel_hucs, indices_j, indices_i = _get_conus_hucs_indices(huc_list, grid, huc_version)
     if indices_i.size == 0 or indices_j.size == 0:
         raise ValueError(
             f"The area defined by the provided HUCs is not part of the {grid} grid."
