@@ -288,7 +288,7 @@ def test_define_huc_with_huc_version():
     """
     Test the huc_version option to subsettools define_huc_domain().
     Note, the answer is the same except for dataset_version 2025_06 which it verified.
-    The function create_mask_solid() is not tested because it is deprecated.
+    The function create_mask_solid(), huc_to_ij() is not tested because it is deprecated.
     """
 
     grid = "conus2"
