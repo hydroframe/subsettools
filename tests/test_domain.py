@@ -284,6 +284,7 @@ def test_write_mask_solid_6_masks(set_parflow_dir, tmp_path, hucs):
         test_content == correct_content
     ), f"Mismatch found in solidfile for HUC {hucs[0]}"
 
+
 def test_define_huc_with_huc_version():
     """
     Test the huc_version option to subsettools define_huc_domain().
