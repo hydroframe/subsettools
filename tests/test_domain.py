@@ -283,3 +283,28 @@ def test_write_mask_solid_6_masks(set_parflow_dir, tmp_path, hucs):
     assert (
         test_content == correct_content
     ), f"Mismatch found in solidfile for HUC {hucs[0]}"
+
+def test_define_huc_with_huc_version():
+    """
+    Test the huc_version option to subsettools define_huc_domain().
+    Note, the answer is the same except for dataset_version 2025_06 which it verified.
+    The function create_mask_solid(), huc_to_ij() is not tested because it is deprecated.
+    """
+
+    grid = "conus2"
+    hucs = ["02070001"]
+
+    bounds, _ = st.define_huc_domain(hucs, grid)
+    assert bounds == (3662, 1657, 3732, 1793)
+
+    huc_version = None
+    bounds, _ = st.define_huc_domain(hucs, grid, huc_version=huc_version)
+    assert bounds == (3662, 1657, 3732, 1793)
+
+    huc_version = "2025_06"
+    bounds, _ = st.define_huc_domain(hucs, grid, huc_version=huc_version)
+    assert bounds == (3662, 1656, 3731, 1794)
+
+    huc_version = "2025_01"
+    bounds, _ = st.define_huc_domain(hucs, grid, huc_version=huc_version)
+    assert bounds == (3662, 1657, 3732, 1793)
