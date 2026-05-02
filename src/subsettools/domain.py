@@ -42,8 +42,6 @@ from ._constants import (
     CONUS2_Z_TOP,
     CONUS_Z_BOTTOM,
 )
-
-
 def define_huc_domain(hucs, grid, huc_version=None):
     """Define a domain by a collection of HUCs.
 
